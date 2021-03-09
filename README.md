@@ -11,7 +11,7 @@ SQLAlchemy models for the UKRDC and related databases.
 ```python
 from datetime import datetime
 
-from ukrdc_sqla.ukrdc import PatientRecord
+from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
 def commit_extra_resultitem(session):
     patient_record = PatientRecord(
