@@ -30,3 +30,9 @@ class Message(Base):
     facility = Column(String)
     error = Column(String)
     status = Column(String)
+
+
+class Facility(Base):
+    __tablename__ = "facilities"
+
+    facility = Column(String, primary_key=True)
