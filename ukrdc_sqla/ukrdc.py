@@ -763,3 +763,17 @@ class Treatment(Base):
     qbl07 = Column("qbl07", String)
     erf61 = Column("erf61", String)
     pat35 = Column("pat35", String)
+
+
+class Code(Base):
+    __tablename__ = "code_list"
+
+    coding_standard = Column("coding_standard", String, primary_key=True)
+    code = Column("code", String, primary_key=True)
+    description = Column("description", String)
+    object_type = Column("object_type", String)
+
+    creation_date = Column("creation_date", DateTime)
+    update_date = Column("update_date", DateTime)
+
+    units = Column("units", String)
