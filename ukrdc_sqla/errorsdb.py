@@ -20,7 +20,7 @@ class Channel(Base):
 class Message(Base):
     __tablename__ = "messages"
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
     message_id = Column(Integer, unique=True)
     channel_id = Column(String, ForeignKey("channels.id"))
     received = Column(DateTime)
