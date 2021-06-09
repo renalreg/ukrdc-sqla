@@ -685,7 +685,7 @@ class ResultItem(Base):
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
 
-    order = relationship(LabOrder)
+    order: LabOrder  # Let LabOrder handle backref
 
 
 class PVData(Base):

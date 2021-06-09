@@ -63,7 +63,7 @@ class LinkRecord(Base):
     updated_by = Column("updatedby", String)
     last_updated = Column("lastupdated", DateTime, nullable=False)
 
-    person: "Person" = relationship("Person")
+    person: "Person"  # Let Person handle backref
 
     def __str__(self):
         return (
@@ -134,8 +134,8 @@ class WorkItem(Base):
     update_description = Column("updatedesc", String)
     attributes = Column(String)
 
-    person = relationship(Person)
-    master_record = relationship(MasterRecord)
+    person: Person  # Let Person handle backref
+    master_record: MasterRecord  # Let MasterRecord handle backref
 
     def __str__(self):
         return f"WorkItem({self.id}) <{self.person_id}, {self.master_id}>"
