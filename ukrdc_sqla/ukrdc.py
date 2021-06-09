@@ -13,7 +13,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -658,7 +658,7 @@ class LabOrder(Base):
     entering_organization_code = Column("enteringorganizationcode", String)
     entering_organization_description = Column("enteringorganizationdesc", String)
 
-    result_items = relationship(
+    result_items: Mapped[list["ResultItem"]] = relationship(
         "ResultItem", lazy=GLOBAL_LAZY, backref="order", cascade="all, delete-orphan"
     )
 
@@ -684,6 +684,8 @@ class ResultItem(Base):
     observation_time = Column("observationtime", DateTime)
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
+
+    order = relationship(LabOrder)
 
 
 class PVData(Base):

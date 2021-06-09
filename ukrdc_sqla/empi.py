@@ -12,7 +12,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 metadata = MetaData()
 Base: Any = declarative_base(metadata=metadata)
@@ -33,10 +33,10 @@ class MasterRecord(Base):
     effective_date = Column("effectivedate", DateTime, nullable=False)
     creation_date = Column("creationdate", DateTime)
 
-    link_records = relationship(
+    link_records: Mapped[list["LinkRecord"]] = relationship(
         "LinkRecord", backref="master_record", cascade="all, delete-orphan"
     )
-    work_items = relationship(
+    work_items: Mapped[list["WorkItem"]] = relationship(
         "WorkItem", backref="master_record", cascade="all, delete-orphan"
     )
 
@@ -62,6 +62,8 @@ class LinkRecord(Base):
     link_desc = Column("linkdesc", String)
     updated_by = Column("updatedby", String)
     last_updated = Column("lastupdated", DateTime, nullable=False)
+
+    person: "Person" = relationship("Person")
 
     def __str__(self):
         return (
@@ -103,8 +105,8 @@ class Person(Base):
     work_items = relationship(
         "WorkItem", backref="person", cascade="all, delete-orphan"
     )
-    xref_entries = relationship(
-        "PidXRef", backref="person", cascade="all, delete-orphan"
+    xref_entries: Mapped[list["PidXRef"]] = relationship(
+        "PidXRef", back_populates="person", cascade="all, delete-orphan"
     )
 
     def __str__(self):
@@ -131,6 +133,9 @@ class WorkItem(Base):
     updated_by = Column("updatedby", String)
     update_description = Column("updatedesc", String)
     attributes = Column(String)
+
+    person = relationship(Person)
+    master_record = relationship(MasterRecord)
 
     def __str__(self):
         return f"WorkItem({self.id}) <{self.person_id}, {self.master_id}>"
@@ -161,6 +166,8 @@ class PidXRef(Base):
     sending_facility = Column("sendingfacility", String, nullable=False)
     sending_extract = Column("sendingextract", String, nullable=False)
     localid = Column(String, nullable=False)
+
+    person = relationship("Person", back_populates="xref_entries")
 
     def __str__(self):
         return (
