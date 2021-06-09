@@ -1,5 +1,5 @@
 """Models which relate to the EMPI (JTRACE) Database"""
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import (
     Boolean,
@@ -33,10 +33,10 @@ class MasterRecord(Base):
     effective_date = Column("effectivedate", DateTime, nullable=False)
     creation_date = Column("creationdate", DateTime)
 
-    link_records: Mapped[list["LinkRecord"]] = relationship(
+    link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="master_record", cascade="all, delete-orphan"
     )
-    work_items: Mapped[list["WorkItem"]] = relationship(
+    work_items: Mapped[List["WorkItem"]] = relationship(
         "WorkItem", backref="master_record", cascade="all, delete-orphan"
     )
 
@@ -105,7 +105,7 @@ class Person(Base):
     work_items = relationship(
         "WorkItem", backref="person", cascade="all, delete-orphan"
     )
-    xref_entries: Mapped[list["PidXRef"]] = relationship(
+    xref_entries: Mapped[List["PidXRef"]] = relationship(
         "PidXRef", back_populates="person", cascade="all, delete-orphan"
     )
 

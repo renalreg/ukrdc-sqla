@@ -658,7 +658,7 @@ class LabOrder(Base):
     entering_organization_code = Column("enteringorganizationcode", String)
     entering_organization_description = Column("enteringorganizationdesc", String)
 
-    result_items: Mapped[list["ResultItem"]] = relationship(
+    result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem", lazy=GLOBAL_LAZY, backref="order", cascade="all, delete-orphan"
     )
 
