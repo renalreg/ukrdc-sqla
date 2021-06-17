@@ -64,6 +64,7 @@ class LinkRecord(Base):
     last_updated = Column("lastupdated", DateTime, nullable=False)
 
     person: "Person"  # Let Person handle backref
+    master_record: MasterRecord  # Let MasterRecord handle backref
 
     def __str__(self):
         return (
