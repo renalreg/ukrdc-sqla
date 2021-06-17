@@ -100,10 +100,10 @@ class Person(Base):
     std_postcode = Column("stdpostcode", String)
     skip_duplicate_check = Column("skipduplicatecheck", Boolean)
 
-    link_records = relationship(
+    link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="person", cascade="all, delete-orphan"
     )
-    work_items = relationship(
+    work_items: Mapped[List["WorkItem"]] = relationship(
         "WorkItem", backref="person", cascade="all, delete-orphan"
     )
     xref_entries: Mapped[List["PidXRef"]] = relationship(
