@@ -7,6 +7,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     MetaData,
     String,
@@ -80,7 +81,8 @@ class Person(Base):
 
     id = Column(Integer, primary_key=True)
     originator = Column(String, nullable=False)
-    localid = Column(String, nullable=False)
+    # Person.localid must be unique for PidXRef relationship to work
+    localid = Column(String, nullable=False, unique=True)
     localid_type = Column("localidtype", String, nullable=False)
     nationalid = Column(String)
     nationalid_type = Column("nationalidtype", String)
@@ -117,6 +119,12 @@ class Person(Base):
             f"{self.localid_type.strip()}:{self.localid.strip()}"
             ">"
         )
+
+
+Index(
+    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
+)
+Index("person_id_key", Person.id, unique=True)
 
 
 class WorkItem(Base):
@@ -177,3 +185,12 @@ class PidXRef(Base):
             f"{self.localid.strip()}"
             f">"
         )
+
+
+Index(
+    "pidxref_compound",
+    PidXRef.sending_facility,
+    PidXRef.sending_extract,
+    PidXRef.localid,
+    unique=True,
+)
