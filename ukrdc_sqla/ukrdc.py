@@ -786,7 +786,9 @@ class CodeMap(Base):
 
     source_coding_standard = Column("source_coding_standard", String, primary_key=True)
     source_code = Column("source_code", String, primary_key=True)
-    destination_coding_standard = Column("destination_coding_standard", String, primary_key=True)
+    destination_coding_standard = Column(
+        "destination_coding_standard", String, primary_key=True
+    )
     destination_code = Column("destination_code", String, primary_key=True)
 
     creation_date = Column("creation_date", DateTime)
