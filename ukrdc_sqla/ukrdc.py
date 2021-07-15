@@ -784,10 +784,10 @@ class Code(Base):
 class CodeMap(Base):
     __tablename__ = "code_map"
 
-    source_coding_standard = Column("coding_standard", String, primary_key=True)
-    source_code = Column("code", String, primary_key=True)
-    destination_coding_standard = Column("coding_standard", String, primary_key=True)
-    destination_code = Column("code", String, primary_key=True)
+    source_coding_standard = Column("source_coding_standard", String, primary_key=True)
+    source_code = Column("source_code", String, primary_key=True)
+    destination_coding_standard = Column("Column", String, primary_key=True)
+    destination_code = Column("destination_code", String, primary_key=True)
 
     creation_date = Column("creation_date", DateTime)
     update_date = Column("update_date", DateTime)
