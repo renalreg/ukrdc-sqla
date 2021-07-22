@@ -12,7 +12,7 @@ python = "^3.6"
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
 isort = "^5.8.0"
-pylint = "^2.9.4"
+pylint = "^2.9.5"
 tox = "^3.24.0"
 
 [build-system]
