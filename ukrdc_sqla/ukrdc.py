@@ -39,9 +39,20 @@ class PatientRecord(Base):
     patient = relationship(
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
+
     lab_orders = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
+
+    result_items = relationship(
+        "ResultItem",
+        secondary="laborder",
+        primaryjoin="LabOrder.pid == PatientRecord.pid",
+        secondaryjoin="ResultItem.order_id == LabOrder.id",
+        lazy=GLOBAL_LAZY,
+        viewonly=True,
+    )
+
     social_histories = relationship("SocialHistory", cascade="all, delete-orphan")
     family_histories = relationship("FamilyHistory", cascade="all, delete-orphan")
     observations = relationship(
