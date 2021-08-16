@@ -47,7 +47,7 @@ class PatientRecord(Base):
     observations = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    allergies = relationship("Allergy", cascade="all, delete-orphan")
+    allergies = relationship("Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     diagnoses = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
@@ -63,9 +63,9 @@ class PatientRecord(Base):
     dialysis_sessions = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures = relationship("Procedure", cascade="all, delete-orphan")
+    procedures = relationship("Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     documents = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    encounters = relationship("Encounter", cascade="all, delete-orphan")
+    encounters = relationship("Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     treatments = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
@@ -80,7 +80,7 @@ class PatientRecord(Base):
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
 
-    surveys = relationship("Survey", cascade="all, delete-orphan")
+    surveys = relationship("Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
