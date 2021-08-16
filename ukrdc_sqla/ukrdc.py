@@ -41,11 +41,11 @@ class PatientRecord(Base):
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
 
-    lab_orders = relationship(
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
-    result_items = relationship(
+    result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
         secondary="laborder",
         primaryjoin="LabOrder.pid == PatientRecord.pid",
@@ -53,42 +53,51 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-
-    social_histories = relationship("SocialHistory", cascade="all, delete-orphan")
-    family_histories = relationship("FamilyHistory", cascade="all, delete-orphan")
-    observations = relationship(
+    observations: Mapped[List["Observation"]] = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    allergies = relationship("Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    diagnoses = relationship(
+
+    social_histories: Mapped[List["SocialHistory"]] = relationship(
+        "SocialHistory", cascade="all, delete-orphan"
+    )
+    family_histories: Mapped[List["FamilyHistory"]] = relationship(
+        "FamilyHistory", cascade="all, delete-orphan"
+    )
+
+    allergies: Mapped[List["Allergy"]] = relationship(
+        "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    diagnoses: Mapped[List["Diagnosis"]] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death = relationship(
+    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses = relationship(
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications = relationship(
+    medications: Mapped[List["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )  # noqa
-    dialysis_sessions = relationship(
+    )
+    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures = relationship(
+    procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    encounters = relationship(
+    documents: Mapped[List["Document"]] = relationship(
+        "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    encounters: Mapped[List["Encounter"]] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments = relationship(
+    treatments: Mapped[List["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    program_memberships = relationship(
+    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
-    transplants = relationship(
+    transplants: Mapped[List["Transplant"]] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
@@ -96,7 +105,9 @@ class PatientRecord(Base):
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
 
-    surveys = relationship("Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    surveys: Mapped[List["Survey"]] = relationship(
+        "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
