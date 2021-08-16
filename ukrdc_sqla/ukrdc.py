@@ -12,6 +12,7 @@ from sqlalchemy import (
     MetaData,
     String,
 )
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship
 
@@ -74,9 +75,13 @@ class PatientRecord(Base):
     dialysis_sessions = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures = relationship("Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    procedures = relationship(
+        "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     documents = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    encounters = relationship("Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    encounters = relationship(
+        "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     treatments = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
@@ -670,7 +675,10 @@ class LabOrder(Base):
     entering_organization_description = Column("enteringorganizationdesc", String)
 
     result_items: Mapped[List["ResultItem"]] = relationship(
-        "ResultItem", lazy=GLOBAL_LAZY, backref="order", cascade="all, delete-orphan"
+        "ResultItem",
+        lazy=GLOBAL_LAZY,
+        back_populates="order",
+        cascade="all, delete-orphan",
     )
 
 
@@ -696,7 +704,8 @@ class ResultItem(Base):
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
 
-    order: LabOrder  # Let LabOrder handle backref
+    order: LabOrder = relationship("LabOrder", back_populates="result_items")
+    pid = association_proxy("order", "pid")
 
 
 class PVData(Base):
