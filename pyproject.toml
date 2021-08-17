@@ -31,5 +31,5 @@ multi_line_output = 3
 use_parentheses = true
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "too-few-public-methods, missing-class-docstring, duplicate-code"
+disable = "too-few-public-methods, missing-class-docstring, duplicate-code, line-too-long"
 max-line-length = 88
