@@ -760,17 +760,27 @@ class Treatment(Base):
     admitting_clinician_code_std = Column("admittingcliniciancodestd", String)
     admitting_clinician_desc = Column("admittingcliniciandesc", String)
 
-    admit_reason_code = Column("admitreasoncode", String)
-    admit_reason_code_std = Column("admitreasoncodestd", String)
-    admit_reason_description = Column("admitreasondesc", String)
-
     admission_source_code = Column("admissionsourcecode", String)
     admission_source_code_std = Column("admissionsourcecodestd", String)
     admission_source_desc = Column("admissionsourcedesc", String)
 
+    admit_reason_code = Column("admitreasoncode", String)
+    admit_reason_code_std = Column("admitreasoncodestd", String)
+    admit_reason_code_item = relationship(
+        "Code",
+        primaryjoin="and_(foreign(Treatment.admit_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.admit_reason_code)==remote(Code.code))",
+    )
+    admit_reason_desc = association_proxy("admit_reason_code_item", "description")
+
     discharge_reason_code = Column("dischargereasoncode", String)
     discharge_reason_code_std = Column("dischargereasoncodestd", String)
-    discharge_reason_desc = Column("dischargereasondesc", String)
+    discharge_reason_code_item = relationship(
+        "Code",
+        primaryjoin="and_(foreign(Treatment.discharge_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.discharge_reason_code)==remote(Code.code))",
+    )
+    discharge_reason_desc = association_proxy(
+        "discharge_reason_code_item", "description"
+    )
 
     discharge_location_code = Column("dischargelocationcode", String)
     discharge_location_code_std = Column("dischargelocationcodestd", String)
@@ -778,7 +788,7 @@ class Treatment(Base):
 
     health_care_facility_code = Column("healthcarefacilitycode", String)
     health_care_facility_code_std = Column("healthcarefacilitycodestd", String)
-    health_care_facilit_desc = Column("healthcarefacilitydesc", String)
+    health_care_facility_desc = Column("healthcarefacilitydesc", String)
 
     entered_at_code = Column("enteredatcode", String)
 
