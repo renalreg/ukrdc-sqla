@@ -138,6 +138,7 @@ class WorkItem(Base):
     type = Column(Integer, nullable=False)
     description = Column(String, nullable=False)
     status = Column(Integer, nullable=False)
+    creation_date = Column("creationdate", DateTime)
     last_updated = Column("lastupdated", DateTime, nullable=False)
     updated_by = Column("updatedby", String)
     update_description = Column("updatedesc", String)
