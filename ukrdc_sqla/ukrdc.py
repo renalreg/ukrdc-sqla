@@ -225,9 +225,12 @@ class FamilyDoctor(Base):
     gpname = Column(String)
 
     gpid = Column("gpid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
-    gp_info = relationship("GPInfo", uselist=False)
+    gppracticeid = Column("gppracticeid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
 
-    gppracticeid = Column(String)
+    gp_info = relationship("GPInfo", foreign_keys=[gpid], uselist=False)
+    gp_practice_info = relationship(
+        "GPInfo", foreign_keys=[gppracticeid], uselist=False
+    )
 
     addressuse = Column(String)
     fromtime = Column(DateTime)
