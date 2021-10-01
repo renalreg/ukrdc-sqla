@@ -223,8 +223,12 @@ class FamilyDoctor(Base):
 
     id = Column(String, ForeignKey("patient.pid"), primary_key=True)
     gpname = Column(String)
-    gpid = Column(String)
+
+    gpid = Column("gpid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
+    gp_info = relationship("GPInfo", uselist=False)
+
     gppracticeid = Column(String)
+
     addressuse = Column(String)
     fromtime = Column(DateTime)
     totime = Column(DateTime)
@@ -244,6 +248,17 @@ class FamilyDoctor(Base):
         return (
             f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
         )
+
+
+class GPInfo(Base):
+    __tablename__ = "ukrdc_ods_gp_codes"
+
+    code = Column(String, primary_key=True)
+    gpname = Column("name", String)
+    street = Column("address1", String)
+    postcode = Column(String)
+    contactvalue = Column("phone", String)
+    type = Column("type", String)
 
 
 class SocialHistory(Base):
