@@ -1,3 +1,4 @@
+"""Models which relate to the generated statistics database"""
 from sqlalchemy import Column, Date, DateTime, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
