@@ -1,4 +1,4 @@
-"""Models which relate to the main UKRDC Database"""
+"""Models which relate to the main UKRDC database"""
 from typing import List, Optional
 
 from sqlalchemy import (

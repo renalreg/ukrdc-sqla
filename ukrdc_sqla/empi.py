@@ -1,4 +1,4 @@
-"""Models which relate to the EMPI (JTRACE) Database"""
+"""Models which relate to the EMPI (JTRACE) database"""
 from typing import Any, List
 
 from sqlalchemy import (

@@ -1,4 +1,4 @@
-"""Models which relate to the errors Database"""
+"""Models which relate to the errors database"""
 from typing import Any
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String
