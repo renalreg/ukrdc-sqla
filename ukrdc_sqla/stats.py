@@ -17,6 +17,9 @@ class FacilityStats(Base):
     # Total distinct NIs in the errordb for the facility
     patients_receiving_messages = Column(Integer)
 
+    # Distinct NIs in the errordb for the facility most recently receiving errors
+    patients_receiving_errors = Column(Integer)
+
     last_updated = Column(DateTime)
 
 
