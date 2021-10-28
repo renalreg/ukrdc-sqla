@@ -854,7 +854,6 @@ class CodeMap(Base):
     update_date = Column("update_date", DateTime)
 
 
-
 class Facility(Base):
     __tablename__ = "facility"
 
