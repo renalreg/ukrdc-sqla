@@ -852,3 +852,13 @@ class CodeMap(Base):
 
     creation_date = Column("creation_date", DateTime)
     update_date = Column("update_date", DateTime)
+
+
+
+class Facility(Base):
+    __tablename__ = "facility"
+
+    code = Column("code", String, primary_key=True)
+    pkb_out = Column("pkb_out", Boolean)
+    pkb_in = Column("pkb_in", Boolean)
+    pkb_msg_exclusions = Column("pkb_msg_exclusions", String)
