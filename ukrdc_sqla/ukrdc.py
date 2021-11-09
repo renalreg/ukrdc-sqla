@@ -840,6 +840,14 @@ class Code(Base):
     units = Column("units", String)
 
 
+class CodeExclusion(Base):
+    __tablename__ = "code_exclusion"
+
+    coding_standard = Column("coding_standard", String, primary_key=True)
+    code = Column("code", String, primary_key=True)
+    system = Column("description", String, primary_key=True)
+
+
 class CodeMap(Base):
     __tablename__ = "code_map"
 
