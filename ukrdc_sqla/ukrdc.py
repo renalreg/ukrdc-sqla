@@ -12,6 +12,7 @@ from sqlalchemy import (
     MetaData,
     String,
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship
@@ -868,7 +869,7 @@ class Facility(Base):
     code = Column("code", String, primary_key=True)
     pkb_out = Column("pkb_out", Boolean)
     pkb_in = Column("pkb_in", Boolean)
-    pkb_msg_exclusions = Column("pkb_msg_exclusions", String)
+    pkb_msg_exclusions = Column("pkb_msg_exclusions", ARRAY(String))
 
     code_info = relationship(
         "Code",
