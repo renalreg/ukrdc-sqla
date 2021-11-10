@@ -869,3 +869,9 @@ class Facility(Base):
     pkb_out = Column("pkb_out", Boolean)
     pkb_in = Column("pkb_in", Boolean)
     pkb_msg_exclusions = Column("pkb_msg_exclusions", String)
+
+    code_info = relationship(
+        "Code",
+        primaryjoin="and_(remote(Code.coding_standard)=='RR1+', foreign(Facility.code)==remote(Code.code))",
+    )
+    description = association_proxy("code_info", "description")
