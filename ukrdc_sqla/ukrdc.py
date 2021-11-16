@@ -846,7 +846,7 @@ class CodeExclusion(Base):
 
     coding_standard = Column("coding_standard", String, primary_key=True)
     code = Column("code", String, primary_key=True)
-    system = Column("description", String, primary_key=True)
+    system = Column("system", String, primary_key=True)
 
 
 class CodeMap(Base):
