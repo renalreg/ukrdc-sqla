@@ -152,17 +152,21 @@ class Patient(Base):
     dead = Column("death", Boolean)
     updated_on = Column("updatedon", DateTime)
 
-    numbers = relationship(
+    numbers: Mapped[List["PatientNumber"]] = relationship(
         "PatientNumber",
         backref="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names = relationship("Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    contact_details = relationship(
+    names: Mapped[List["Name"]] = relationship(
+        "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses = relationship("Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    addresses: Mapped[List["Address"]] = relationship(
+        "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     familydoctor = relationship(
         "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
     )
