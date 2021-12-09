@@ -175,7 +175,7 @@ class Patient(Base):
         return f"{self.__class__.__name__}({self.pid}) <{self.birth_time}>"
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> Optional["Name"]:
         """Return main patient name."""
         for name in self.names:
             if name.nameuse == "L":
