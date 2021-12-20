@@ -45,3 +45,14 @@ class PatientsLatestErrors(Base):
     id = Column(Integer)
 
     last_updated = Column(DateTime)
+
+
+class MultipleUKRDCID(Base):
+    __table_name__ = "multiple_ukrdcid"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    group_id = Column(Integer, nullable=False)
+    master_id = Column(Integer, nullable=False)
+
+    last_updated = Column(DateTime)
