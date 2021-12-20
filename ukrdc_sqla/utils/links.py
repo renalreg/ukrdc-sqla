@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 from sqlalchemy.orm import Query, Session
 
 from ..empi import LinkRecord
@@ -63,7 +63,7 @@ def find_related_link_records(
     """
 
     linkrecord_ids: Set[PersonMasterLink] = set()
-    new_entries: Set[tuple[int, int]] = set()
+    new_entries: Set[Tuple[int, int]] = set()
     entries: Query
 
     # If no explicit person_id is give, we'll derive one
