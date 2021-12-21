@@ -48,7 +48,7 @@ class PatientsLatestErrors(Base):
 
 
 class MultipleUKRDCID(Base):
-    __table_name__ = "multiple_ukrdcid"
+    __tablename__ = "multiple_ukrdcid"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
