@@ -1,5 +1,5 @@
 """Models which relate to the generated statistics database"""
-from sqlalchemy import Column, Date, DateTime, Integer, String
+from sqlalchemy import Column, Date, DateTime, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -55,4 +55,14 @@ class MultipleUKRDCID(Base):
     group_id = Column(Integer, nullable=False)
     master_id = Column(Integer, nullable=False)
 
+    resolved = Column(Boolean, default=False)
+
     last_updated = Column(DateTime)
+
+
+class LastRunTimes(Base):
+    __tablename__ = "last_run_times"
+
+    table = Column(String, primary_key=True)
+    facility = Column(String, primary_key=True, nullable=False)
+    last_run_time = Column(DateTime)
