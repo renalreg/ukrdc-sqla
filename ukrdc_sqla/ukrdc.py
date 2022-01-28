@@ -514,6 +514,7 @@ class Address(Base):
     county = Column(String)
     postcode = Column(String)
     country_code = Column("countrycode", String)
+    country_code_std = Column("countrycodestd", String)
     country_description = Column("countrydesc", String)
 
     def __str__(self):
