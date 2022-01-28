@@ -13,7 +13,7 @@ python = ">=3.6.2,<4.0"
 black = {version = "^21.10b0", allow-prereleases = true}
 isort = "^5.8.0"
 pylint = "^2.11.1"
-tox = "^3.24.4"
+tox = "^3.24.5"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
