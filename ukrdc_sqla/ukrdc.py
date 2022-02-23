@@ -124,8 +124,8 @@ class Patient(Base):
     __tablename__ = "patient"
 
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
-    birth_time = Column("birthtime", Date)
-    death_time = Column("deathtime", Date)
+    birth_time = Column("birthtime", DateTime)
+    death_time = Column("deathtime", DateTime)
     gender = Column(String)
     country_of_birth = Column("countryofbirth", String)
     ethnic_group_code = Column("ethnicgroupcode", String)
