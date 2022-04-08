@@ -22,6 +22,7 @@ class FacilityStats(Base):
 
     last_updated = Column(DateTime)
 
+
 class FacilityLatestMessages(Base):
 
     __tablename__ = "facility_latest_messages"
@@ -35,6 +36,7 @@ class FacilityLatestMessages(Base):
     last_message_received_at = Column(DateTime)
 
     last_updated = Column(DateTime)
+
 
 class ErrorHistory(Base):
 
