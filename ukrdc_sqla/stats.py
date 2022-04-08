@@ -22,6 +22,19 @@ class FacilityStats(Base):
 
     last_updated = Column(DateTime)
 
+class FacilityLatestMessages(Base):
+
+    __tablename__ = "facility_latest_messages"
+
+    facility = Column(String, primary_key=True)
+
+    # ID of the most recent message received for the facility
+    last_message_received_id = Column(Integer)
+
+    # Date of the most recent message received for the facility
+    last_message_received_at = Column(DateTime)
+
+    last_updated = Column(DateTime)
 
 class ErrorHistory(Base):
 
