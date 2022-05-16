@@ -12,7 +12,7 @@ python = ">=3.6.2,<4.0"
 [tool.poetry.dev-dependencies]
 black = {version = "^22.3", allow-prereleases = true}
 isort = "^5.8.0"
-pylint = "^2.13.8"
+pylint = "^2.13.9"
 tox = "^3.25.0"
 
 [build-system]
