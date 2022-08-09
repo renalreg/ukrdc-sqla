@@ -11,11 +11,13 @@ from sqlalchemy import (
     LargeBinary,
     MetaData,
     String,
+    Float,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -881,3 +883,73 @@ class Facility(Base):
         primaryjoin="and_(remote(Code.coding_standard)=='RR1+', foreign(Facility.code)==remote(Code.code))",
     )
     description = association_proxy("code_info", "description")
+
+
+class RRCodes(Base):
+    __tablename__ = "rr_codes"
+    id = Column("id", String, primary_key=True)
+    rr_code = Column("rr_code", String, primary_key=True)
+    description_1 = Column("description_1", String)
+    description_2 = Column("description_2", String)
+    description_3 = Column("description_3", String)
+    old_value = Column("old_value", String)
+    old_value_2 = Column("old_value_2", String)
+    new_value = Column("new_value", String)
+    __table_args__ = (PrimaryKeyConstraint(id, rr_code), {})
+
+
+class Locations(Base):
+    __tablename__ = "locations"
+    centre_code = Column("centre_code", String, primary_key=True)
+    centre_name = Column("centre_name", String)
+    country_code = Column("country_code", String)
+    region_code = Column("region_code", String)
+    paed_unit = Column("paed_unit", String)
+
+
+class RRDataDefinition(Base):
+    __tablename__ = "rr_data_definition"
+    upload_key = Column("upload_key", String, primary_key=True)
+    table_name = Column("table_name", String)
+    feild_name = Column("feild_name", String)
+    code_id = Column("code_id", String)
+    mandatory = Column("mandatory", Float)
+    code_type = Column("type", String)
+    alt_constraint = Column("alt_constraint", String)
+    alt_desc = Column("alt_desc", String)
+    extra_val = Column("extra_val", String)
+    error_type = Column("error_type", Integer)
+    paed_mand = Column("paed_mand", Float)
+    ckd5_mand_numeric = Column("ckd5_mand_numeric", Float)
+    dependant_field = Column("dependant_field", String)
+    alt_validation = Column("alt_validation", String)
+    file_prefix = Column("file_prefis", String)
+    load_min = Column("load_min", Float)
+    load_max = Column("load_max", Float)
+    remove_min = Column("remove_min", Float)
+    remove_max = Column("remove_max", Float)
+    in_month = Column("in_month", Float)
+    aki_mand = Column("aki_mand", Float)
+    rrt_mand = Column("rrt_mand", Float)
+    cons_mand = Column("cons_mand", Float)
+    ckd4_mand = Column("ckd4_mand", Float)
+    valid_before_dob = Column("valid_before_dob", Float)
+    valid_after_dod = Column("valid_after_dod", Float)
+    in_quarter = Column("in_quarter", Float)
+
+
+class ModalityCodes(Base):
+    __tablename__ = "modality_codes"
+    registry_code = Column("registry_code", String, primary_key=True)
+    registry_code_desc = Column("registry_code_desc", String)
+    registry_code_type = Column("registry_code_type", String)
+    acute = Column("acute", Boolean)
+    transfer_in = Column("transfer_in", Boolean)
+    ckd = Column("ckd", Boolean)
+    cons = Column("cons", Boolean)
+    rrt = Column("rrt", Boolean)
+    equiv_modality = Column("equiv_modality", String)
+    end_of_care = Column("end_of_care", Boolean)
+    is_imprecise = Column("is_imprecise", Boolean)
+    nhsbt_transplant_type = Column("nhsbt_transplant_type", String)
+    transfer_out = Column("transfer_out", Boolean)
