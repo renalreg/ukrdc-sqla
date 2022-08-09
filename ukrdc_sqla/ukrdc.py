@@ -17,6 +17,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
