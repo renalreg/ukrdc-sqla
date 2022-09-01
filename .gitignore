@@ -139,3 +139,6 @@ cython_debug/
 
 # IDE files
 .vscode/
+
+# Poetry lockfile (since this is a library, there's no need to keep it)
+poetry.lock
