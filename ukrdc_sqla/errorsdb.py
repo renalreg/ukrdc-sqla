@@ -37,6 +37,7 @@ class Facility(Base):
 
     facility = Column(String, primary_key=True)
 
+
 class Latest(Base):
     __tablename__ = "latests"
 
