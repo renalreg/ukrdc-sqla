@@ -36,3 +36,11 @@ class Facility(Base):
     __tablename__ = "facilities"
 
     facility = Column(String, primary_key=True)
+
+class Latest(Base):
+    __tablename__ = "latests"
+
+    ni = Column(String, primary_key=True)
+    facility = Column(String, primary_key=True)
+
+    message_id = Column(Integer, ForeignKey("messages.id"))
