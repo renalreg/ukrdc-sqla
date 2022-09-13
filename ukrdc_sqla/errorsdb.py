@@ -1,8 +1,9 @@
 """Models which relate to the errors database"""
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, relationship
 
 metadata = MetaData()
 Base: Any = declarative_base(metadata=metadata)
@@ -31,6 +32,8 @@ class Message(Base):
     error = Column(String)
     status = Column(String)
 
+    latests: Mapped[List["Latest"]] = relationship("Latest", back_populates="message")
+
 
 class Facility(Base):
     __tablename__ = "facilities"
@@ -45,3 +48,4 @@ class Latest(Base):
     facility = Column(String, primary_key=True)
 
     message_id = Column(Integer, ForeignKey("messages.id"))
+    message: Mapped[Message] = relationship("Message", back_populates="children")
