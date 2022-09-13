@@ -48,4 +48,4 @@ class Latest(Base):
     facility = Column(String, primary_key=True)
 
     message_id = Column(Integer, ForeignKey("messages.id"))
-    message: Mapped[Message] = relationship("Message", back_populates="children")
+    message: Mapped[Message] = relationship("Message", back_populates="latests")
