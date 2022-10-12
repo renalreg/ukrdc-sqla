@@ -6,17 +6,17 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     LargeBinary,
     MetaData,
     String,
-    Float,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, synonym
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
@@ -29,18 +29,25 @@ class PatientRecord(Base):
     __tablename__ = "patientrecord"
 
     pid = Column(String, primary_key=True)
-    sendingfacility = Column(String)
-    sendingextract = Column(String)
-    localpatientid = Column(String)
-    ukrdcid = Column(String)
 
-    extract_time = Column("extracttime", DateTime)
+    sendingfacility = Column("sendingfacility", String)
+    sendingextract = Column("sendingextract", String)
+    localpatientid = Column("localpatientid", String)
+    ukrdcid = Column("ukrdcid", String)
+
+    extracttime = Column("extracttime", DateTime)
+    extract_time = synonym("extracttime")
+
     creation_date = Column("creation_date", DateTime)
     update_date = Column("update_date", DateTime)
-    repository_creation_date = Column("repositorycreationdate", DateTime)
-    repository_update_date = Column("repositoryupdatedate", DateTime)
 
-    patient = relationship(
+    repositorycreationdate = Column("repositorycreationdate", DateTime)
+    repository_creation_date = synonym("repositorycreationdate")
+
+    repositoryupdatedate = Column("repositoryupdatedate", DateTime)
+    repository_update_date = synonym("repositoryupdatedate")
+
+    patient: Mapped["Patient"] = relationship(
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
 
@@ -126,33 +133,69 @@ class Patient(Base):
     __tablename__ = "patient"
 
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
-    birth_time = Column("birthtime", DateTime)
-    death_time = Column("deathtime", DateTime)
-    gender = Column(String)
-    country_of_birth = Column("countryofbirth", String)
-    ethnic_group_code = Column("ethnicgroupcode", String)
-    ethnic_group_description = Column("ethnicgroupdesc", String)
-    person_to_contact_name = Column("persontocontactname", String)
-    person_to_contact_number = Column("persontocontact_contactnumber", String)
-    person_to_contact_relationship = Column("persontocontact_relationship", String)
-    person_to_contact_number_comments = Column(
+
+    birthtime = Column("birthtime", DateTime)
+    birth_time = synonym("birthtime")
+
+    deathtime = Column("deathtime", DateTime)
+    death_time = synonym("deathtime")
+
+    gender = Column("gender", String)
+
+    countryofbirth = Column("countryofbirth", String)
+    country_of_birth = synonym("countryofbirth")
+
+    ethnicgroupcode = Column("ethnicgroupcode", String)
+    ethnic_group_code = synonym("ethnicgroupcode")
+
+    ethnicgroupdesc = Column("ethnicgroupdesc", String)
+    ethnic_group_description = synonym("ethnicgroupdesc")
+
+    persontocontactname = Column("persontocontactname", String)
+    person_to_contact_name = synonym("persontocontactname")
+
+    persontocontact_contactnumber = Column("persontocontact_contactnumber", String)
+    person_to_contact_number = synonym("persontocontact_contactnumber")
+
+    persontocontact_relationship = Column("persontocontact_relationship", String)
+    person_to_contact_relationship = synonym("persontocontact_relationship")
+
+    persontocontact_contactnumbercomments = Column(
         "persontocontact_contactnumbercomments", String
     )
-    person_to_contact_number_type = Column("persontocontact_contactnumbertype", String)
-    occupation_code = Column("occupationcode", String)
-    occupation_codestd = Column("occupationcodestd", String)
-    occupation_description = Column("occupationdesc", String)
-    primary_language = Column("primarylanguagecode", String)
-    primary_language_codestd = Column("primarylanguagecodestd", String)
-    primary_language_description = Column("primarylanguagedesc", String)
-    dead = Column("death", Boolean)
-    updated_on = Column("updatedon", DateTime)
+    person_to_contact_number_comments = synonym("person_to_contact_number_comments")
 
-    bloodgroup = Column(String)
-    bloodrhesus = Column(String)
+    persontocontact_contactnumbertype = Column(
+        "persontocontact_contactnumbertype", String
+    )
+    person_to_contact_number_type = synonym("persontocontact_contactnumbertype")
 
-    dead = Column("death", Boolean)
-    updated_on = Column("updatedon", DateTime)
+    occupationcode = Column("occupationcode", String)
+    occupation_code = synonym("occupationcode")
+
+    occupationcodestd = Column("occupationcodestd", String)
+    occupation_codestd = synonym("occupationcodestd")
+
+    occupationdesc = Column("occupationdesc", String)
+    occupation_description = synonym("occupationdesc")
+
+    primarylanguagecode = Column("primarylanguagecode", String)
+    primary_language = synonym("primarylanguagecode")
+
+    primarylanguagecodestd = Column("primarylanguagecodestd", String)
+    primary_language_codestd = synonym("primarylanguagecodestd")
+
+    primarylanguagedesc = Column("primarylanguagedesc", String)
+    primary_language_description = synonym("primarylanguagedesc")
+
+    death = Column("death", Boolean)
+    dead = synonym("death")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    bloodgroup = Column("bloodgroup", String)
+    bloodrhesus = Column("bloodrhesus", String)
 
     numbers: Mapped[List["PatientNumber"]] = relationship(
         "PatientNumber",
@@ -179,7 +222,7 @@ class Patient(Base):
     @property
     def name(self) -> Optional["Name"]:
         """Return main patient name."""
-        for name in self.names:
+        for name in self.names or []:
             if name.nameuse == "L":
                 return name
         return None
@@ -188,7 +231,7 @@ class Patient(Base):
     def first_ni_number(self) -> Optional[str]:
         """Find the first nhs,chi or hsc number for a patient."""
         types = "NHS", "CHI", "HSC"
-        for number in self.numbers:
+        for number in self.numbers or []:
             if number.numbertype == "NI" and number.organization in types:
                 return number.patientid
         return None
@@ -197,7 +240,7 @@ class Patient(Base):
     def first_hospital_number(self) -> Optional[str]:
         """Find the first local hospital number for a patient."""
         hospital = "LOCALHOSP"
-        for number in self.numbers:
+        for number in self.numbers or []:
             if number.numbertype == "MRN" and number.organization == hospital:
                 return number.patientid
         return None
@@ -208,29 +251,48 @@ class CauseOfDeath(Base):
 
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    diagnosis_type = Column("diagnosistype", String)
+    diagnosistype = Column("diagnosistype", String)
+    diagnosis_type = synonym("diagnosistype")
 
-    diagnosing_clinician_code = Column("diagnosingcliniciancode", String)
-    diagnosing_clinician_code_std = Column("diagnosingcliniciancodestd", String)
-    diagnosing_clinician_desc = Column("diagnosingcliniciandesc", String)
+    diagnosingcliniciancode = Column("diagnosingcliniciancode", String)
+    diagnosing_clinician_code = synonym("diagnosingcliniciancode")
 
-    diagnosis_code = Column("diagnosiscode", String)
-    diagnosis_code_std = Column("diagnosiscodestd", String)
-    diagnosis_desc = Column("diagnosisdesc", String)
+    diagnosingcliniciancodestd = Column("diagnosingcliniciancodestd", String)
+    diagnosing_clinician_code_std = synonym("diagnosingcliniciancodestd")
+
+    diagnosingcliniciandesc = Column("diagnosingcliniciandesc", String)
+    diagnosing_clinician_desc = synonym("diagnosingcliniciandesc")
+
+    diagnosiscode = Column("diagnosiscode", String)
+    diagnosis_code = synonym("diagnosiscode")
+
+    diagnosiscodestd = Column("diagnosiscodestd", String)
+    diagnosis_code_std = synonym("diagnosiscodestd")
+
+    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosis_desc = synonym("diagnosisdesc")
 
     comments = Column("comments", String)
-    entered_on = Column("enteredon", DateTime)
-    updated_on = Column("updatedon", DateTime)
-    action_code = Column("actioncode", String)
-    external_id = Column("externalid", String)
+
+    enteredon = Column("enteredon", DateTime)
+    entered_on = synonym("enteredon")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    actioncode = Column("actioncode", String)
+    action_code = synonym("actioncode")
+
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
 
 
 class FamilyDoctor(Base):
     __tablename__ = "familydoctor"
 
     id = Column(String, ForeignKey("patient.pid"), primary_key=True)
-    gpname = Column(String)
 
+    gpname = Column("gpname", String)
     gpid = Column("gpid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
     gppracticeid = Column("gppracticeid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
 
@@ -239,20 +301,20 @@ class FamilyDoctor(Base):
         "GPInfo", foreign_keys=[gppracticeid], uselist=False
     )
 
-    addressuse = Column(String)
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
-    street = Column(String)
-    town = Column(String)
-    county = Column(String)
-    postcode = Column(String)
-    countrycode = Column(String)
-    countrycodestd = Column(String)
-    countrydesc = Column(String)
-    contactuse = Column(String)
-    contactvalue = Column(String)
-    email = Column(String)
-    commenttext = Column(String)
+    addressuse = Column("addressuse", String)
+    fromtime = Column("fromtime", DateTime)
+    totime = Column("totime", DateTime)
+    street = Column("street", String)
+    town = Column("town", String)
+    county = Column("county", String)
+    postcode = Column("postcode", String)
+    countrycode = Column("countrycode", String)
+    countrycodestd = Column("countrycodestd", String)
+    countrydesc = Column("countrydesc", String)
+    contactuse = Column("contactuse", String)
+    contactvalue = Column("contactvalue", String)
+    email = Column("email", String)
+    commenttext = Column("commenttext", String)
 
     def __str__(self):
         return (
@@ -263,11 +325,19 @@ class FamilyDoctor(Base):
 class GPInfo(Base):
     __tablename__ = "ukrdc_ods_gp_codes"
 
-    code = Column(String, primary_key=True)
-    gpname = Column("name", String)
-    street = Column("address1", String)
-    postcode = Column(String)
-    contactvalue = Column("phone", String)
+    code = Column("code", String, primary_key=True)
+
+    name = Column("name", String)
+    gpname = synonym("name")
+
+    address1 = Column("address1", String)
+    street = synonym("address1")
+
+    postcode = Column("postcode", String)
+
+    phone = Column("phone", String)
+    contactvalue = synonym("phone")
+
     type = Column("type", String)
 
 
@@ -289,24 +359,60 @@ class Observation(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
     idx = Column(Integer)
-    observation_time = Column("observationtime", DateTime)
-    observation_code = Column("observationcode", String)
-    observation_code_std = Column("observationcodestd", String)
-    observation_desc = Column("observationdesc", String)
-    observation_value = Column("observationvalue", String)
-    observation_units = Column("observationunits", String)
-    comment_text = Column("commenttext", String)
-    clinician_code = Column("cliniciancode", String)
-    clinician_code_std = Column("cliniciancodestd", String)
-    clinician_desc = Column("cliniciandesc", String)
-    entered_at = Column("enteredatcode", String)
-    entered_at_description = Column("enteredatdesc", String)
-    entering_organization_code = Column("enteringorganizationcode", String)
-    entering_organization_description = Column("enteringorganizationdesc", String)
-    updated_on = Column("updatedon", DateTime)
-    action_code = Column("actioncode", String)
-    external_id = Column("externalid", String)
-    pre_post = Column("prepost", String)
+
+    observationtime = Column("observationtime", DateTime)
+    observation_time = synonym("observationtime")
+
+    observationcode = Column("observationcode", String)
+    observation_code = synonym("observationcode")
+
+    observationcodestd = Column("observationcodestd", String)
+    observation_code_std = synonym("observationcodestd")
+
+    observationdesc = Column("observationdesc", String)
+    observationdesc = synonym("observationdesc")
+
+    observationvalue = Column("observationvalue", String)
+    observation_value = synonym("observationvalue")
+
+    observationunits = Column("observationunits", String)
+    observation_units = synonym("observationunits")
+
+    commenttext = Column("commenttext", String)
+    comment_text = synonym("commenttext")
+
+    cliniciancode = Column("cliniciancode", String)
+    clinician_code = synonym("cliniciancode")
+
+    cliniciancodestd = Column("cliniciancodestd", String)
+    clinician_code_std = synonym("cliniciancodestd")
+
+    cliniciandesc = Column("cliniciandesc", String)
+    clinician_desc = synonym("cliniciandesc")
+
+    enteredatcode = Column("enteredatcode", String)
+    entered_at = synonym("enteredatcode")
+
+    enteredatdesc = Column("enteredatdesc", String)
+    entered_at_description = synonym("enteredatdesc")
+
+    enteringorganizationcode = Column("enteringorganizationcode", String)
+    entering_organization_code = synonym("enteringorganizationcode")
+
+    enteringorganizationdesc = Column("enteringorganizationdesc", String)
+    entering_organization_description = synonym("enteringorganizationdesc")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    actioncode = Column("actioncode", String)
+    action_code = synonym("actioncode")
+
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
+
+    prepost = Column("prepost", String)
+    pre_post = synonym("prepost")
 
     def __str__(self):
         return (
@@ -322,19 +428,45 @@ class OptOut(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
     idx = Column(Integer)
-    program_name = Column("programname", String)
-    program_description = Column("programdescription", String)
-    entered_by_code = Column("enteredbycode", String)
-    entered_by_code_std = Column("enteredbycodestd", String)
-    entered_by_desc = Column("enteredbydesc", String)
-    entered_at_code = Column("enteredatcode", String)
-    entered_at_code_std = Column("enteredatcodestd", String)
-    entered_at_desc = Column("enteredatdesc", String)
-    from_time = Column("fromtime", Date)
-    to_time = Column("totime", Date)
-    updated_on = Column("updatedon", DateTime)
-    action_code = Column("actioncode", String)
-    external_id = Column("externalid", String)
+
+    programname = Column("programname", String)
+    program_name = synonym("programname")
+
+    programdescription = Column("programdescription", String)
+    program_description = synonym("programdescription")
+
+    enteredbycode = Column("enteredbycode", String)
+    entered_by_code = synonym("enteredbycode")
+
+    enteredbycodestd = Column("enteredbycodestd", String)
+    entered_by_code_std = synonym("enteredbycodestd")
+
+    enteredbydesc = Column("enteredbydesc", String)
+    entered_by_desc = synonym("enteredbydesc")
+
+    enteredatcode = Column("enteredatcode", String)
+    entered_at_code = synonym("enteredatcode")
+
+    enteredatcodestd = Column("enteredatcodestd", String)
+    entered_at_code_std = synonym("enteredatcodestd")
+
+    enteredatdesc = Column("enteredatdesc", String)
+    entered_at_desc = synonym("enteredatdesc")
+
+    fromtime = Column("fromtime", Date)
+    from_time = synonym("fromtime")
+
+    totime = Column("totime", Date)
+    to_time = synonym("totime")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    actioncode = Column("actioncode", String)
+    action_code = synonym("actioncode")
+
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
 
 
 class Allergy(Base):
@@ -350,12 +482,20 @@ class Diagnosis(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    diagnosis_code = Column("diagnosiscode", String)
-    diagnosis_code_std = Column("diagnosiscodestd", String)
-    diagnosis_desc = Column("diagnosisdesc", String)
+    diagnosiscode = Column("diagnosiscode", String)
+    diagnosis_code = synonym("diagnosiscode")
 
-    identification_time = Column("identificationtime", DateTime)
-    onset_time = Column("onsettime", DateTime)
+    diagnosiscodestd = Column("diagnosiscodestd", String)
+    diagnosis_code_std = synonym("diagnosiscodestd")
+
+    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosis_desc = synonym("diagnosisdesc")
+
+    identificationtime = Column("identificationtime", DateTime)
+    identification_time = synonym("identificationtime")
+
+    onsettime = Column("onsettime", DateTime)
+    onset_time = synonym("onsettime")
 
     comments = Column(String)
 
@@ -365,11 +505,17 @@ class RenalDiagnosis(Base):
 
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    diagnosis_code = Column("diagnosiscode", String)
-    diagnosis_code_std = Column("diagnosiscodestd", String)
-    diagnosis_desc = Column("diagnosisdesc", String)
+    diagnosiscode = Column("diagnosiscode", String)
+    diagnosis_code = synonym("diagnosiscode")
 
-    identification_time = Column("identificationtime", DateTime)
+    diagnosiscodestd = Column("diagnosiscodestd", String)
+    diagnosis_code_std = synonym("diagnosiscodestd")
+
+    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosis_desc = synonym("diagnosisdesc")
+
+    identificationtime = Column("identificationtime", DateTime)
+    identification_time = synonym("identificationtime")
 
     comments = Column(String)
 
@@ -380,11 +526,17 @@ class DialysisSession(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    procedure_type_code = Column("proceduretypecode", String)
-    procedure_type_code_std = Column("proceduretypecodestd", String)
-    procedure_type_desc = Column("proceduretypedesc", String)
+    proceduretypecode = Column("proceduretypecode", String)
+    procedure_type_code = synonym("proceduretypecode")
 
-    procedure_time = Column("proceduretime", DateTime)
+    proceduretypecodestd = Column("proceduretypecodestd", String)
+    procedure_type_code_std = synonym("proceduretypecodestd")
+
+    proceduretypedesc = Column("proceduretypedesc", String)
+    procedure_type_desc = synonym("proceduretypedesc")
+
+    proceduretime = Column("proceduretime", DateTime)
+    procedure_time = synonym("proceduretime")
 
     qhd19 = Column(String)
     qhd20 = Column(String)
@@ -403,11 +555,17 @@ class Transplant(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    procedure_type_code = Column("proceduretypecode", String)
-    procedure_type_code_std = Column("proceduretypecodestd", String)
-    procedure_type_desc = Column("proceduretypedesc", String)
+    proceduretypecode = Column("proceduretypecode", String)
+    procedure_type_code = synonym("proceduretypecode")
 
-    procedure_time = Column("proceduretime", DateTime)
+    proceduretypecodestd = Column("proceduretypecodestd", String)
+    procedure_type_code_std = synonym("proceduretypecodestd")
+
+    proceduretypedesc = Column("proceduretypedesc", String)
+    procedure_type_desc = synonym("proceduretypedesc")
+
+    proceduretime = Column("proceduretime", DateTime)
+    procedure_time = synonym("proceduretime")
 
     tra64 = Column(String)
     tra65 = Column(String)
@@ -438,8 +596,11 @@ class Encounter(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    from_time = Column("fromtime", DateTime)
-    to_time = Column("totime", DateTime)
+    fromtime = Column("fromtime", DateTime)
+    from_time = synonym("fromtime")
+
+    totime = Column("totime", DateTime)
+    to_time = synonym("totime")
 
 
 class ProgramMembership(Base):
@@ -447,9 +608,15 @@ class ProgramMembership(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
-    program_name = Column("programname", String)
-    from_time = Column("fromtime", Date)
-    to_time = Column("totime", Date)
+
+    programname = Column("programname", String)
+    program_name = synonym("programname")
+
+    fromtime = Column("fromtime", Date)
+    from_time = synonym("fromtime")
+
+    totime = Column("totime", Date)
+    to_time = synonym("totime")
 
     def __str__(self):
         return (
@@ -471,12 +638,13 @@ class Name(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patient.pid"))
-    nameuse = Column(String)
-    prefix = Column(String)
-    family = Column(String)
-    given = Column(String)
-    othergivennames = Column(String)
-    suffix = Column(String)
+
+    nameuse = Column("nameuse", String)
+    prefix = Column("prefix", String)
+    family = Column("family", String)
+    given = Column("given", String)
+    othergivennames = Column("othergivennames", String)
+    suffix = Column("suffix", String)
 
     def __str__(self):
         return (
@@ -491,9 +659,10 @@ class PatientNumber(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patient.pid"))
-    patientid = Column(String)
-    organization = Column(String)
-    numbertype = Column(String)
+
+    patientid = Column("patientid", String)
+    organization = Column("organization", String)
+    numbertype = Column("numbertype", String)
 
     def __str__(self):
         return (
@@ -508,16 +677,28 @@ class Address(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patient.pid"))
-    addressuse = Column(String)
-    from_time = Column("fromtime", Date)
-    to_time = Column("totime", Date)
+
+    addressuse = Column("addressuse", String)
+
+    fromtime = Column("fromtime", Date)
+    from_time = synonym("fromtime")
+
+    totime = Column("totime", Date)
+    to_time = synonym("totime")
+
     street = Column(String)
     town = Column(String)
     county = Column(String)
     postcode = Column(String)
-    country_code = Column("countrycode", String)
-    country_code_std = Column("countrycodestd", String)
+
+    countrycode = Column("countrycode", String)
+    country_code = synonym("countrycode")
+
+    countrycodestd = Column("countrycodestd", String)
+    country_code_std = synonym("countrycodestd")
+
     country_description = Column("countrydesc", String)
+    country_description = synonym("countrydesc")
 
     def __str__(self):
         return (
@@ -532,8 +713,13 @@ class ContactDetail(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patient.pid"))
-    use = Column("contactuse", String)
-    value = Column("contactvalue", String)
+
+    contactuse = Column("contactuse", String)
+    use = synonym("contactuse")
+
+    contactvalue = Column("contactvalue", String)
+    value = synonym("contactvalue")
+
     commenttext = Column(String)
 
     def __str__(self):
@@ -546,32 +732,62 @@ class Medication(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
     idx = Column(Integer)
-    # ...
 
-    from_time = Column("fromtime", DateTime)
-    to_time = Column("totime", DateTime)
-    dose_uom_code = Column("doseuomcode", String)
-    dose_uom_code_std = Column("doseuomcodestd", String)
-    dose_uom_description = Column("doseuomdesc", String)
-    dose_quantity = Column("dosequantity", String)
-    drug_product_id_code = Column("drugproductidcode", String)
-    drug_product_id_description = Column("drugproductiddesc", String)
-    drug_product_generic = Column("drugproductgeneric", String)
-    entering_organization_code = Column("enteringorganizationcode", String)
-    entering_organization_description = Column("enteringorganizationdesc", String)
+    fromtime = Column("fromtime", DateTime)
+    from_time = synonym("fromtime")
+
+    totime = Column("totime", DateTime)
+    to_time = synonym("totime")
+
+    doseuomcode = Column("doseuomcode", String)
+    dose_uom_code = synonym("doseuomcode")
+
+    doseuomcodestd = Column("doseuomcodestd", String)
+    dose_uom_code_std = synonym("doseuomcodestd")
+
+    doseuomdesc = Column("doseuomdesc", String)
+    dose_uom_description = synonym("doseuomdesc")
+
+    dosequantity = Column("dosequantity", String)
+    dose_quantity = synonym("dosequantity")
+
+    drugproductidcode = Column("drugproductidcode", String)
+    drug_product_id_code = synonym("drugproductidcode")
+
+    drugproductiddesc = Column("drugproductiddesc", String)
+    drug_product_id_description = synonym("drugproductiddesc")
+
+    drugproductgeneric = Column("drugproductgeneric", String)
+    drug_product_generic = synonym("drugproductgeneric")
+
+    enteringorganizationcode = Column("enteringorganizationcode", String)
+    entering_organization_code = synonym("enteringorganizationcode")
+
+    enteringorganizationdesc = Column("enteringorganizationdesc", String)
+    entering_organization_description = synonym("enteringorganizationdesc")
+
     frequency = Column(String)
 
-    comment = Column("commenttext", String)
+    commenttext = Column("commenttext", String)
+    comment = synonym("commenttext")
 
-    route_code = Column("routecode", String)
-    route_code_std = Column("routecodestd", String)
-    route_desc = Column("routedesc", String)
+    routecode = Column("routecode", String)
+    route_code = synonym("routecode")
 
-    external_id = Column("externalid", String)
+    routecodestd = Column("routecodestd", String)
+    route_code_std = synonym("routecodestd")
 
-    updated_on = Column("updatedon", DateTime)
+    routedesc = Column("routedesc", String)
+    route_desc = synonym("routedesc")
 
-    repository_update_date = Column("repositoryupdatedate", DateTime)
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    repositoryupdatedate = Column("repositoryupdatedate", DateTime)
+    repository_update_date = synonym("repositoryupdatedate")
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid})"
@@ -623,7 +839,10 @@ class Score(Base):
 
     id = Column(String, primary_key=True)
     surveyid = Column(String, ForeignKey("survey.id"))
-    value = Column("scorevalue", String)
+
+    scorevalue = Column("scorevalue", String)
+    value = synonym("scorevalue")
+
     scoretypecode = Column(String)
     scoretypecodestd = Column(String)
     scoretypedesc = Column(String)
@@ -634,7 +853,10 @@ class Level(Base):
 
     id = Column(String, primary_key=True)
     surveyid = Column(String, ForeignKey("survey.id"))
-    value = Column("levelvalue", String)
+
+    levelvalue = Column("levelvalue", String)
+    value = synonym("levelvalue")
+
     leveltypecode = Column(String)
     leveltypecodestd = Column(String)
     leveltypedesc = Column(String)
@@ -676,7 +898,8 @@ class Document(Base):
     update_date = Column(DateTime)
     creation_date = Column(DateTime)
 
-    repository_update_date = Column("repositoryupdatedate", DateTime)
+    repositoryupdatedate = Column("repositoryupdatedate", DateTime)
+    repository_update_date = synonym("repositoryupdatedate")
 
 
 class LabOrder(Base):
@@ -685,31 +908,78 @@ class LabOrder(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    receiving_location = Column("receivinglocationcode", String)
-    receiving_location_description = Column("receivinglocationdesc", String)
-    placer_id = Column("placerid", String)
-    filler_id = Column("fillerid", String)
-    ordered_by = Column("orderedbycode", String)
-    ordered_by_description = Column("orderedbydesc", String)
-    order_item = Column("orderitemcode", String)
-    order_item_description = Column("orderitemdesc", String)
-    order_category = Column("ordercategorycode", String)
-    order_category_description = Column("ordercategorydesc", String)
-    specimen_collected_time = Column("specimencollectedtime", DateTime)
-    specimen_received_time = Column("specimenreceivedtime", DateTime)
-    status = Column("status", String)
-    priority = Column("prioritycode", String)
-    priority_description = Column("prioritydesc", String)
-    specimen_source = Column("specimensource", String)
-    duration = Column("duration", String)
-    patient_class = Column("patientclasscode", String)
-    patient_class_description = Column("patientclassdesc", String)
-    entered_on = Column("enteredon", DateTime)
-    entered_at = Column("enteredatcode", String)
-    entered_at_description = Column("enteredatdesc", String)
-    external_id = Column("externalid", String)
-    entering_organization_code = Column("enteringorganizationcode", String)
-    entering_organization_description = Column("enteringorganizationdesc", String)
+    receivinglocationcode = Column("receivinglocationcode", String)
+    receiving_location = synonym("receivinglocationcode")
+
+    receivinglocationdesc = Column("receivinglocationdesc", String)
+    receiving_location_description = synonym("receivinglocationdesc")
+
+    placerid = Column("placerid", String)
+    placer_id = synonym("placerid")
+
+    fillerid = Column("fillerid", String)
+    filler_id = synonym("fillerid")
+
+    orderedbycode = Column("orderedbycode", String)
+    ordered_by = synonym("orderedbycode")
+
+    orderedbydesc = Column("orderedbydesc", String)
+    ordered_by_description = synonym("orderedbydesc")
+
+    orderitemcode = Column("orderitemcode", String)
+    order_item = synonym("orderitemcode")
+
+    orderitemdesc = Column("orderitemdesc", String)
+    order_item_description = synonym("orderitemdesc")
+
+    ordercategorycode = Column("ordercategorycode", String)
+    order_category = synonym("ordercategorycode")
+
+    ordercategorydesc = Column("ordercategorydesc", String)
+    order_category_description = synonym("ordercategorydesc")
+
+    specimencollectedtime = Column("specimencollectedtime", DateTime)
+    specimen_collected_time = synonym("specimencollectedtime")
+
+    specimenreceivedtime = Column("specimenreceivedtime", DateTime)
+    specimen_received_time = synonym("specimenreceivedtime")
+
+    status = Column(String)
+
+    prioritycode = Column("prioritycode", String)
+    priority = synonym("prioritycode")
+
+    prioritydesc = Column("prioritydesc", String)
+    priority_description = synonym("prioritydesc")
+
+    specimensource = Column("specimensource", String)
+    specimen_source = synonym("specimensource")
+
+    duration = Column(String)
+
+    patientclasscode = Column("patientclasscode", String)
+    patient_class = synonym("patientclasscode")
+
+    patientclassdesc = Column("patientclassdesc", String)
+    patient_class_description = synonym("patientclassdesc")
+
+    enteredon = Column("enteredon", DateTime)
+    entered_on = synonym("enteredon")
+
+    enteredatcode = Column("enteredatcode", String)
+    entered_at = synonym("enteredatcode")
+
+    enteredatdesc = Column("enteredatdesc", String)
+    entered_at_description = synonym("enteredatdesc")
+
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
+
+    enteringorganizationcode = Column("enteringorganizationcode", String)
+    entering_organization_code = synonym("enteringorganizationcode")
+
+    enteringorganizationdesc = Column("enteringorganizationdesc", String)
+    entering_organization_description = synonym("enteringorganizationdesc")
 
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
@@ -725,21 +995,49 @@ class ResultItem(Base):
     id = Column(String, primary_key=True)
     order_id = Column("orderid", String, ForeignKey("laborder.id"))
 
-    result_type = Column("resulttype", String)
-    entered_on = Column("enteredon", DateTime)
-    pre_post = Column("prepost", String)
-    service_id = Column("serviceidcode", String)
-    service_id_std = Column("serviceidcodestd", String)
-    service_id_description = Column("serviceiddesc", String)
-    sub_id = Column("subid", String)
-    value = Column("resultvalue", String)
-    value_units = Column("resultvalueunits", String)
-    reference_range = Column("referencerange", String)
-    interpretation_codes = Column("interpretationcodes", String)
+    resulttype = Column("resulttype", String)
+    result_type = synonym("resulttype")
+
+    enteredon = Column("enteredon", DateTime)
+    entered_on = synonym("enteredon")
+
+    prepost = Column("prepost", String)
+    pre_post = synonym("prepost")
+
+    serviceidcode = Column("serviceidcode", String)
+    service_id = synonym("serviceidcode")
+
+    serviceidcodestd = Column("serviceidcodestd", String)
+    service_id_std = synonym("serviceidcodestd")
+
+    serviceiddesc = Column("serviceiddesc", String)
+    service_id_description = synonym("serviceiddesc")
+
+    subid = Column("subid", String)
+    sub_id = synonym("subid")
+
+    resultvalue = Column("resultvalue", String)
+    value = synonym("resultvalue")
+
+    resultvalueunits = Column("resultvalueunits", String)
+    value_units = synonym("resultvalueunits")
+
+    referencerange = Column("referencerange", String)
+    reference_range = synonym("referencerange")
+
+    interpretationcodes = Column("interpretationcodes", String)
+    interpretation_codes = synonym("interpretationcodes")
+
     status = Column(String)
-    observation_time = Column("observationtime", DateTime)
-    comments = Column("commenttext", String)
-    reference_comment = Column("referencecomment", String)
+
+    observationtime = Column("observationtime", DateTime)
+    observation_time = synonym("observationtime")
+
+    commenttext = Column("commenttext", String)
+    comments = synonym("commenttext")
+
+    referencecomment = Column("referencecomment", String)
+    reference_comment = synonym("referencecomment")
 
     order: LabOrder = relationship("LabOrder", back_populates="result_items")
     pid = association_proxy("order", "pid")
@@ -765,41 +1063,69 @@ class PVDelete(Base):
 
     did = Column(Integer, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
-    observation_time = Column("observationtime", DateTime)
-    service_id = Column("serviceidcode", String)
+
+    observationtime = Column("observationtime", DateTime)
+    observation_time = synonym("observationtime")
+
+    serviceidcode = Column("serviceidcode", String)
+    service_id = synonym("serviceidcode")
 
 
 class Treatment(Base):
     __tablename__ = "treatment"
 
-    id = Column("id", String, primary_key=True)
-    pid = Column("pid", String, ForeignKey("patientrecord.pid"))
-    idx = Column("idx", Integer)
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
 
-    encounter_number = Column("encounternumber", String)
-    encounter_type = Column("encountertype", String)
+    encounternumber = Column("encounternumber", String)
+    encounter_number = synonym("encounternumber")
 
-    from_time = Column("fromtime", DateTime)
-    to_time = Column("totime", DateTime)
+    encountertype = Column("encountertype", String)
+    encounter_type = synonym("encountertype")
 
-    admitting_clinician_code = Column("admittingcliniciancode", String)
-    admitting_clinician_code_std = Column("admittingcliniciancodestd", String)
-    admitting_clinician_desc = Column("admittingcliniciandesc", String)
+    fromtime = Column("fromtime", DateTime)
+    from_time = synonym("fromtime")
 
-    admission_source_code = Column("admissionsourcecode", String)
-    admission_source_code_std = Column("admissionsourcecodestd", String)
-    admission_source_desc = Column("admissionsourcedesc", String)
+    totime = Column("totime", DateTime)
+    to_time = synonym("totime")
 
-    admit_reason_code = Column("admitreasoncode", String)
-    admit_reason_code_std = Column("admitreasoncodestd", String)
+    admittingcliniciancode = Column("admittingcliniciancode", String)
+    admitting_clinician_code = synonym("admittingcliniciancode")
+
+    admittingcliniciancodestd = Column("admittingcliniciancodestd", String)
+    admitting_clinician_code_std = synonym("admittingcliniciancodestd")
+
+    admittingcliniciandesc = Column("admittingcliniciandesc", String)
+    admitting_clinician_desc = synonym("admittingcliniciandesc")
+
+    admissionsourcecode = Column("admissionsourcecode", String)
+    admission_source_code = synonym("admissionsourcecode")
+
+    admissionsourcecodestd = Column("admissionsourcecodestd", String)
+    admission_source_code_std = synonym("admissionsourcecodestd")
+
+    admissionsourcedesc = Column("admissionsourcedesc", String)
+    admission_source_desc = synonym("admissionsourcedesc")
+
+    admitreasoncode = Column("admitreasoncode", String)
+    admit_reason_code = synonym("admitreasoncode")
+
+    admitreasoncodestd = Column("admitreasoncodestd", String)
+    admit_reason_code_std = synonym("admitreasoncodestd")
+
     admit_reason_code_item = relationship(
         "Code",
         primaryjoin="and_(foreign(Treatment.admit_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.admit_reason_code)==remote(Code.code))",
     )
     admit_reason_desc = association_proxy("admit_reason_code_item", "description")
 
-    discharge_reason_code = Column("dischargereasoncode", String)
-    discharge_reason_code_std = Column("dischargereasoncodestd", String)
+    dischargereasoncode = Column("dischargereasoncode", String)
+    discharge_reason_code = synonym("dischargereasoncode")
+
+    dischargereasoncodestd = Column("dischargereasoncodestd", String)
+    discharge_reason_code_std = synonym("dischargereasoncodestd")
+
     discharge_reason_code_item = relationship(
         "Code",
         primaryjoin="and_(foreign(Treatment.discharge_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.discharge_reason_code)==remote(Code.code))",
@@ -808,20 +1134,38 @@ class Treatment(Base):
         "discharge_reason_code_item", "description"
     )
 
-    discharge_location_code = Column("dischargelocationcode", String)
-    discharge_location_code_std = Column("dischargelocationcodestd", String)
-    discharge_location_desc = Column("dischargelocationdesc", String)
+    dischargelocationcode = Column("dischargelocationcode", String)
+    discharge_location_code = synonym("dischargelocationcode")
 
-    health_care_facility_code = Column("healthcarefacilitycode", String)
-    health_care_facility_code_std = Column("healthcarefacilitycodestd", String)
-    health_care_facility_desc = Column("healthcarefacilitydesc", String)
+    dischargelocationcodestd = Column("dischargelocationcodestd", String)
+    discharge_location_code_std = synonym("dischargelocationcodestd")
 
-    entered_at_code = Column("enteredatcode", String)
+    dischargelocationdesc = Column("dischargelocationdesc", String)
+    discharge_location_desc = synonym("dischargelocationdesc")
 
-    visit_description = Column("visitdescription", String)
-    updated_on = Column("updatedon", DateTime)
-    action_code = Column("actioncode", String)
-    external_id = Column("externalid", String)
+    healthcarefacilitycode = Column("healthcarefacilitycode", String)
+    health_care_facility_code = synonym("healthcarefacilitycode")
+
+    healthcarefacilitycodestd = Column("healthcarefacilitycodestd", String)
+    health_care_facility_code_std = synonym("healthcarefacilitycodestd")
+
+    healthcarefacilitydesc = Column("healthcarefacilitydesc", String)
+    health_care_facility_desc = synonym("healthcarefacilitydesc")
+
+    enteredatcode = Column("enteredatcode", String)
+    entered_at_code = synonym("enteredatcode")
+
+    visitdescription = Column("visitdescription", String)
+    visit_description = synonym("visitdescription")
+
+    updatedon = Column("updatedon", DateTime)
+    updated_on = synonym("updatedon")
+
+    actioncode = Column("actioncode", String)
+    action_code = synonym("actioncode")
+
+    externalid = Column("externalid", String)
+    external_id = synonym("externalid")
 
     hdp01 = Column("hdp01", String)
     hdp02 = Column("hdp02", String)
@@ -841,10 +1185,8 @@ class Code(Base):
     code = Column("code", String, primary_key=True)
     description = Column("description", String)
     object_type = Column("object_type", String)
-
     creation_date = Column("creation_date", DateTime)
     update_date = Column("update_date", DateTime)
-
     units = Column("units", String)
 
 
@@ -887,7 +1229,7 @@ class Facility(Base):
 
 class RRCodes(Base):
     __tablename__ = "rr_codes"
-    id = Column("id", String, primary_key=True)
+    id = Column(String, primary_key=True)
     rr_code = Column("rr_code", String, primary_key=True)
     description_1 = Column("description_1", String)
     description_2 = Column("description_2", String)
@@ -914,7 +1256,10 @@ class RRDataDefinition(Base):
     feild_name = Column("feild_name", String)
     code_id = Column("code_id", String)
     mandatory = Column("mandatory", Float)
-    code_type = Column("type", String)
+
+    type = Column("type", String)
+    code_type = synonym("type")
+
     alt_constraint = Column("alt_constraint", String)
     alt_desc = Column("alt_desc", String)
     extra_val = Column("extra_val", String)
@@ -923,7 +1268,9 @@ class RRDataDefinition(Base):
     ckd5_mand_numeric = Column("ckd5_mand_numeric", Float)
     dependant_field = Column("dependant_field", String)
     alt_validation = Column("alt_validation", String)
-    file_prefix = Column("file_prefis", String)
+
+    file_prefix = Column("file_prefix", String)
+
     load_min = Column("load_min", Float)
     load_max = Column("load_max", Float)
     remove_min = Column("remove_min", Float)

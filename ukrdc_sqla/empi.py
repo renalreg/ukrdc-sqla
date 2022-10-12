@@ -13,7 +13,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, synonym
 
 metadata = MetaData()
 Base: Any = declarative_base(metadata=metadata)
@@ -23,16 +23,28 @@ class MasterRecord(Base):
     __tablename__ = "masterrecord"
 
     id = Column(Integer, primary_key=True)
-    last_updated = Column("lastupdated", DateTime, nullable=False)
-    date_of_birth = Column("dateofbirth", Date, nullable=False)
-    gender = Column(String)
-    givenname = Column(String)
-    surname = Column(String)
-    nationalid = Column(String, nullable=False)
-    nationalid_type = Column("nationalidtype", String, nullable=False)
-    status = Column(Integer, nullable=False)
-    effective_date = Column("effectivedate", DateTime, nullable=False)
-    creation_date = Column("creationdate", DateTime)
+
+    lastupdated = Column("lastupdated", DateTime, nullable=False)
+    last_updated = synonym("lastupdated")
+
+    dateofbirth = Column("dateofbirth", Date, nullable=False)
+    date_of_birth = synonym("dateofbirth")
+
+    gender = Column("gender", String)
+    givenname = Column("givenname", String)
+    surname = Column("surname", String)
+    nationalid = Column("nationalid", String, nullable=False)
+
+    nationalidtype = Column("nationalidtype", String, nullable=False)
+    nationalid_type = synonym("nationalidtype")
+
+    status = Column("status", Integer, nullable=False)
+
+    effectivedate = Column("effectivedate", DateTime, nullable=False)
+    effective_date = synonym("effectivedate")
+
+    creationdate = Column("creationdate", DateTime)
+    creation_date = synonym("creationdate")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="master_record", cascade="all, delete-orphan"
@@ -54,15 +66,29 @@ class LinkRecord(Base):
     __tablename__ = "linkrecord"
 
     id = Column(Integer, primary_key=True)
-    person_id = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
-    master_id = Column(
+
+    personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
+    person_id = synonym("personid")
+
+    masterid = Column(
         "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
     )
-    link_type = Column("linktype", Integer, nullable=False)
-    link_code = Column("linkcode", Integer, nullable=False)
-    link_desc = Column("linkdesc", String)
-    updated_by = Column("updatedby", String)
-    last_updated = Column("lastupdated", DateTime, nullable=False)
+    master_id = synonym("masterid")
+
+    linktype = Column("linktype", Integer, nullable=False)
+    link_type = synonym("linktype")
+
+    linkcode = Column("linkcode", Integer, nullable=False)
+    link_code = synonym("linkcode")
+
+    linkdesc = Column("linkdesc", String)
+    link_desc = synonym("linkdesc")
+
+    updatedby = Column("updatedby", String)
+    updated_by = synonym("updatedby")
+
+    lastupdated = Column("lastupdated", DateTime, nullable=False)
+    last_updated = synonym("lastupdated")
 
     person: "Person"  # Let Person handle backref
     master_record: MasterRecord  # Let MasterRecord handle backref
@@ -81,26 +107,53 @@ class Person(Base):
 
     id = Column(Integer, primary_key=True)
     originator = Column(String, nullable=False)
+
     # Person.localid must be unique for PidXRef relationship to work
     localid = Column(String, nullable=False, unique=True)
-    localid_type = Column("localidtype", String, nullable=False)
-    nationalid = Column(String)
-    nationalid_type = Column("nationalidtype", String)
-    date_of_birth = Column("dateofbirth", Date, nullable=False)
-    gender = Column(String, nullable=False)
-    date_of_death = Column("dateofdeath", Date)
-    givenname = Column(String)
-    surname = Column(String)
-    prev_surname = Column("prevsurname", String)
-    other_given_names = Column("othergivennames", String)
-    title = Column(String)
-    postcode = Column(String)
-    street = Column(String)
-    std_surname = Column("stdsurname", String)
-    std_prev_surname = Column("stdprevsurname", String)
-    std_given_name = Column("stdgivenname", String)
-    std_postcode = Column("stdpostcode", String)
-    skip_duplicate_check = Column("skipduplicatecheck", Boolean)
+
+    localidtype = Column("localidtype", String, nullable=False)
+    localid_type = synonym("localidtype")
+
+    nationalid = Column("nationalid", String)
+
+    nationalidtype = Column("nationalidtype", String)
+    nationalid_type = synonym("nationalidtype")
+
+    dateofbirth = Column("dateofbirth", Date, nullable=False)
+    date_of_birth = synonym("dateofbirth")
+
+    gender = Column("gender", String, nullable=False)
+
+    dateofdeath = Column("dateofdeath", Date)
+    date_of_death = synonym("dateofdeath")
+
+    givenname = Column("givenname", String)
+    surname = Column("surname", String)
+
+    prevsurname = Column("prevsurname", String)
+    prev_surname = synonym("prevsurname")
+
+    othergivennames = Column("othergivennames", String)
+    other_given_names = synonym("othergivennames")
+
+    title = Column("title", String)
+    postcode = Column("postcode", String)
+    street = Column("street", String)
+
+    stdsurname = Column("stdsurname", String)
+    std_surname = synonym("stdsurname")
+
+    stdprevsurname = Column("stdprevsurname", String)
+    std_prev_surname = synonym("stdprevsurname")
+
+    stdgivenname = Column("stdgivenname", String)
+    std_given_name = synonym("stdgivenname")
+
+    stdpostcode = Column("stdpostcode", String)
+    std_postcode = synonym("stdpostcode")
+
+    skipduplicatecheck = Column("skipduplicatecheck", Boolean)
+    skip_duplicate_check = synonym("skipduplicatecheck")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="person", cascade="all, delete-orphan"
@@ -121,28 +174,36 @@ class Person(Base):
         )
 
 
-Index(
-    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
-)
-Index("person_id_key", Person.id, unique=True)
-
-
 class WorkItem(Base):
     __tablename__ = "workitem"
 
     id = Column(Integer, primary_key=True)
-    person_id = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
-    master_id = Column(
+
+    personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
+    person_id = synonym("personid")
+
+    masterid = Column(
         "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
     )
-    type = Column(Integer, nullable=False)
-    description = Column(String, nullable=False)
-    status = Column(Integer, nullable=False)
-    creation_date = Column("creationdate", DateTime)
-    last_updated = Column("lastupdated", DateTime, nullable=False)
-    updated_by = Column("updatedby", String)
-    update_description = Column("updatedesc", String)
-    attributes = Column(String)
+    master_id = synonym("masterid")
+
+    type = Column("type", Integer, nullable=False)
+    description = Column("description", String, nullable=False)
+    status = Column("status", Integer, nullable=False)
+
+    creationdate = Column("creationdate", DateTime)
+    creation_date = synonym("creationdate")
+
+    lastupdated = Column("lastupdated", DateTime, nullable=False)
+    last_updated = synonym("lastupdated")
+
+    updatedby = Column("updatedby", String)
+    updated_by = synonym("updatedby")
+
+    updatedesc = Column("updatedesc", String)
+    update_description = synonym("updatedesc")
+
+    attributes = Column("attributes", String)
 
     person: Person  # Let Person handle backref
     master_record: MasterRecord  # Let MasterRecord handle backref
@@ -155,17 +216,30 @@ class Audit(Base):
     __tablename__ = "audit"
 
     id = Column(Integer, primary_key=True)
+
     # Can't use relations here, otherwise on delete sqla would try to
     # set null for these fields and it would fail, because DB doesn't
     # allow nulls for these fields
-    person_id = Column("personid", Integer, nullable=False)
-    master_id = Column("masterid", Integer, nullable=False)
-    type = Column(Integer, nullable=False)
-    description = Column(String, nullable=False)
-    main_nationalid = Column("mainnationalid", String)
-    main_nationalid_type = Column("mainnationalidtype", String)
-    last_updated = Column("lastupdated", DateTime, nullable=False)
-    updated_by = Column("updatedby", String)
+    personid = Column("personid", Integer, nullable=False)
+    person_id = synonym("personid")
+
+    masterid = Column("masterid", Integer, nullable=False)
+    master_id = synonym("masterid")
+
+    type = Column("type", Integer, nullable=False)
+    description = Column("description", String, nullable=False)
+
+    mainnationalid = Column("mainnationalid", String)
+    main_nationalid = synonym("mainnationalid")
+
+    mainnationalidtype = Column("mainnationalidtype", String)
+    main_nationalid_type = synonym("mainnationalidtype")
+
+    lastupdated = Column("lastupdated", DateTime, nullable=False)
+    last_updated = synonym("lastupdated")
+
+    updatedby = Column("updatedby", String)
+    updated_by = synonym("updatedby")
 
 
 class PidXRef(Base):
@@ -173,9 +247,14 @@ class PidXRef(Base):
 
     id = Column(Integer, primary_key=True)
     pid = Column(String, ForeignKey("person.localid"), nullable=False)
-    sending_facility = Column("sendingfacility", String, nullable=False)
-    sending_extract = Column("sendingextract", String, nullable=False)
-    localid = Column(String, nullable=False)
+
+    sendingfacility = Column("sendingfacility", String, nullable=False)
+    sending_facility = synonym("sendingfacility")
+
+    sendingextract = Column("sendingextract", String, nullable=False)
+    sending_extract = synonym("sendingextract")
+
+    localid = Column("localid", String, nullable=False)
 
     person = relationship("Person", back_populates="xref_entries")
 
@@ -187,6 +266,11 @@ class PidXRef(Base):
             f">"
         )
 
+
+Index(
+    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
+)
+Index("person_id_key", Person.id, unique=True)
 
 Index(
     "pidxref_compound",
