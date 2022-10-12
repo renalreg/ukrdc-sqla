@@ -13,24 +13,26 @@ class Channel(Base):
     __tablename__ = "channels"
 
     id = Column(String, primary_key=True)
-    name = Column(String)
-    store_first_message = Column(Boolean)
-    store_last_message = Column(Boolean)
+
+    name = Column("name", String)
+    store_first_message = Column("store_first_message", Boolean)
+    store_last_message = Column("store_last_message", Boolean)
 
 
 class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True)
-    message_id = Column(Integer, unique=True)
-    channel_id = Column(String, ForeignKey("channels.id"))
-    received = Column(DateTime)
-    msg_status = Column(String)
-    ni = Column(String)
-    filename = Column(String)
-    facility = Column(String)
-    error = Column(String)
-    status = Column(String)
+
+    message_id = Column("message_id", Integer, unique=True)
+    channel_id = Column("channel_id", String, ForeignKey("channels.id"))
+    received = Column("received", DateTime)
+    msg_status = Column("msg_status", String)
+    ni = Column("ni", String)
+    filename = Column("filename", String)
+    facility = Column("facility", String)
+    error = Column("error", String)
+    status = Column("status", String)
 
     latests: Mapped[List["Latest"]] = relationship("Latest", back_populates="message")
 
@@ -38,14 +40,14 @@ class Message(Base):
 class Facility(Base):
     __tablename__ = "facilities"
 
-    facility = Column(String, primary_key=True)
+    facility = Column("facility", String, primary_key=True)
 
 
 class Latest(Base):
     __tablename__ = "latests"
 
-    ni = Column(String, primary_key=True)
-    facility = Column(String, primary_key=True)
+    ni = Column("ni", String, primary_key=True)
+    facility = Column("facility", String, primary_key=True)
 
-    message_id = Column(Integer, ForeignKey("messages.id"))
+    message_id = Column("message_id", Integer, ForeignKey("messages.id"))
     message: Mapped[Message] = relationship("Message", back_populates="latests")
