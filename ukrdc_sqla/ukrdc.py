@@ -370,7 +370,7 @@ class Observation(Base):
     observation_code_std = synonym("observationcodestd")
 
     observationdesc = Column("observationdesc", String)
-    observationdesc = synonym("observationdesc")
+    observation_desc = synonym("observationdesc")
 
     observationvalue = Column("observationvalue", String)
     observation_value = synonym("observationvalue")
@@ -1040,6 +1040,7 @@ class ResultItem(Base):
     reference_comment = synonym("referencecomment")
 
     order: LabOrder = relationship("LabOrder", back_populates="result_items")
+
     pid = association_proxy("order", "pid")
 
 
