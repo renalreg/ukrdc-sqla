@@ -1,4 +1,5 @@
 """Models which relate to the EMPI (JTRACE) database"""
+import datetime
 from typing import Any, List
 
 from sqlalchemy import (
@@ -25,10 +26,10 @@ class MasterRecord(Base):
     id = Column(Integer, primary_key=True)
 
     lastupdated = Column("lastupdated", DateTime, nullable=False)
-    last_updated = synonym("lastupdated")
+    last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
     dateofbirth = Column("dateofbirth", Date, nullable=False)
-    date_of_birth = synonym("dateofbirth")
+    date_of_birth: Mapped[datetime.date] = synonym("dateofbirth")
 
     gender = Column("gender", String)
     givenname = Column("givenname", String)
@@ -36,15 +37,15 @@ class MasterRecord(Base):
     nationalid = Column("nationalid", String, nullable=False)
 
     nationalidtype = Column("nationalidtype", String, nullable=False)
-    nationalid_type = synonym("nationalidtype")
+    nationalid_type: Mapped[str] = synonym("nationalidtype")
 
     status = Column("status", Integer, nullable=False)
 
     effectivedate = Column("effectivedate", DateTime, nullable=False)
-    effective_date = synonym("effectivedate")
+    effective_date: Mapped[datetime.datetime] = synonym("effectivedate")
 
     creationdate = Column("creationdate", DateTime)
-    creation_date = synonym("creationdate")
+    creation_date: Mapped[datetime.datetime] = synonym("creationdate")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="master_record", cascade="all, delete-orphan"
@@ -68,27 +69,27 @@ class LinkRecord(Base):
     id = Column(Integer, primary_key=True)
 
     personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
-    person_id = synonym("personid")
+    person_id: Mapped[int] = synonym("personid")
 
     masterid = Column(
         "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
     )
-    master_id = synonym("masterid")
+    master_id: Mapped[int] = synonym("masterid")
 
     linktype = Column("linktype", Integer, nullable=False)
-    link_type = synonym("linktype")
+    link_type: Mapped[int] = synonym("linktype")
 
     linkcode = Column("linkcode", Integer, nullable=False)
-    link_code = synonym("linkcode")
+    link_code: Mapped[int] = synonym("linkcode")
 
     linkdesc = Column("linkdesc", String)
-    link_desc = synonym("linkdesc")
+    link_desc: Mapped[str] = synonym("linkdesc")
 
     updatedby = Column("updatedby", String)
-    updated_by = synonym("updatedby")
+    updated_by: Mapped[str] = synonym("updatedby")
 
     lastupdated = Column("lastupdated", DateTime, nullable=False)
-    last_updated = synonym("lastupdated")
+    last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
     person: "Person"  # Let Person handle backref
     master_record: MasterRecord  # Let MasterRecord handle backref
@@ -112,48 +113,48 @@ class Person(Base):
     localid = Column(String, nullable=False, unique=True)
 
     localidtype = Column("localidtype", String, nullable=False)
-    localid_type = synonym("localidtype")
+    localid_type: Mapped[str] = synonym("localidtype")
 
     nationalid = Column("nationalid", String)
 
     nationalidtype = Column("nationalidtype", String)
-    nationalid_type = synonym("nationalidtype")
+    nationalid_type: Mapped[str] = synonym("nationalidtype")
 
     dateofbirth = Column("dateofbirth", Date, nullable=False)
-    date_of_birth = synonym("dateofbirth")
+    date_of_birth: Mapped[datetime.date] = synonym("dateofbirth")
 
     gender = Column("gender", String, nullable=False)
 
     dateofdeath = Column("dateofdeath", Date)
-    date_of_death = synonym("dateofdeath")
+    date_of_death: Mapped[datetime.date] = synonym("dateofdeath")
 
     givenname = Column("givenname", String)
     surname = Column("surname", String)
 
     prevsurname = Column("prevsurname", String)
-    prev_surname = synonym("prevsurname")
+    prev_surname: Mapped[str] = synonym("prevsurname")
 
     othergivennames = Column("othergivennames", String)
-    other_given_names = synonym("othergivennames")
+    other_given_names: Mapped[str] = synonym("othergivennames")
 
     title = Column("title", String)
     postcode = Column("postcode", String)
     street = Column("street", String)
 
     stdsurname = Column("stdsurname", String)
-    std_surname = synonym("stdsurname")
+    std_surname: Mapped[str] = synonym("stdsurname")
 
     stdprevsurname = Column("stdprevsurname", String)
-    std_prev_surname = synonym("stdprevsurname")
+    std_prev_surname: Mapped[str] = synonym("stdprevsurname")
 
     stdgivenname = Column("stdgivenname", String)
-    std_given_name = synonym("stdgivenname")
+    std_given_name: Mapped[str] = synonym("stdgivenname")
 
     stdpostcode = Column("stdpostcode", String)
-    std_postcode = synonym("stdpostcode")
+    std_postcode: Mapped[str] = synonym("stdpostcode")
 
     skipduplicatecheck = Column("skipduplicatecheck", Boolean)
-    skip_duplicate_check = synonym("skipduplicatecheck")
+    skip_duplicate_check: Mapped[bool] = synonym("skipduplicatecheck")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
         "LinkRecord", backref="person", cascade="all, delete-orphan"
@@ -180,28 +181,28 @@ class WorkItem(Base):
     id = Column(Integer, primary_key=True)
 
     personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
-    person_id = synonym("personid")
+    person_id: Mapped[int] = synonym("personid")
 
     masterid = Column(
         "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
     )
-    master_id = synonym("masterid")
+    master_id: Mapped[int] = synonym("masterid")
 
     type = Column("type", Integer, nullable=False)
     description = Column("description", String, nullable=False)
     status = Column("status", Integer, nullable=False)
 
     creationdate = Column("creationdate", DateTime)
-    creation_date = synonym("creationdate")
+    creation_date: Mapped[datetime.datetime] = synonym("creationdate")
 
     lastupdated = Column("lastupdated", DateTime, nullable=False)
-    last_updated = synonym("lastupdated")
+    last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
     updatedby = Column("updatedby", String)
-    updated_by = synonym("updatedby")
+    updated_by: Mapped[str] = synonym("updatedby")
 
     updatedesc = Column("updatedesc", String)
-    update_description = synonym("updatedesc")
+    update_description: Mapped[str] = synonym("updatedesc")
 
     attributes = Column("attributes", String)
 
@@ -221,25 +222,25 @@ class Audit(Base):
     # set null for these fields and it would fail, because DB doesn't
     # allow nulls for these fields
     personid = Column("personid", Integer, nullable=False)
-    person_id = synonym("personid")
+    person_id: Mapped[int] = synonym("personid")
 
     masterid = Column("masterid", Integer, nullable=False)
-    master_id = synonym("masterid")
+    master_id: Mapped[int] = synonym("masterid")
 
     type = Column("type", Integer, nullable=False)
     description = Column("description", String, nullable=False)
 
     mainnationalid = Column("mainnationalid", String)
-    main_nationalid = synonym("mainnationalid")
+    main_nationalid: Mapped[str] = synonym("mainnationalid")
 
     mainnationalidtype = Column("mainnationalidtype", String)
-    main_nationalid_type = synonym("mainnationalidtype")
+    main_nationalid_type: Mapped[str] = synonym("mainnationalidtype")
 
     lastupdated = Column("lastupdated", DateTime, nullable=False)
-    last_updated = synonym("lastupdated")
+    last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
     updatedby = Column("updatedby", String)
-    updated_by = synonym("updatedby")
+    updated_by: Mapped[str] = synonym("updatedby")
 
 
 class PidXRef(Base):
@@ -249,10 +250,10 @@ class PidXRef(Base):
     pid = Column(String, ForeignKey("person.localid"), nullable=False)
 
     sendingfacility = Column("sendingfacility", String, nullable=False)
-    sending_facility = synonym("sendingfacility")
+    sending_facility: Mapped[str] = synonym("sendingfacility")
 
     sendingextract = Column("sendingextract", String, nullable=False)
-    sending_extract = synonym("sendingextract")
+    sending_extract: Mapped[str] = synonym("sendingextract")
 
     localid = Column("localid", String, nullable=False)
 
