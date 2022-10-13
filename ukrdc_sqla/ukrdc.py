@@ -30,11 +30,11 @@ class PatientRecord(Base):
     __tablename__ = "patientrecord"
 
     pid = Column(String, primary_key=True)
+    localpatientid = Column("localpatientid", String)
+    ukrdcid = Column("ukrdcid", String)
 
     sendingfacility = Column("sendingfacility", String)
     sendingextract = Column("sendingextract", String)
-    localpatientid = Column("localpatientid", String)
-    ukrdcid = Column("ukrdcid", String)
 
     extracttime = Column("extracttime", DateTime)
     extract_time: Mapped[datetime.datetime] = synonym("extracttime")
@@ -150,6 +150,9 @@ class Patient(Base):
 
     ethnicgroupcode = Column("ethnicgroupcode", String)
     ethnic_group_code: Mapped[str] = synonym("ethnicgroupcode")
+
+    ethnicgroupcodestd = Column("ethnicgroupcodestd", String)
+    ethnic_group_code_std = synonym("ethnicgroupcodestd")
 
     ethnicgroupdesc = Column("ethnicgroupdesc", String)
     ethnic_group_description: Mapped[str] = synonym("ethnicgroupdesc")
