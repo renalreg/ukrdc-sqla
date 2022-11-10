@@ -224,7 +224,7 @@ class Patient(Base):
     addresses: Mapped[List["Address"]] = relationship(
         "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    familydoctor = relationship(
+    familydoctor: Mapped["FamilyDoctor"] = relationship(
         "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
     )
 
@@ -926,6 +926,9 @@ class LabOrder(Base):
     receivinglocationdesc = Column("receivinglocationdesc", String)
     receiving_location_description: Mapped[str] = synonym("receivinglocationdesc")
 
+    receivinglocationcodestd = Column("receivinglocationcodestd", String)
+    receiving_location_code_std: Mapped[str] = synonym("receivinglocationcodestd")
+
     placerid = Column("placerid", String)
     placer_id: Mapped[str] = synonym("placerid")
 
@@ -938,17 +941,26 @@ class LabOrder(Base):
     orderedbydesc = Column("orderedbydesc", String)
     ordered_by_description: Mapped[str] = synonym("orderedbydesc")
 
+    orderedbycodestd = Column("orderedbycodestd", String)
+    ordered_by_code_std: Mapped[str] = synonym("orderedbycodestd")
+
     orderitemcode = Column("orderitemcode", String)
     order_item: Mapped[str] = synonym("orderitemcode")
 
     orderitemdesc = Column("orderitemdesc", String)
     order_item_description: Mapped[str] = synonym("orderitemdesc")
 
+    orderitemcodestd = Column("orderitemcodestd", String)
+    order_item_code_std: Mapped[str] = synonym("orderitemcodestd")
+
     ordercategorycode = Column("ordercategorycode", String)
     order_category: Mapped[str] = synonym("ordercategorycode")
 
     ordercategorydesc = Column("ordercategorydesc", String)
     order_category_description: Mapped[str] = synonym("ordercategorydesc")
+
+    ordercategorycodestd = Column("ordercategorycodestd", String)
+    order_category_code_std: Mapped[str] = synonym("ordercategorycodestd")
 
     specimencollectedtime = Column("specimencollectedtime", DateTime)
     specimen_collected_time: Mapped[datetime.datetime] = synonym(
@@ -966,6 +978,9 @@ class LabOrder(Base):
     prioritydesc = Column("prioritydesc", String)
     priority_description: Mapped[str] = synonym("prioritydesc")
 
+    prioritycodestd = Column("prioritycodestd", String)
+    priority_code_std: Mapped[str] = synonym("prioritycodestd")
+
     specimensource = Column("specimensource", String)
     specimen_source: Mapped[str] = synonym("specimensource")
 
@@ -976,6 +991,9 @@ class LabOrder(Base):
 
     patientclassdesc = Column("patientclassdesc", String)
     patient_class_description: Mapped[str] = synonym("patientclassdesc")
+
+    patientclasscodestd = Column("patientclasscodestd", String)
+    patient_class_code_std: Mapped[str] = synonym("patientclasscodestd")
 
     enteredon = Column("enteredon", DateTime)
     entered_on: Mapped[datetime.datetime] = synonym("enteredon")
@@ -994,6 +1012,15 @@ class LabOrder(Base):
 
     enteringorganizationdesc = Column("enteringorganizationdesc", String)
     entering_organization_description: Mapped[str] = synonym("enteringorganizationdesc")
+
+    enteringorganizationcodestd = Column("enteringorganizationcodestd", String)
+    entering_organization_code_std: Mapped[str] = synonym("enteringorganizationcodestd")
+
+    updatedon = Column("updatedon", DateTime)
+
+    creation_date = Column("creation_date", DateTime)
+    update_date = Column("update_date", DateTime)
+    repository_update_date = Column("repository_update_date", DateTime)
 
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
