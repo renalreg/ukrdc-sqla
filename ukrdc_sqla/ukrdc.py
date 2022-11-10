@@ -358,6 +358,13 @@ class SocialHistory(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
+    socialhabitcode = Column("socialhabitcode", String)
+    socialhabitcodestd = Column("socialhabitcodestd", String)
+    socialhabitdesc = Column("socialhabitdesc", String)
+
+    updatedon = Column("updatedon", DateTime)
+    externalid = Column("externalid", String)
+
 
 class FamilyHistory(Base):
     __tablename__ = "familyhistory"
