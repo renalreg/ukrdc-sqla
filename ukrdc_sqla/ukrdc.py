@@ -2,18 +2,7 @@
 import datetime
 from typing import List, Optional
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    LargeBinary,
-    MetaData,
-    String,
-)
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, LargeBinary, MetaData, String, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
@@ -310,16 +299,21 @@ class FamilyHistory(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
+
     familymembercode = Column(String(100))
     familymembercodestd = Column(String(100))
     familymemberdesc = Column(String(100))
+
     diagnosiscode = Column(String(100))
     diagnosiscodestd = Column(String(100))
     diagnosisdesc = Column(String(100))
+
     notetext = Column(String(100))
+
     enteredatcode = Column(String(100))
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
+
     fromtime = Column(DateTime)
     totime = Column(DateTime)
     updatedon = Column(DateTime)
