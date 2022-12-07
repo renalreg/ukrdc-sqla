@@ -105,6 +105,9 @@ class PatientRecord(Base):
     encounters: Mapped[List["Encounter"]] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
+    transplantlists: Mapped[List["TransplantList"]] = relationship(
+        "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     treatments: Mapped[List["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
@@ -1285,6 +1288,54 @@ class Treatment(Base):
     qbl07 = Column("qbl07", String)
     erf61 = Column("erf61", String)
     pat35 = Column("pat35", String)
+
+
+class TransplantList(Base):
+    __tablename__ = "transplantlist"
+
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
+
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    encounternumber = Column(String(100))
+    encountertype = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+
+    admittingcliniciancode = Column(String(100))
+    admittingcliniciancodestd = Column(String(100))
+    admittingcliniciandesc = Column(String(100))
+
+    admitreasoncode = Column(String(100))
+    admitreasoncodestd = Column(String(100))
+    admitreasondesc = Column(String(100))
+
+    admissionsourcecode = Column(String(100))
+    admissionsourcecodestd = Column(String(100))
+    admissionsourcedesc = Column(String(100))
+
+    dischargereasoncode = Column(String(100))
+    dischargereasoncodestd = Column(String(100))
+    dischargereasondesc = Column(String(100))
+
+    dischargelocationcode = Column(String(100))
+    dischargelocationcodestd = Column(String(100))
+    dischargelocationdesc = Column(String(100))
+
+    healthcarefacilitycode = Column(String(100))
+    healthcarefacilitycodestd = Column(String(100))
+    healthcarefacilitydesc = Column(String(100))
+
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+
+    visitdescription = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Code(Base):
