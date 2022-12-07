@@ -394,6 +394,7 @@ class FamilyHistory(Base):
 
     fromtime = Column(DateTime)
     totime = Column(DateTime)
+
     updatedon = Column(DateTime)
     actioncode = Column(String(3))
     externalid = Column(String(100))
@@ -521,6 +522,37 @@ class Allergy(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
+
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+
+    allergycode = Column(String(100))
+    allergycodestd = Column(String(100))
+    allergydesc = Column(String(100))
+
+    allergycategorycode = Column(String(100))
+    allergycategorycodestd = Column(String(100))
+    allergycategorydesc = Column(String(100))
+
+    severitycode = Column(String(100))
+    severitycodestd = Column(String(100))
+    severitydesc = Column(String(100))
+
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+
+    discoverytime = Column(DateTime)
+    confirmedtime = Column(DateTime)
+
+    commenttext = Column(String(500))
+    inactivetime = Column(DateTime)
+    freetextallergy = Column(String(500))
+    qualifyingdetails = Column(String(500))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Diagnosis(Base):
