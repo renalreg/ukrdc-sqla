@@ -96,6 +96,9 @@ class PatientRecord(Base):
     dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
+    vascular_accesses: Mapped[List["VascularAccess"]] = relationship(
+        "VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
@@ -663,6 +666,47 @@ class Transplant(Base):
     tra83 = Column(String)
     tra84 = Column(String)
     tra85 = Column(String)
+
+
+class VascularAccess(Base):
+    __tablename__ = "vascularaccess"
+
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
+
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
+
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+
+    proceduretime = Column(DateTime)
+
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+
+    acc19 = Column(String(255))
+    acc20 = Column(String(255))
+    acc21 = Column(String(255))
+    acc22 = Column(String(255))
+    acc30 = Column(String(255))
+    acc40 = Column(String(255))
+
+    update_date = Column(DateTime)
 
 
 class Procedure(Base):
