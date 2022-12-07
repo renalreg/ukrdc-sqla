@@ -2,7 +2,19 @@
 import datetime
 from typing import List, Optional
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, LargeBinary, MetaData, String, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    MetaData,
+    String,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
@@ -32,14 +44,20 @@ class PatientRecord(Base):
     update_date = Column("update_date", DateTime)
 
     repositorycreationdate = Column("repositorycreationdate", DateTime)
-    repository_creation_date: Mapped[datetime.datetime] = synonym("repositorycreationdate")
+    repository_creation_date: Mapped[datetime.datetime] = synonym(
+        "repositorycreationdate"
+    )
 
     repositoryupdatedate = Column("repositoryupdatedate", DateTime)
     repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
 
-    patient: Mapped["Patient"] = relationship("Patient", backref="record", uselist=False, cascade="all, delete-orphan")
+    patient: Mapped["Patient"] = relationship(
+        "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
+    )
 
-    lab_orders: Mapped[List["LabOrder"]] = relationship("LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
+        "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
 
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
@@ -49,32 +67,70 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship("Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    observations: Mapped[List["Observation"]] = relationship(
+        "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
 
-    social_histories: Mapped[List["SocialHistory"]] = relationship("SocialHistory", cascade="all, delete-orphan")
-    family_histories: Mapped[List["FamilyHistory"]] = relationship("FamilyHistory", cascade="all, delete-orphan")
+    social_histories: Mapped[List["SocialHistory"]] = relationship(
+        "SocialHistory", cascade="all, delete-orphan"
+    )
+    family_histories: Mapped[List["FamilyHistory"]] = relationship(
+        "FamilyHistory", cascade="all, delete-orphan"
+    )
 
-    allergies: Mapped[List["Allergy"]] = relationship("Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    diagnoses: Mapped[List["Diagnosis"]] = relationship("Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship("CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship("RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    medications: Mapped[List["Medication"]] = relationship("Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship("DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    procedures: Mapped[List["Procedure"]] = relationship("Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    documents: Mapped[List["Document"]] = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    encounters: Mapped[List["Encounter"]] = relationship("Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    treatments: Mapped[List["Treatment"]] = relationship("Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    program_memberships: Mapped[List["ProgramMembership"]] = relationship("ProgramMembership", cascade="all, delete-orphan")
-    transplants: Mapped[List["Transplant"]] = relationship("Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    allergies: Mapped[List["Allergy"]] = relationship(
+        "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+        "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+        "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+        "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    medications: Mapped[List["Medication"]] = relationship(
+        "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
+        "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    procedures: Mapped[List["Procedure"]] = relationship(
+        "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    documents: Mapped[List["Document"]] = relationship(
+        "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    encounters: Mapped[List["Encounter"]] = relationship(
+        "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    treatments: Mapped[List["Treatment"]] = relationship(
+        "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
+        "ProgramMembership", cascade="all, delete-orphan"
+    )
+    transplants: Mapped[List["Transplant"]] = relationship(
+        "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    clinical_relationships = relationship("ClinicalRelationship", cascade="all, delete-orphan")
+    clinical_relationships = relationship(
+        "ClinicalRelationship", cascade="all, delete-orphan"
+    )
 
-    surveys: Mapped[List["Survey"]] = relationship("Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    surveys: Mapped[List["Survey"]] = relationship(
+        "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"UKRDCID:{self.ukrdcid} CREATED:{self.repository_creation_date}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"UKRDCID:{self.ukrdcid} CREATED:{self.repository_creation_date}"
+            f">"
+        )
 
 
 class Patient(Base):
@@ -109,13 +165,23 @@ class Patient(Base):
     person_to_contact_number: Mapped[str] = synonym("persontocontact_contactnumber")
 
     persontocontact_relationship = Column("persontocontact_relationship", String)
-    person_to_contact_relationship: Mapped[str] = synonym("persontocontact_relationship")
+    person_to_contact_relationship: Mapped[str] = synonym(
+        "persontocontact_relationship"
+    )
 
-    persontocontact_contactnumbercomments = Column("persontocontact_contactnumbercomments", String)
-    person_to_contact_number_comments: Mapped[str] = synonym("person_to_contact_number_comments")
+    persontocontact_contactnumbercomments = Column(
+        "persontocontact_contactnumbercomments", String
+    )
+    person_to_contact_number_comments: Mapped[str] = synonym(
+        "person_to_contact_number_comments"
+    )
 
-    persontocontact_contactnumbertype = Column("persontocontact_contactnumbertype", String)
-    person_to_contact_number_type: Mapped[str] = synonym("persontocontact_contactnumbertype")
+    persontocontact_contactnumbertype = Column(
+        "persontocontact_contactnumbertype", String
+    )
+    person_to_contact_number_type: Mapped[str] = synonym(
+        "persontocontact_contactnumbertype"
+    )
 
     occupationcode = Column("occupationcode", String)
     occupation_code: Mapped[str] = synonym("occupationcode")
@@ -150,10 +216,18 @@ class Patient(Base):
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names: Mapped[List["Name"]] = relationship("Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    contact_details: Mapped[List["ContactDetail"]] = relationship("ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    addresses: Mapped[List["Address"]] = relationship("Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    familydoctor: Mapped["FamilyDoctor"] = relationship("FamilyDoctor", uselist=False, cascade="all, delete-orphan")
+    names: Mapped[List["Name"]] = relationship(
+        "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
+        "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    addresses: Mapped[List["Address"]] = relationship(
+        "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    familydoctor: Mapped["FamilyDoctor"] = relationship(
+        "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
+    )
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <{self.birth_time}>"
@@ -236,7 +310,9 @@ class FamilyDoctor(Base):
     gppracticeid = Column("gppracticeid", String, ForeignKey("ukrdc_ods_gp_codes.code"))
 
     gp_info = relationship("GPInfo", foreign_keys=[gpid], uselist=False)
-    gp_practice_info = relationship("GPInfo", foreign_keys=[gppracticeid], uselist=False)
+    gp_practice_info = relationship(
+        "GPInfo", foreign_keys=[gppracticeid], uselist=False
+    )
 
     addressuse = Column("addressuse", String)
     fromtime = Column("fromtime", DateTime)
@@ -254,7 +330,9 @@ class FamilyDoctor(Base):
     commenttext = Column("commenttext", String)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
+        return (
+            f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
+        )
 
 
 class GPInfo(Base):
@@ -384,7 +462,11 @@ class Observation(Base):
     pre_post: Mapped[str] = synonym("prepost")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.observation_code} {self.observation_value}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.observation_code} {self.observation_value}"
+            f">"
+        )
 
 
 class OptOut(Base):
@@ -584,7 +666,11 @@ class ProgramMembership(Base):
     to_time: Mapped[datetime.date] = synonym("totime")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.program_name} {self.from_time}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.program_name} {self.from_time}"
+            f">"
+        )
 
 
 class ClinicalRelationship(Base):
@@ -608,7 +694,11 @@ class Name(Base):
     suffix = Column("suffix", String)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.given} {self.family}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.given} {self.family}"
+            f">"
+        )
 
 
 class PatientNumber(Base):
@@ -622,7 +712,11 @@ class PatientNumber(Base):
     numbertype = Column("numbertype", String)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.organization}:{self.numbertype}:{self.patientid}" ">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.organization}:{self.numbertype}:{self.patientid}"
+            ">"
+        )
 
 
 class Address(Base):
@@ -654,7 +748,11 @@ class Address(Base):
     country_description: Mapped[str] = synonym("countrydesc")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.street} {self.town} {self.postcode}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.street} {self.town} {self.postcode}"
+            f">"
+        )
 
 
 class ContactDetail(Base):
@@ -764,7 +862,11 @@ class Survey(Base):
     levels = relationship("Level", cascade="all, delete-orphan")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.surveytime}:{self.surveytypecode}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.surveytime}:{self.surveytypecode}"
+            f">"
+        )
 
 
 class Question(Base):
@@ -896,7 +998,9 @@ class LabOrder(Base):
     order_category_code_std: Mapped[str] = synonym("ordercategorycodestd")
 
     specimencollectedtime = Column("specimencollectedtime", DateTime)
-    specimen_collected_time: Mapped[datetime.datetime] = synonym("specimencollectedtime")
+    specimen_collected_time: Mapped[datetime.datetime] = synonym(
+        "specimencollectedtime"
+    )
 
     specimenreceivedtime = Column("specimenreceivedtime", DateTime)
     specimen_received_time: Mapped[datetime.datetime] = synonym("specimenreceivedtime")
@@ -1103,7 +1207,9 @@ class Treatment(Base):
         "Code",
         primaryjoin="and_(foreign(Treatment.discharge_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.discharge_reason_code)==remote(Code.code))",
     )
-    discharge_reason_desc = association_proxy("discharge_reason_code_item", "description")
+    discharge_reason_desc = association_proxy(
+        "discharge_reason_code_item", "description"
+    )
 
     dischargelocationcode = Column("dischargelocationcode", String)
     discharge_location_code: Mapped[str] = synonym("dischargelocationcode")
@@ -1174,7 +1280,9 @@ class CodeMap(Base):
 
     source_coding_standard = Column("source_coding_standard", String, primary_key=True)
     source_code = Column("source_code", String, primary_key=True)
-    destination_coding_standard = Column("destination_coding_standard", String, primary_key=True)
+    destination_coding_standard = Column(
+        "destination_coding_standard", String, primary_key=True
+    )
     destination_code = Column("destination_code", String, primary_key=True)
 
     creation_date = Column("creation_date", DateTime)
