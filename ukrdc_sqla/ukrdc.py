@@ -567,22 +567,42 @@ class Diagnosis(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    diagnosiscode = Column("diagnosiscode", String)
+    idx = Column(Integer)
+
+    diagnosistype = Column(String(50))
+
+    diagnosiscode = Column(String(100))
     diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-
-    diagnosiscodestd = Column("diagnosiscodestd", String)
+    diagnosiscodestd = Column(String(100))
     diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-
-    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosisdesc = Column(String(255))
     diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
 
-    identificationtime = Column("identificationtime", DateTime)
-    identification_time: Mapped[datetime.datetime] = synonym("identificationtime")
-
-    onsettime = Column("onsettime", DateTime)
-    onset_time: Mapped[datetime.datetime] = synonym("onsettime")
+    diagnosingcliniciancode = Column(String(100))
+    diagnosingcliniciancodestd = Column(String(100))
+    diagnosingcliniciandesc = Column(String(100))
 
     comments = Column(String)
+
+    identificationtime = Column(DateTime)
+    identification_time: Mapped[datetime.datetime] = synonym("identificationtime")
+    onsettime = Column(DateTime)
+    onset_time: Mapped[datetime.datetime] = synonym("onsettime")
+
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
+
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+
+    encounternumber = Column(String(100))
+
+    verificationstatus = Column(String(100))
 
 
 class RenalDiagnosis(Base):
