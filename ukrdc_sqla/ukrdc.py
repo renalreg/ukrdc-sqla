@@ -2,22 +2,7 @@
 import datetime
 from typing import List, Optional
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Date,
-    DateTime,
-    Enum,
-    Float,
-    ForeignKey,
-    Integer,
-    LargeBinary,
-    MetaData,
-    Numeric,
-    String,
-    Text,
-    text,
-)
+from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Integer, LargeBinary, MetaData, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
@@ -1520,7 +1505,7 @@ class ModalityCodes(Base):
     __tablename__ = "modality_codes"
 
     registry_code = Column(String(8), primary_key=True)
-    
+
     registry_code_desc = Column(String(100))
     registry_code_type = Column(String(3), nullable=False)
     acute = Column(BIT(1), nullable=False)
