@@ -275,19 +275,15 @@ class CauseOfDeath(Base):
 
     diagnosingcliniciancode = Column("diagnosingcliniciancode", String)
     diagnosing_clinician_code: Mapped[str] = synonym("diagnosingcliniciancode")
-
     diagnosingcliniciancodestd = Column("diagnosingcliniciancodestd", String)
     diagnosing_clinician_code_std: Mapped[str] = synonym("diagnosingcliniciancodestd")
-
     diagnosingcliniciandesc = Column("diagnosingcliniciandesc", String)
     diagnosing_clinician_desc: Mapped[str] = synonym("diagnosingcliniciandesc")
 
     diagnosiscode = Column("diagnosiscode", String)
     diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-
     diagnosiscodestd = Column("diagnosiscodestd", String)
     diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-
     diagnosisdesc = Column("diagnosisdesc", String)
     diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
 
@@ -610,19 +606,30 @@ class RenalDiagnosis(Base):
 
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
+    diagnosistype = Column(String(50))
+
     diagnosiscode = Column("diagnosiscode", String)
     diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-
     diagnosiscodestd = Column("diagnosiscodestd", String)
     diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-
     diagnosisdesc = Column("diagnosisdesc", String)
     diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
+
+    diagnosingcliniciancode = Column(String(100))
+    diagnosingcliniciancodestd = Column(String(100))
+    diagnosingcliniciandesc = Column(String(100))
+
+    comments = Column(String)
 
     identificationtime = Column("identificationtime", DateTime)
     identification_time: Mapped[datetime.datetime] = synonym("identificationtime")
 
-    comments = Column(String)
+    onsettime = Column(DateTime)
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class DialysisSession(Base):
