@@ -7,7 +7,6 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship, synonym
-from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -257,6 +256,12 @@ class GPInfo(Base):
     type = Column(Enum("GP", "PRACTICE", name="gp_type"))
     update_date = Column(DateTime)
 
+    # Synonyms
+
+    gpname: Mapped[str] = synonym("name")
+    street: Mapped[str] = synonym("address1")
+    contactvalue: Mapped[str] = synonym("phone")
+
 
 class SocialHistory(Base):
     __tablename__ = "socialhistory"
@@ -350,6 +355,7 @@ class Observation(Base):
     updated_on: Mapped[datetime.datetime] = synonym("updatedon")
     action_code: Mapped[str] = synonym("actioncode")
     external_id: Mapped[str] = synonym("externalid")
+    pre_post: Mapped[str] = synonym("prepost")
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <" f"{self.observation_code} {self.observation_value}" f">"
@@ -1246,6 +1252,11 @@ class PVDelete(Base):
     serviceidcode = Column(String(100))
     update_date = Column(DateTime)
 
+    # Synonyms
+
+    observation_time: Mapped[datetime.datetime] = synonym("observationtime")
+    service_id: Mapped[str] = synonym("serviceidcode")
+
 
 class Treatment(Base):
     __tablename__ = "treatment"
@@ -1437,7 +1448,6 @@ class Facility(Base):
 
 class RRCodes(Base):
     __tablename__ = "rr_codes"
-    __table_args__ = (PrimaryKeyConstraint(id, rr_code), {})
 
     id = Column(String, primary_key=True)
     rr_code = Column("rr_code", String, primary_key=True)
@@ -1453,6 +1463,7 @@ class RRCodes(Base):
 
 class Locations(Base):
     __tablename__ = "locations"
+
     centre_code = Column(String(10), primary_key=True)
     centre_name = Column(String(255))
     country_code = Column(String(6))
