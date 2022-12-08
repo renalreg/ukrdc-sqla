@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     LargeBinary,
     MetaData,
+    Numeric,
     String,
     text,
 )
@@ -886,61 +887,77 @@ class Medication(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"))
     idx = Column(Integer)
 
+    repositoryupdatedate = Column("repositoryupdatedate", DateTime)
+    repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+
+    prescriptionnumber = Column(String(100))
+
     fromtime = Column("fromtime", DateTime)
     from_time: Mapped[datetime.datetime] = synonym("fromtime")
-
     totime = Column("totime", DateTime)
     to_time: Mapped[datetime.datetime] = synonym("totime")
 
-    doseuomcode = Column("doseuomcode", String)
-    dose_uom_code: Mapped[str] = synonym("doseuomcode")
+    orderedbycode = Column(String(100))
+    orderedbycodestd = Column(String(100))
+    orderedbydesc = Column(String(100))
 
-    doseuomcodestd = Column("doseuomcodestd", String)
-    dose_uom_code_std: Mapped[str] = synonym("doseuomcodestd")
-
-    doseuomdesc = Column("doseuomdesc", String)
-    dose_uom_description: Mapped[str] = synonym("doseuomdesc")
-
-    dosequantity = Column("dosequantity", String)
-    dose_quantity: Mapped[str] = synonym("dosequantity")
-
-    drugproductidcode = Column("drugproductidcode", String)
-    drug_product_id_code: Mapped[str] = synonym("drugproductidcode")
-
-    drugproductiddesc = Column("drugproductiddesc", String)
-    drug_product_id_description: Mapped[str] = synonym("drugproductiddesc")
-
-    drugproductgeneric = Column("drugproductgeneric", String)
-    drug_product_generic: Mapped[str] = synonym("drugproductgeneric")
-
-    enteringorganizationcode = Column("enteringorganizationcode", String)
+    enteringorganizationcode = Column(String(100))
     entering_organization_code: Mapped[str] = synonym("enteringorganizationcode")
-
-    enteringorganizationdesc = Column("enteringorganizationdesc", String)
+    enteringorganizationcodestd = Column(String(100))
+    enteringorganizationdesc = Column(String(100))
     entering_organization_description: Mapped[str] = synonym("enteringorganizationdesc")
-
-    frequency = Column(String)
-
-    commenttext = Column("commenttext", String)
-    comment: Mapped[str] = synonym("commenttext")
 
     routecode = Column("routecode", String)
     route_code: Mapped[str] = synonym("routecode")
-
     routecodestd = Column("routecodestd", String)
     route_code_std: Mapped[str] = synonym("routecodestd")
-
     routedesc = Column("routedesc", String)
     route_desc: Mapped[str] = synonym("routedesc")
 
-    externalid = Column("externalid", String)
-    external_id: Mapped[str] = synonym("externalid")
+    drugproductidcode = Column(String(100))
+    drug_product_id_code: Mapped[str] = synonym("drugproductidcode")
+    drugproductidcodestd = Column(String(100))
+    drugproductiddesc = Column(String(100))
+    drug_product_id_description: Mapped[str] = synonym("drugproductiddesc")
+
+    drugproductgeneric = Column(String(255))
+    drug_product_generic: Mapped[str] = synonym("drugproductgeneric")
+    drugproductlabelname = Column(String(255))
+
+    drugproductformcode = Column(String(100))
+    drugproductformcodestd = Column(String(100))
+    drugproductformdesc = Column(String(100))
+
+    drugproductstrengthunitscode = Column(String(100))
+    drugproductstrengthunitscodestd = Column(String(100))
+    drugproductstrengthunitsdesc = Column(String(100))
+
+    frequency = Column(String(255))
+    commenttext = Column(String(1000))
+    comment: Mapped[str] = synonym("commenttext")
+    dosequantity = Column(Numeric(19, 2))
+    dose_quantity: Mapped[str] = synonym("dosequantity")
+
+    doseuomcode = Column("doseuomcode", String)
+    dose_uom_code: Mapped[str] = synonym("doseuomcode")
+    doseuomcodestd = Column("doseuomcodestd", String)
+    dose_uom_code_std: Mapped[str] = synonym("doseuomcodestd")
+    doseuomdesc = Column("doseuomdesc", String)
+    dose_uom_description: Mapped[str] = synonym("doseuomdesc")
+
+    indication = Column(String(100))
 
     updatedon = Column("updatedon", DateTime)
     updated_on: Mapped[datetime.datetime] = synonym("updatedon")
 
-    repositoryupdatedate = Column("repositoryupdatedate", DateTime)
-    repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
+    actioncode = Column(String(3))
+
+    externalid = Column("externalid", String)
+    external_id: Mapped[str] = synonym("externalid")
+
+    update_date = Column(DateTime)
+    encounternumber = Column(String(100))
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid})"
