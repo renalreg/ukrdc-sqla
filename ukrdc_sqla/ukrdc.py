@@ -641,15 +641,25 @@ class DialysisSession(Base):
 
     proceduretypecode = Column("proceduretypecode", String)
     procedure_type_code: Mapped[str] = synonym("proceduretypecode")
-
     proceduretypecodestd = Column("proceduretypecodestd", String)
     procedure_type_code_std: Mapped[str] = synonym("proceduretypecodestd")
-
     proceduretypedesc = Column("proceduretypedesc", String)
     procedure_type_desc: Mapped[str] = synonym("proceduretypedesc")
 
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+
     proceduretime = Column("proceduretime", DateTime)
     procedure_time: Mapped[datetime.datetime] = synonym("proceduretime")
+
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
 
     qhd19 = Column(String)
     qhd20 = Column(String)
@@ -660,6 +670,11 @@ class DialysisSession(Base):
     qhd32 = Column(String)
     qhd33 = Column(String)
 
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
+
 
 class Transplant(Base):
 
@@ -667,33 +682,65 @@ class Transplant(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
 
     proceduretypecode = Column("proceduretypecode", String)
     procedure_type_code: Mapped[str] = synonym("proceduretypecode")
-
     proceduretypecodestd = Column("proceduretypecodestd", String)
     procedure_type_code_std: Mapped[str] = synonym("proceduretypecodestd")
-
     proceduretypedesc = Column("proceduretypedesc", String)
     procedure_type_desc: Mapped[str] = synonym("proceduretypedesc")
+
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
 
     proceduretime = Column("proceduretime", DateTime)
     procedure_time: Mapped[datetime.datetime] = synonym("proceduretime")
 
-    tra64 = Column(String)
-    tra65 = Column(String)
-    tra66 = Column(DateTime)
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+
+    tra64 = Column(DateTime)
+    tra65 = Column(String(255))
+    tra66 = Column(String(255))
     tra69 = Column(DateTime)
-    tra76 = Column(DateTime)
-    tra77 = Column(String)
-    tra78 = Column(String)
-    tra79 = Column(String)
-    tra8a = Column(String)
-    tra81 = Column(String)
-    tra82 = Column(String)
-    tra83 = Column(String)
-    tra84 = Column(String)
-    tra85 = Column(String)
+    tra76 = Column(String(255))
+    tra77 = Column(String(255))
+    tra78 = Column(String(255))
+    tra79 = Column(String(255))
+    tra80 = Column(String(255))
+    tra8a = Column(String(255))
+    tra81 = Column(String(255))
+    tra82 = Column(String(255))
+    tra83 = Column(String(255))
+    tra84 = Column(String(255))
+    tra85 = Column(String(255))
+    tra86 = Column(String(255))
+    tra87 = Column(String(255))
+    tra88 = Column(String(255))
+    tra89 = Column(String(255))
+    tra90 = Column(String(255))
+    tra91 = Column(String(255))
+    tra92 = Column(String(255))
+    tra93 = Column(String(255))
+    tra94 = Column(String(255))
+    tra95 = Column(String(255))
+    tra96 = Column(String(255))
+    tra97 = Column(String(255))
+    tra98 = Column(String(255))
+
+    update_date = Column(DateTime)
 
 
 class VascularAccess(Base):
@@ -742,6 +789,25 @@ class Procedure(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    proceduretime = Column(DateTime)
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Encounter(Base):
@@ -923,6 +989,7 @@ class Medication(Base):
 
     drugproductgeneric = Column(String(255))
     drug_product_generic: Mapped[str] = synonym("drugproductgeneric")
+
     drugproductlabelname = Column(String(255))
 
     drugproductformcode = Column(String(100))
