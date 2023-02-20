@@ -47,20 +47,11 @@ class MasterRecord(Base):
     creationdate = Column("creationdate", DateTime)
     creation_date: Mapped[datetime.datetime] = synonym("creationdate")
 
-    link_records: Mapped[List["LinkRecord"]] = relationship(
-        "LinkRecord", backref="master_record", cascade="all, delete-orphan"
-    )
-    work_items: Mapped[List["WorkItem"]] = relationship(
-        "WorkItem", backref="master_record", cascade="all, delete-orphan"
-    )
+    link_records: Mapped[List["LinkRecord"]] = relationship("LinkRecord", backref="master_record", cascade="all, delete-orphan")
+    work_items: Mapped[List["WorkItem"]] = relationship("WorkItem", backref="master_record", cascade="all, delete-orphan")
 
     def __str__(self):
-        return (
-            f"MasterRecord({self.id}) <"
-            f"{self.givenname} {self.surname} {self.date_of_birth} "
-            f"{self.nationalid_type.strip()}:{self.nationalid}"
-            f">"
-        )
+        return f"MasterRecord({self.id}) <" f"{self.givenname} {self.surname} {self.date_of_birth} " f"{self.nationalid_type.strip()}:{self.nationalid}" f">"
 
 
 class LinkRecord(Base):
@@ -71,9 +62,7 @@ class LinkRecord(Base):
     personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
     person_id: Mapped[int] = synonym("personid")
 
-    masterid = Column(
-        "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
-    )
+    masterid = Column("masterid", Integer, ForeignKey("masterrecord.id"), nullable=False)
     master_id: Mapped[int] = synonym("masterid")
 
     linktype = Column("linktype", Integer, nullable=False)
@@ -95,12 +84,7 @@ class LinkRecord(Base):
     master_record: MasterRecord  # Let MasterRecord handle backref
 
     def __str__(self):
-        return (
-            f"LinkRecord({self.id}) <"
-            f"Person({self.person_id}), "
-            f"Master({self.master_id})"
-            ">"
-        )
+        return f"LinkRecord({self.id}) <" f"Person({self.person_id}), " f"Master({self.master_id})" ">"
 
 
 class Person(Base):
@@ -156,23 +140,12 @@ class Person(Base):
     skipduplicatecheck = Column("skipduplicatecheck", Boolean)
     skip_duplicate_check: Mapped[bool] = synonym("skipduplicatecheck")
 
-    link_records: Mapped[List["LinkRecord"]] = relationship(
-        "LinkRecord", backref="person", cascade="all, delete-orphan"
-    )
-    work_items: Mapped[List["WorkItem"]] = relationship(
-        "WorkItem", backref="person", cascade="all, delete-orphan"
-    )
-    xref_entries: Mapped[List["PidXRef"]] = relationship(
-        "PidXRef", back_populates="person", cascade="all, delete-orphan"
-    )
+    link_records: Mapped[List["LinkRecord"]] = relationship("LinkRecord", backref="person", cascade="all, delete-orphan")
+    work_items: Mapped[List["WorkItem"]] = relationship("WorkItem", backref="person", cascade="all, delete-orphan")
+    xref_entries: Mapped[List["PidXRef"]] = relationship("PidXRef", back_populates="person", cascade="all, delete-orphan")
 
     def __str__(self):
-        return (
-            f"Person({self.id}) <"
-            f"{self.givenname} {self.surname} {self.date_of_birth} "
-            f"{self.localid_type.strip()}:{self.localid.strip()}"
-            ">"
-        )
+        return f"Person({self.id}) <" f"{self.givenname} {self.surname} {self.date_of_birth} " f"{self.localid_type.strip()}:{self.localid.strip()}" ">"
 
 
 class WorkItem(Base):
@@ -183,9 +156,7 @@ class WorkItem(Base):
     personid = Column("personid", Integer, ForeignKey("person.id"), nullable=False)
     person_id: Mapped[int] = synonym("personid")
 
-    masterid = Column(
-        "masterid", Integer, ForeignKey("masterrecord.id"), nullable=False
-    )
+    masterid = Column("masterid", Integer, ForeignKey("masterrecord.id"), nullable=False)
     master_id: Mapped[int] = synonym("masterid")
 
     type = Column("type", Integer, nullable=False)
@@ -260,17 +231,10 @@ class PidXRef(Base):
     person = relationship("Person", back_populates="xref_entries")
 
     def __str__(self):
-        return (
-            f"PidXRef({self.id}) <"
-            f"{self.pid} {self.sending_facility} {self.sending_extract} "
-            f"{self.localid.strip()}"
-            f">"
-        )
+        return f"PidXRef({self.id}) <" f"{self.pid} {self.sending_facility} {self.sending_extract} " f"{self.localid.strip()}" f">"
 
 
-Index(
-    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
-)
+Index("ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True)
 Index("person_id_key", Person.id, unique=True)
 
 Index(
