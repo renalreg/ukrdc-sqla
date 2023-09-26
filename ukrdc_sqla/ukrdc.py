@@ -1402,6 +1402,8 @@ class Code(Base):
     object_type = Column(String(256))
     update_date = Column(DateTime)
     units = Column(String(256))
+    pkb_reference_range = Column(String(10))
+    pkb_comment = Column(String(365))
 
 
 class CodeExclusion(Base):
