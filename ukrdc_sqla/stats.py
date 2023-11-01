@@ -6,7 +6,6 @@ Base = declarative_base()
 
 
 class ErrorHistory(Base):
-
     __tablename__ = "error_history"
 
     facility = Column("facility", String, primary_key=True)
