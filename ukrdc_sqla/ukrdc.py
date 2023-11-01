@@ -71,7 +71,7 @@ class PatientRecord(Base):
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
     # Synonyms
-
+    id: Mapped[str] = synonym("pid") 
     extract_time: Mapped[datetime.datetime] = synonym("extracttime")
     repository_creation_date: Mapped[datetime.datetime] = synonym("repositorycreationdate")
     repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
@@ -113,7 +113,7 @@ class Patient(Base):
     update_date = Column(DateTime)
 
     # Synonyms
-
+    id: Mapped[str] = synonym("pid")
     birth_time: Mapped[datetime.datetime] = synonym("birthtime")
     death_time: Mapped[datetime.datetime] = synonym("deathtime")
     country_of_birth: Mapped[str] = synonym("countryofbirth")
@@ -193,7 +193,7 @@ class CauseOfDeath(Base):
     update_date = Column(DateTime)
 
     # Synonyms
-
+    id: Mapped[str] = synonym("pid") # this will not be correct if the primary key changes
     diagnosis_type: Mapped[str] = synonym("diagnosistype")
     diagnosing_clinician_code: Mapped[str] = synonym("diagnosingcliniciancode")
     diagnosing_clinician_code_std: Mapped[str] = synonym("diagnosingcliniciancodestd")
@@ -494,7 +494,7 @@ class RenalDiagnosis(Base):
     update_date = Column(DateTime)
 
     # Synonyms
-
+    id: Mapped[str] = synonym("pid") # see comment on cause of death
     diagnosis_code: Mapped[str] = synonym("diagnosiscode")
     diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
     diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
