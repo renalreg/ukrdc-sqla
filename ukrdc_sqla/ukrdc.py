@@ -69,6 +69,8 @@ class PatientRecord(Base):
     surveys: Mapped[List["Survey"]] = relationship("Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    assessments: Mapped[List["Assessment"]] = relationship("Assessment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    dialysisprescriptions: Mapped[List["DialysisPrescription"]] = relationship("DialysisPrescription", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
     # Synonyms
     id: Mapped[str] = synonym("pid")
@@ -492,6 +494,8 @@ class RenalDiagnosis(Base):
     actioncode = Column(String(3))
     externalid = Column(String(100))
     update_date = Column(DateTime)
+    biopsyperformed = Column(String)
+    verificationstatus = Column(String)
 
     # Synonyms
     id: Mapped[str] = synonym("pid")  # see comment on cause of death
@@ -1389,6 +1393,46 @@ class TransplantList(Base):
     actioncode = Column(String(3))
     externalid = Column(String(100))
     update_date = Column(DateTime)
+
+
+class Assessment(Base):
+    __tablename__ = "assessment"
+
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+
+    time_created = Column(DateTime(timezone=True), server_default=text("now()"))
+
+    assessmentstart = Column(DateTime)
+    assessmentend = Column(DateTime)
+
+    assessmenttypecode = Column(String(100))
+    assessmenttypecodestd = Column(String(100))
+    assessmenttypecodedesc = Column(String(100))
+
+    assessmentoutcomecode = Column(String(100))
+    assessmentoutcomecodestd = Column(String(100))
+    assessmentoutcomecodedesc = Column(String(100))
+
+
+class DialysisPrescription(Base):
+    __tablename__ = "dialysisprescription"
+
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+
+    time_created = Column(DateTime(timezone=True), server_default=text("now()"))
+
+    enteredon = Column(DateTime)
+
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+
+    sessiontype = Column(String(5))
+    sessionsperweek = Column(Integer)
+
+    timedialysed = Column(Integer)
+    vascularaccess = Column(String(5))
 
 
 class Code(Base):
