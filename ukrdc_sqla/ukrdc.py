@@ -1401,7 +1401,8 @@ class Assessment(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    time_created = Column(DateTime(timezone=True), server_default=text("now()"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
 
     assessmentstart = Column(DateTime)
     assessmentend = Column(DateTime)
@@ -1421,7 +1422,8 @@ class DialysisPrescription(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    time_created = Column(DateTime(timezone=True), server_default=text("now()"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
 
     enteredon = Column(DateTime)
 
