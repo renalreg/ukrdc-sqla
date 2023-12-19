@@ -193,7 +193,6 @@ class CauseOfDeath(Base):
     actioncode = Column(String(3))
     externalid = Column(String(100))
     update_date = Column(DateTime)
-    biopsyperformed = Column(String)
     verificationstatus = Column(String)
 
     # Synonyms
