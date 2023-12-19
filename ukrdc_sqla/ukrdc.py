@@ -193,6 +193,8 @@ class CauseOfDeath(Base):
     actioncode = Column(String(3))
     externalid = Column(String(100))
     update_date = Column(DateTime)
+    biopsyperformed = Column(String)
+    verificationstatus = Column(String)
 
     # Synonyms
     id: Mapped[str] = synonym("pid")  # this will not be correct if the primary key changes
@@ -462,7 +464,8 @@ class Diagnosis(Base):
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
     encounternumber = Column(String(100))
-    verificationstatus = Column(String(100))
+    biopsyperformed = Column(String)
+    verificationstatus = Column(String)
 
     # Synonyms
 
