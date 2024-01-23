@@ -1230,11 +1230,30 @@ class PVData(Base):
     id = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
+
+    diagnosisdate = Column(Date)
+
+    bloodgroup = Column(String(10))
+
     rrtstatus = Column(String(100))
     tpstatus = Column(String(100))
-    diagnosisdate = Column(Date)
-    bloodgroup = Column(String(10))
-    update_date = Column(DateTime)
+
+    # Proxies
+
+    rrtstatus_desc = association_proxy("rrtstatus_info", "description")
+    tpstatus_desc = association_proxy("tpstatus_info", "description")
+
+    # Relationships
+    rrtstatus_info = relationship(
+        "Code",
+        primaryjoin="and_(remote(Code.coding_standard)=='PV_RRTSTATUS', foreign(PVData.rrtstatus)==remote(Code.code))",
+    )
+
+    tpstatus_info = relationship(
+        "Code",
+        primaryjoin="and_(remote(Code.coding_standard)=='PV_TPSTATUS', foreign(PVData.tpstatus)==remote(Code.code))",
+    )
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.id})"
