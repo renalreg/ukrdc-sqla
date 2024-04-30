@@ -1,4 +1,5 @@
 """Models which relate to the main UKRDC database"""
+
 import datetime
 from typing import List, Optional
 
@@ -567,7 +568,6 @@ class DialysisSession(Base):
 
 
 class Transplant(Base):
-
     __tablename__ = "transplant"
 
     id = Column(String, primary_key=True)
@@ -1086,7 +1086,9 @@ class ResultItem(Base):
     referencecomment = Column("referencecomment", String)
     reference_comment: Mapped[str] = synonym("referencecomment")
 
-    order: Mapped[List["LabOrder"]] = relationship("LabOrder", back_populates="result_items")
+    order: Mapped[List["LabOrder"]] = relationship(
+        "LabOrder", back_populates="result_items"
+    )
 
     pid = association_proxy("order", "pid")
 

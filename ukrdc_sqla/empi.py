@@ -1,4 +1,5 @@
 """Models which relate to the EMPI (JTRACE) database"""
+
 import datetime
 from typing import Any, List
 

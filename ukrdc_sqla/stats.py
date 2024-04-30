@@ -1,4 +1,5 @@
 """Models which relate to the generated facility error stats and data health database"""
+
 from sqlalchemy import Column, Date, DateTime, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -6,7 +7,6 @@ Base = declarative_base()
 
 
 class ErrorHistory(Base):
-
     __tablename__ = "error_history"
 
     facility = Column("facility", String, primary_key=True)

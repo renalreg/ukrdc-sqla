@@ -1,4 +1,5 @@
 """Models which relate to the main UKRDC database"""
+
 from typing import List, Optional
 
 from sqlalchemy import (
@@ -396,7 +397,6 @@ class DialysisSession(Base):
 
 
 class Transplant(Base):
-
     __tablename__ = "transplant"
 
     id = Column(String, primary_key=True)
@@ -740,7 +740,9 @@ class ResultItem(Base):
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
 
-    order: Mapped[List[LabOrder]] = relationship("LabOrder", back_populates="result_items")
+    order: Mapped[List[LabOrder]] = relationship(
+        "LabOrder", back_populates="result_items"
+    )
 
     pid = association_proxy("order", "pid")
 
