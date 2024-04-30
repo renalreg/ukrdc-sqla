@@ -15,8 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, declarative_base
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
@@ -741,7 +740,7 @@ class ResultItem(Base):
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
 
-    order: LabOrder = relationship("LabOrder", back_populates="result_items")
+    order: Mapped[List[LabOrder]] = relationship("LabOrder", back_populates="result_items")
 
     pid = association_proxy("order", "pid")
 
