@@ -7,9 +7,7 @@ from ..empi import LinkRecord
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
 
-def find_related_ids(
-    jtrace: Session, seen_master_ids: Set[int], seen_person_ids: Set[int]
-):
+def find_related_ids(jtrace: Session, seen_master_ids: Set[int], seen_person_ids: Set[int]):
     """
     Construct sets of related master records and person records.
     This performs a recursive search of associated link records,
@@ -30,28 +28,19 @@ def find_related_ids(
     found_new: bool = True
     while found_new:
         links: List[LinkRecord] = (
-            jtrace.query(LinkRecord)
-            .filter(
-                (LinkRecord.master_id.in_(seen_master_ids))
-                | (LinkRecord.person_id.in_(seen_person_ids))
-            )
-            .all()
+            jtrace.query(LinkRecord).filter((LinkRecord.master_id.in_(seen_master_ids)) | (LinkRecord.person_id.in_(seen_person_ids))).all()
         )
 
         master_ids: Set[int] = {item.master_id for item in links}
         person_ids: Set[int] = {item.person_id for item in links}
-        if seen_master_ids.issuperset(master_ids) and seen_person_ids.issuperset(
-            person_ids
-        ):
+        if seen_master_ids.issuperset(master_ids) and seen_person_ids.issuperset(person_ids):
             found_new = False
         seen_master_ids |= master_ids
         seen_person_ids |= person_ids
     return (seen_master_ids, seen_person_ids)
 
 
-def find_related_link_records(
-    session: Session, master_id: Optional[int] = None, person_id: Optional[int] = None
-) -> Set[PersonMasterLink]:
+def find_related_link_records(session: Session, master_id: Optional[int] = None, person_id: Optional[int] = None) -> Set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
     This function is non-trivial since linked records can
@@ -77,10 +66,7 @@ def find_related_link_records(
     new_entries = {(entry.person_id, entry.master_id) for entry in entries}
 
     # Add LinkRecord IDs to our output set
-    linkrecord_ids |= {
-        PersonMasterLink(entry.id, entry.person_id, entry.master_id)
-        for entry in entries
-    }
+    linkrecord_ids |= {PersonMasterLink(entry.id, entry.person_id, entry.master_id) for entry in entries}
 
     # For each personid-masterid tuple
     while new_entries:
@@ -88,15 +74,11 @@ def find_related_link_records(
         person_id, master_id = new_entries.pop()
 
         # Filter every possible LinkRecord by personid OR masterid
-        link_records: Query = session.query(LinkRecord).filter(
-            (LinkRecord.person_id == person_id) | (LinkRecord.master_id == master_id)
-        )
+        link_records: Query = session.query(LinkRecord).filter((LinkRecord.person_id == person_id) | (LinkRecord.master_id == master_id))
 
         # For each match (either personid or masterid)
         for record in link_records:
-            person_master_link: PersonMasterLink = PersonMasterLink(
-                record.id, record.person_id, record.master_id
-            )
+            person_master_link: PersonMasterLink = PersonMasterLink(record.id, record.person_id, record.master_id)
             # If it's already in the original set, skip
             if person_master_link in linkrecord_ids:
                 continue

@@ -3,7 +3,7 @@ authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = "SQLAlchemy models for the UKRDC"
 name = "ukrdc-sqla"
 readme = "README.md"
-version = "2.0.0"
+version = "2.3.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = ">=1.4.25,<3.0.0"
@@ -21,15 +21,16 @@ requires = ["poetry-core>=1.0.0"]
 
 [tool.black]
 exclude = '(\.eggs|\.git|\.venv|\.tox)'
+line-length = 160
 
 [tool.isort]
 ensure_newline_before_comments = true
 force_grid_wrap = 0
 include_trailing_comma = true
-line_length = 88
+line_length = 160
 multi_line_output = 3
 use_parentheses = true
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = "too-many-lines, too-few-public-methods, missing-module-docstring, missing-class-docstring, duplicate-code, line-too-long"
-max-line-length = 88
+max-line-length = 160
