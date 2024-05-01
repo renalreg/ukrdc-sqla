@@ -17,11 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.8, 3.9, "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -31,7 +30,9 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Install Dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry add tox-gh-actions
 
       - name: Run Tox
         run: poetry run tox
