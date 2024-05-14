@@ -1,4 +1,5 @@
 """Models which relate to the errors database"""
+
 from typing import Any, List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String

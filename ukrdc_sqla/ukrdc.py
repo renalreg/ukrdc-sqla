@@ -1,12 +1,26 @@
 """Models which relate to the main UKRDC database"""
+
 import datetime
 from typing import List, Optional
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Integer, LargeBinary, MetaData, Numeric, String, Text, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    MetaData,
+    Numeric,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship, synonym
+from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -37,8 +51,12 @@ class PatientRecord(Base):
 
     # Relationships
 
-    patient: Mapped["Patient"] = relationship("Patient", backref="record", uselist=False, cascade="all, delete-orphan")
-    lab_orders: Mapped[List["LabOrder"]] = relationship("LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    patient: Mapped["Patient"] = relationship(
+        "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
+    )
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
+        "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
         secondary="laborder",
@@ -47,26 +65,64 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship("Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    social_histories: Mapped[List["SocialHistory"]] = relationship("SocialHistory", cascade="all, delete-orphan")
-    family_histories: Mapped[List["FamilyHistory"]] = relationship("FamilyHistory", cascade="all, delete-orphan")
-    allergies: Mapped[List["Allergy"]] = relationship("Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    diagnoses: Mapped[List["Diagnosis"]] = relationship("Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship("CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship("RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    medications: Mapped[List["Medication"]] = relationship("Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship("DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    vascular_accesses: Mapped[List["VascularAccess"]] = relationship("VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    procedures: Mapped[List["Procedure"]] = relationship("Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    documents: Mapped[List["Document"]] = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    encounters: Mapped[List["Encounter"]] = relationship("Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    transplantlists: Mapped[List["TransplantList"]] = relationship("TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    treatments: Mapped[List["Treatment"]] = relationship("Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    program_memberships: Mapped[List["ProgramMembership"]] = relationship("ProgramMembership", cascade="all, delete-orphan")
-    transplants: Mapped[List["Transplant"]] = relationship("Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    observations: Mapped[List["Observation"]] = relationship(
+        "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    social_histories: Mapped[List["SocialHistory"]] = relationship(
+        "SocialHistory", cascade="all, delete-orphan"
+    )
+    family_histories: Mapped[List["FamilyHistory"]] = relationship(
+        "FamilyHistory", cascade="all, delete-orphan"
+    )
+    allergies: Mapped[List["Allergy"]] = relationship(
+        "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+        "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+        "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+        "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    medications: Mapped[List["Medication"]] = relationship(
+        "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
+        "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    vascular_accesses: Mapped[List["VascularAccess"]] = relationship(
+        "VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    procedures: Mapped[List["Procedure"]] = relationship(
+        "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    documents: Mapped[List["Document"]] = relationship(
+        "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    encounters: Mapped[List["Encounter"]] = relationship(
+        "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    transplantlists: Mapped[List["TransplantList"]] = relationship(
+        "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    treatments: Mapped[List["Treatment"]] = relationship(
+        "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
+        "ProgramMembership", cascade="all, delete-orphan"
+    )
+    transplants: Mapped[List["Transplant"]] = relationship(
+        "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    clinical_relationships = relationship("ClinicalRelationship", cascade="all, delete-orphan")
-    surveys: Mapped[List["Survey"]] = relationship("Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    clinical_relationships = relationship(
+        "ClinicalRelationship", cascade="all, delete-orphan"
+    )
+    surveys: Mapped[List["Survey"]] = relationship(
+        "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     assessments: Mapped[List["Assessment"]] = relationship("Assessment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
@@ -75,11 +131,17 @@ class PatientRecord(Base):
     # Synonyms
     id: Mapped[str] = synonym("pid")
     extract_time: Mapped[datetime.datetime] = synonym("extracttime")
-    repository_creation_date: Mapped[datetime.datetime] = synonym("repositorycreationdate")
+    repository_creation_date: Mapped[datetime.datetime] = synonym(
+        "repositorycreationdate"
+    )
     repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"UKRDCID:{self.ukrdcid} CREATED:{self.repository_creation_date}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"UKRDCID:{self.ukrdcid} CREATED:{self.repository_creation_date}"
+            f">"
+        )
 
 
 class Patient(Base):
@@ -124,9 +186,15 @@ class Patient(Base):
     ethnic_group_description: Mapped[str] = synonym("ethnicgroupdesc")
     person_to_contact_name: Mapped[str] = synonym("persontocontactname")
     person_to_contact_number: Mapped[str] = synonym("persontocontact_contactnumber")
-    person_to_contact_relationship: Mapped[str] = synonym("persontocontact_relationship")
-    person_to_contact_number_comments: Mapped[str] = synonym("person_to_contact_number_comments")
-    person_to_contact_number_type: Mapped[str] = synonym("persontocontact_contactnumbertype")
+    person_to_contact_relationship: Mapped[str] = synonym(
+        "persontocontact_relationship"
+    )
+    person_to_contact_number_comments: Mapped[str] = synonym(
+        "person_to_contact_number_comments"
+    )
+    person_to_contact_number_type: Mapped[str] = synonym(
+        "persontocontact_contactnumbertype"
+    )
     occupation_code: Mapped[str] = synonym("occupationcode")
     occupation_codestd: Mapped[str] = synonym("occupationcodestd")
     occupation_description: Mapped[str] = synonym("occupationdesc")
@@ -138,11 +206,24 @@ class Patient(Base):
 
     # Relationships
 
-    numbers: Mapped[List["PatientNumber"]] = relationship("PatientNumber", backref="patient", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    names: Mapped[List["Name"]] = relationship("Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    contact_details: Mapped[List["ContactDetail"]] = relationship("ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    addresses: Mapped[List["Address"]] = relationship("Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    familydoctor: Mapped["FamilyDoctor"] = relationship("FamilyDoctor", uselist=False, cascade="all, delete-orphan")
+    numbers: Mapped[List["PatientNumber"]] = relationship(
+        "PatientNumber",
+        backref="patient",
+        lazy=GLOBAL_LAZY,
+        cascade="all, delete-orphan",
+    )
+    names: Mapped[List["Name"]] = relationship(
+        "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
+        "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    addresses: Mapped[List["Address"]] = relationship(
+        "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    familydoctor: Mapped["FamilyDoctor"] = relationship(
+        "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
+    )
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <{self.birth_time}>"
@@ -196,7 +277,9 @@ class CauseOfDeath(Base):
     verificationstatus = Column(String)
 
     # Synonyms
-    id: Mapped[str] = synonym("pid")  # this will not be correct if the primary key changes
+    id: Mapped[str] = synonym(
+        "pid"
+    )  # this will not be correct if the primary key changes
     diagnosis_type: Mapped[str] = synonym("diagnosistype")
     diagnosing_clinician_code: Mapped[str] = synonym("diagnosingcliniciancode")
     diagnosing_clinician_code_std: Mapped[str] = synonym("diagnosingcliniciancodestd")
@@ -240,10 +323,14 @@ class FamilyDoctor(Base):
     # Relationships
 
     gp_info = relationship("GPInfo", foreign_keys=[gpid], uselist=False)
-    gp_practice_info = relationship("GPInfo", foreign_keys=[gppracticeid], uselist=False)
+    gp_practice_info = relationship(
+        "GPInfo", foreign_keys=[gppracticeid], uselist=False
+    )
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
+        return (
+            f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
+        )
 
 
 class GPInfo(Base):
@@ -361,7 +448,11 @@ class Observation(Base):
     pre_post: Mapped[str] = synonym("prepost")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.observation_code} {self.observation_value}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.observation_code} {self.observation_value}"
+            f">"
+        )
 
 
 class OptOut(Base):
@@ -756,7 +847,11 @@ class ProgramMembership(Base):
     to_time: Mapped[datetime.date] = synonym("totime")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.program_name} {self.from_time}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.program_name} {self.from_time}"
+            f">"
+        )
 
 
 class ClinicalRelationship(Base):
@@ -798,7 +893,11 @@ class Name(Base):
     update_date = Column(DateTime)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.given} {self.family}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.given} {self.family}"
+            f">"
+        )
 
 
 class PatientNumber(Base):
@@ -818,7 +917,11 @@ class PatientNumber(Base):
     update_date = Column(DateTime)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.organization}:{self.numbertype}:{self.patientid}" ">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.organization}:{self.numbertype}:{self.patientid}"
+            ">"
+        )
 
 
 class Address(Base):
@@ -850,7 +953,11 @@ class Address(Base):
     country_description: Mapped[str] = synonym("countrydesc")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.street} {self.town} {self.postcode}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.street} {self.town} {self.postcode}"
+            f">"
+        )
 
 
 class ContactDetail(Base):
@@ -991,7 +1098,11 @@ class Survey(Base):
     levels = relationship("Level", cascade="all, delete-orphan")
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <" f"{self.surveytime}:{self.surveytypecode}" f">"
+        return (
+            f"{self.__class__.__name__}({self.pid}) <"
+            f"{self.surveytime}:{self.surveytypecode}"
+            f">"
+        )
 
 
 class Question(Base):
@@ -1095,7 +1206,9 @@ class LabOrder(Base):
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, index=True, server_default=text("now()"))
+    creation_date = Column(
+        DateTime, nullable=False, index=True, server_default=text("now()")
+    )
     placerid = Column(String(100))
     fillerid = Column(String(100))
     receivinglocationcode = Column(String(100))
@@ -1150,7 +1263,9 @@ class LabOrder(Base):
     order_category: Mapped[str] = synonym("ordercategorycode")
     order_category_description: Mapped[str] = synonym("ordercategorydesc")
     order_category_code_std: Mapped[str] = synonym("ordercategorycodestd")
-    specimen_collected_time: Mapped[datetime.datetime] = synonym("specimencollectedtime")
+    specimen_collected_time: Mapped[datetime.datetime] = synonym(
+        "specimencollectedtime"
+    )
     specimen_received_time: Mapped[datetime.datetime] = synonym("specimenreceivedtime")
     priority: Mapped[str] = synonym("prioritycode")
     priority_description: Mapped[str] = synonym("prioritydesc")
@@ -1225,9 +1340,15 @@ class ResultItem(Base):
     comments: Mapped[str] = synonym("commenttext")
     reference_comment: Mapped[str] = synonym("referencecomment")
 
+    order: Mapped[List["LabOrder"]] = relationship(
+        "LabOrder", back_populates="result_items"
+    )
+
     # Relationships
 
-    order: LabOrder = relationship("LabOrder", back_populates="result_items")
+    order: Mapped[List[LabOrder]] = relationship(
+        "LabOrder", back_populates="result_items"
+    )
 
 
 class PVData(Base):
@@ -1236,11 +1357,30 @@ class PVData(Base):
     id = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
+
+    diagnosisdate = Column(Date)
+
+    bloodgroup = Column(String(10))
+
     rrtstatus = Column(String(100))
     tpstatus = Column(String(100))
-    diagnosisdate = Column(Date)
-    bloodgroup = Column(String(10))
-    update_date = Column(DateTime)
+
+    # Proxies
+
+    rrtstatus_desc = association_proxy("rrtstatus_info", "description")
+    tpstatus_desc = association_proxy("tpstatus_info", "description")
+
+    # Relationships
+    rrtstatus_info = relationship(
+        "Code",
+        primaryjoin="and_(remote(Code.coding_standard)=='PV_RRTSTATUS', foreign(PVData.rrtstatus)==remote(Code.code))",
+    )
+
+    tpstatus_info = relationship(
+        "Code",
+        primaryjoin="and_(remote(Code.coding_standard)=='PV_TPSTATUS', foreign(PVData.tpstatus)==remote(Code.code))",
+    )
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.id})"
@@ -1342,7 +1482,9 @@ class Treatment(Base):
     # Proxies
 
     admit_reason_desc = association_proxy("admit_reason_code_item", "description")
-    discharge_reason_desc = association_proxy("discharge_reason_code_item", "description")
+    discharge_reason_desc = association_proxy(
+        "discharge_reason_code_item", "description"
+    )
 
     # Relationships
 

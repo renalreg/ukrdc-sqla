@@ -17,13 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.8, 3.9, "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v3
-
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
@@ -31,7 +30,9 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Install Dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry add tox-gh-actions
 
       - name: Run Tox
         run: poetry run tox
@@ -43,12 +44,12 @@ jobs:
     if: github.event_name == 'release'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
