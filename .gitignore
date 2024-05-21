@@ -142,3 +142,7 @@ cython_debug/
 
 # Poetry lockfile (since this is a library, there's no need to keep it)
 poetry.lock
+
+# Ruff
+
+.ruff_cache
