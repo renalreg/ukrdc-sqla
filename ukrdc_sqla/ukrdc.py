@@ -1677,8 +1677,8 @@ class ModalityCodes(Base):
 class Satellite_map(Base):
     __tablename__ = "satellite_map"
 
-    satellite_code = Column(String(10))
-    main_unit_code = Column(String(10))
+    satellite_code = Column(String(10), primary_key=True)
+    main_unit_code = Column(String(10), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     update_date = Column(DateTime)

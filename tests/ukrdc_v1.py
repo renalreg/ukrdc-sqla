@@ -955,3 +955,13 @@ class ModalityCodes(Base):
     is_imprecise = Column("is_imprecise", Boolean)
     nhsbt_transplant_type = Column("nhsbt_transplant_type", String)
     transfer_out = Column("transfer_out", Boolean)
+
+
+class Satellite_map(Base):
+    __tablename__ = "satellite_map"
+
+    satellite_code = Column(String(10), primary_key=True)
+    main_unit_code = Column(String(10), primary_key=True)
+
+    creation_date = Column(DateTime)
+    update_date = Column(DateTime)
