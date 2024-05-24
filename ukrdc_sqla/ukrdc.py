@@ -18,7 +18,8 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BIT
+
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
@@ -1714,13 +1715,13 @@ class ModalityCodes(Base):
 
     registry_code_desc = Column(String(100))
     registry_code_type = Column(String(3), nullable=False)
-    acute = Column(BIT(1), nullable=False)
-    transfer_in = Column(BIT(1), nullable=False)
-    ckd = Column(BIT(1), nullable=False)
-    cons = Column(BIT(1), nullable=False)
-    rrt = Column(BIT(1), nullable=False)
+    acute = Column(Boolean(1), nullable=False)
+    transfer_in = Column(Boolean(1), nullable=False)
+    ckd = Column(Boolean(1), nullable=False)
+    cons = Column(Boolean(1), nullable=False)
+    rrt = Column(Boolean(1), nullable=False)
     equiv_modality = Column(String(8))
-    end_of_care = Column(BIT(1), nullable=False)
-    is_imprecise = Column(BIT(1), nullable=False)
+    end_of_care = Column(Boolean(1), nullable=False)
+    is_imprecise = Column(Boolean(1), nullable=False)
     nhsbt_transplant_type = Column(String(4))
-    transfer_out = Column(BIT(1))
+    transfer_out = Column(Boolean(1))
