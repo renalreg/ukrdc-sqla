@@ -1672,3 +1672,13 @@ class ModalityCodes(Base):
     is_imprecise = Column(BIT(1), nullable=False)
     nhsbt_transplant_type = Column(String(4))
     transfer_out = Column(BIT(1))
+
+
+class Satellite_map(Base):
+    __tablename__ = "satellite_map"
+
+    satellite_code = Column(String(10), primary_key=True)
+    main_unit_code = Column(String(10), primary_key=True)
+
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
