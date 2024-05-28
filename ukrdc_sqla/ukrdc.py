@@ -1674,7 +1674,7 @@ class ModalityCodes(Base):
     transfer_out = Column(BIT(1))
 
 
-class Satellite_map(Base):
+class SatelliteMap(Base):
     __tablename__ = "satellite_map"
 
     satellite_code = Column(String(10), primary_key=True)
