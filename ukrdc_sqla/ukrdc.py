@@ -1672,7 +1672,7 @@ class RRDataDefinition(Base):
     upload_key = Column(String(5), primary_key=True)
 
     table_name = Column("TABLE_NAME", String(30), nullable=False)
-    feild_name = Column(String(30), nullable=False)
+    field_name = Column(String(30), nullable=False)
     code_id = Column(String(10))
     mandatory = Column(Numeric(1, 0))
 
