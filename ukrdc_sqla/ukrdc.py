@@ -125,8 +125,12 @@ class PatientRecord(Base):
     )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
     pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    assessments: Mapped[List["Assessment"]] = relationship("Assessment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    dialysisprescriptions: Mapped[List["DialysisPrescription"]] = relationship("DialysisPrescription", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    assessments: Mapped[List["Assessment"]] = relationship(
+        "Assessment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
+    dialysisprescriptions: Mapped[List["DialysisPrescription"]] = relationship(
+        "DialysisPrescription", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
 
     # Synonyms
     id: Mapped[str] = synonym("pid")
