@@ -17,6 +17,7 @@ from sqlalchemy import (
     String,
     Text,
     text,
+    PrimaryKeyConstraint
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -1669,7 +1670,7 @@ class Locations(Base):
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key = Column(String(5), primary_key=True)
+    upload_key = Column(String(5))
 
     table_name = Column("TABLE_NAME", String(30), nullable=False)
     field_name = Column(String(30), nullable=False)
@@ -1703,8 +1704,11 @@ class RRDataDefinition(Base):
     in_quarter = Column(Numeric(1, 0))
 
     # Synonyms
-
     code_type: Mapped[str] = synonym("type")
+
+    __table_args__ = (
+        PrimaryKeyConstraint('upload_key', 'table_name', name='pk_upload_key_table_name'),
+    )
 
 
 class ModalityCodes(Base):
