@@ -1707,7 +1707,7 @@ class RRDataDefinition(Base):
     code_type: Mapped[str] = synonym("type")
 
     __table_args__ = (
-        PrimaryKeyConstraint('upload_key', 'table_name', name='pk_upload_key_table_name'),
+        PrimaryKeyConstraint('upload_key', 'TABLE_NAME', name='pk_upload_key_table_name'),
     )
 
 
