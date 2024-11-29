@@ -23,7 +23,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
-metadata = MetaData()
+metadata = MetaData(schema="extract")
 Base = declarative_base(metadata=metadata)
 
 GLOBAL_LAZY = "dynamic"
