@@ -17,13 +17,13 @@ from sqlalchemy import (
     String,
     Text,
     text,
-    PrimaryKeyConstraint
+    PrimaryKeyConstraint,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
-metadata = MetaData(schema="extract")
+metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
 GLOBAL_LAZY = "dynamic"
@@ -1707,7 +1707,9 @@ class RRDataDefinition(Base):
     code_type: Mapped[str] = synonym("type")
 
     __table_args__ = (
-        PrimaryKeyConstraint('upload_key', 'TABLE_NAME', name='pk_upload_key_table_name'),
+        PrimaryKeyConstraint(
+            "upload_key", "TABLE_NAME", name="pk_upload_key_table_name"
+        ),
     )
 
 
