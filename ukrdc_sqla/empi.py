@@ -18,7 +18,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, relationship, synonym
 
 metadata = MetaData()
-Base: Any = declarative_base(metadata=metadata)
+Base = declarative_base(metadata=metadata)
 
 
 class MasterRecord(Base):
