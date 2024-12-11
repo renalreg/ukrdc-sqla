@@ -92,7 +92,7 @@ class LinkRecord(Base):
     lastupdated = Column("lastupdated", DateTime, nullable=False)
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
-    person: "Person"  # Let Person handle backref
+    person: Mapped["Person"]  # Let Person handle backref
     master_record: MasterRecord  # Let MasterRecord handle backref
 
     def __str__(self):
