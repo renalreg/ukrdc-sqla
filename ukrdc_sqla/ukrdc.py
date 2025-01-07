@@ -573,7 +573,7 @@ class Diagnosis(Base):
 
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
-
+    
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
@@ -1549,6 +1549,7 @@ class Assessment(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     update_date = Column(DateTime)
@@ -1570,6 +1571,7 @@ class DialysisPrescription(Base):
 
     id = Column(String, primary_key=True)
     pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     update_date = Column(DateTime)
