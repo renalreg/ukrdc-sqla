@@ -92,8 +92,8 @@ class LinkRecord(Base):
     lastupdated = Column("lastupdated", DateTime, nullable=False)
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
-    person: Mapped["Person"]  # Let Person handle backref
-    master_record: MasterRecord  # Let MasterRecord handle backref
+    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    master_record: Mapped["MasterRecord"] = relationship("MasterRecord", back_populates="links")
 
     def __str__(self):
         return (
@@ -207,8 +207,8 @@ class WorkItem(Base):
 
     attributes = Column("attributes", String)
 
-    person: Person  # Let Person handle backref
-    master_record: MasterRecord  # Let MasterRecord handle backref
+    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    master_record: Mapped["MasterRecord"] = relationship("MasterRecord", back_populates="links")
 
     def __str__(self):
         return f"WorkItem({self.id}) <{self.person_id}, {self.master_id}>"
