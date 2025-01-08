@@ -1,7 +1,7 @@
 """Models which relate to the EMPI (JTRACE) database"""
 
 import datetime
-from typing import Any, List
+from typing import List
 
 from sqlalchemy import (
     Boolean,
@@ -91,7 +91,6 @@ class LinkRecord(Base):
 
     lastupdated = Column("lastupdated", DateTime, nullable=False)
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
-
 
     def __str__(self):
         return (
