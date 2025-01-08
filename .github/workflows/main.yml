@@ -31,8 +31,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          poetry install
-          poetry add tox-gh-actions
+          poetry install --with dev
 
       - name: Run Tox
         run: poetry run tox
