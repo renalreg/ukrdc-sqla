@@ -1,7 +1,7 @@
 """Models which relate to the EMPI (JTRACE) database"""
 
 import datetime
-from typing import Any, List
+from typing import List
 
 from sqlalchemy import (
     Boolean,
