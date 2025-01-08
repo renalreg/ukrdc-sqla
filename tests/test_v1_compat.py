@@ -61,13 +61,19 @@ def test_v1_compat_patientrecord():
         v2_cls = getattr(v2, name)
         assert v2_cls
         for k in _field_keys(v1_cls):
-            assert hasattr(v2_cls, k), f"{name}.{k} not found in v2"
-            assert isinstance(
-                getattr(v2_cls, k),
-                (
-                    InspectionAttr,
-                    AssociationProxy,
-                    ColumnAssociationProxyInstance,
-                    property,
-                ),
-            ), f"{name}.{k} is not a valid attribute"
+            if k == "feild_name":
+                assert hasattr(
+                    v2_cls, "field_name"
+                ), f"{name}.field_name not found in v2"
+            else:
+                assert hasattr(v2_cls, k), f"{name}.{k} not found in v2"
+
+                assert isinstance(
+                    getattr(v2_cls, k),
+                    (
+                        InspectionAttr,
+                        AssociationProxy,
+                        ColumnAssociationProxyInstance,
+                        property,
+                    ),
+                ), f"{name}.{k} is not a valid attribute"
