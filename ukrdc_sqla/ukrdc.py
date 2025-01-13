@@ -266,6 +266,7 @@ class CauseOfDeath(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
     diagnosistype = Column(String(50))
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
