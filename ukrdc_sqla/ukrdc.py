@@ -188,7 +188,7 @@ class Patient(Base):
         "persontocontact_relationship"
     )
     person_to_contact_number_comments: Mapped[str] = synonym(
-        "person_to_contact_number_comments"
+        "persontocontact_numbercomments"
     )
     person_to_contact_number_type: Mapped[str] = synonym(
         "persontocontact_contactnumbertype"
