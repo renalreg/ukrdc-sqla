@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
+    Column,
     Date,
     DateTime,
     Enum,
@@ -19,7 +20,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base, mapped_column
+from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -30,33 +31,33 @@ GLOBAL_LAZY = "dynamic"
 class PatientRecord(Base):
     __tablename__ = "patientrecord"
 
-    pid = mapped_column(String, primary_key=True)
+    pid = Column(String, primary_key=True)
 
-    sendingfacility = mapped_column(String(7), nullable=False)
-    sendingextract = mapped_column(String(6), nullable=False)
-    localpatientid = mapped_column(String(17), nullable=False)
-    repositorycreationdate = mapped_column(DateTime, nullable=False)
-    repositoryupdatedate = mapped_column(DateTime, nullable=False)
-    migrated = mapped_column(Boolean, nullable=False, server_default=text("false"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    ukrdcid = mapped_column(String(10), index=True)
-    channelname = mapped_column(String(50))
-    channelid = mapped_column(String(50))
-    extracttime = mapped_column(String(50))
-    startdate = mapped_column(DateTime)
-    stopdate = mapped_column(DateTime)
-    schemaversion = mapped_column(String(50))
-    update_date = mapped_column(DateTime)
+    sendingfacility = Column(String(7), nullable=False)
+    sendingextract = Column(String(6), nullable=False)
+    localpatientid = Column(String(17), nullable=False)
+    repositorycreationdate = Column(DateTime, nullable=False)
+    repositoryupdatedate = Column(DateTime, nullable=False)
+    migrated = Column(Boolean, nullable=False, server_default=text("false"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    ukrdcid = Column(String(10), index=True)
+    channelname = Column(String(50))
+    channelid = Column(String(50))
+    extracttime = Column(String(50))
+    startdate = Column(DateTime)
+    stopdate = Column(DateTime)
+    schemaversion = Column(String(50))
+    update_date = Column(DateTime)
 
     # Relationships
 
     patient: Mapped["Patient"] = relationship(
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders:Mapped["LabOrder"] = relationship(
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    result_items:Mapped["ResultItem"] = relationship(
+    result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
         secondary="laborder",
         primaryjoin="LabOrder.pid == PatientRecord.pid",
@@ -64,62 +65,62 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations:Mapped["Observation"] = relationship(
+    observations: Mapped[List["Observation"]] = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    social_histories:Mapped["SocialHistory"] = relationship(
+    social_histories: Mapped[List["SocialHistory"]] = relationship(
         "SocialHistory", cascade="all, delete-orphan"
     )
-    family_histories:Mapped["FamilyHistory"] = relationship(
+    family_histories: Mapped[List["FamilyHistory"]] = relationship(
         "FamilyHistory", cascade="all, delete-orphan"
     )
-    allergies:Mapped["Allergy"] = relationship(
+    allergies: Mapped[List["Allergy"]] = relationship(
         "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    diagnoses:Mapped["Diagnosis"] = relationship(
+    diagnoses: Mapped[List["Diagnosis"]] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death:Mapped["CauseOfDeath"] = relationship(
+    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses:Mapped["RenalDiagnosis"] = relationship(
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications:Mapped["Medication"] = relationship(
+    medications: Mapped[List["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    dialysis_sessions:Mapped["DialysisSession"] = relationship(
+    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    vascular_accesses:Mapped["VascularAccess"] = relationship(
+    vascular_accesses: Mapped[List["VascularAccess"]] = relationship(
         "VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures:Mapped["Procedure"] = relationship(
+    procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents:Mapped["Document"] = relationship(
+    documents: Mapped[List["Document"]] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    encounters:Mapped["Encounter"] = relationship(
+    encounters: Mapped[List["Encounter"]] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    transplantlists:Mapped["TransplantList"] = relationship(
+    transplantlists: Mapped[List["TransplantList"]] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments:Mapped["Treatment"] = relationship(
+    treatments: Mapped[List["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    program_memberships:Mapped["ProgramMembership"] = relationship(
+    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
-    transplants:Mapped["Transplant"] = relationship(
+    transplants: Mapped[List["Transplant"]] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     clinical_relationships = relationship(
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
-    surveys:Mapped["Survey"] = relationship(
+    surveys: Mapped[List["Survey"]] = relationship(
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
@@ -144,34 +145,34 @@ class PatientRecord(Base):
 class Patient(Base):
     __tablename__ = "patient"
 
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    birthtime = mapped_column(DateTime)
-    deathtime = mapped_column(DateTime)
-    gender = mapped_column(String(2))
-    countryofbirth = mapped_column(String(3))
-    ethnicgroupcode = mapped_column(String(100))
-    ethnicgroupcodestd = mapped_column(String(100))
-    ethnicgroupdesc = mapped_column(String(100))
-    occupationcode = mapped_column(String(100))
-    occupationcodestd = mapped_column(String(100))
-    occupationdesc = mapped_column(String(100))
-    primarylanguagecode = mapped_column(String(100))
-    primarylanguagecodestd = mapped_column(String(100))
-    primarylanguagedesc = mapped_column(String(100))
-    death = mapped_column(Boolean)
-    persontocontactname = mapped_column(String(100))
-    persontocontact_relationship = mapped_column(String(20))
-    persontocontact_contactnumber = mapped_column(String(20))
-    persontocontact_contactnumbertype = mapped_column(String(20))
-    persontocontact_contactnumbercomments = mapped_column(String(200))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    bloodgroup = mapped_column(String(100))
-    bloodrhesus = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    birthtime = Column(DateTime)
+    deathtime = Column(DateTime)
+    gender = Column(String(2))
+    countryofbirth = Column(String(3))
+    ethnicgroupcode = Column(String(100))
+    ethnicgroupcodestd = Column(String(100))
+    ethnicgroupdesc = Column(String(100))
+    occupationcode = Column(String(100))
+    occupationcodestd = Column(String(100))
+    occupationdesc = Column(String(100))
+    primarylanguagecode = Column(String(100))
+    primarylanguagecodestd = Column(String(100))
+    primarylanguagedesc = Column(String(100))
+    death = Column(Boolean)
+    persontocontactname = Column(String(100))
+    persontocontact_relationship = Column(String(20))
+    persontocontact_contactnumber = Column(String(20))
+    persontocontact_contactnumbertype = Column(String(20))
+    persontocontact_contactnumbercomments = Column(String(200))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    bloodgroup = Column(String(100))
+    bloodrhesus = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
     id: Mapped[str] = synonym("pid")
@@ -203,19 +204,19 @@ class Patient(Base):
 
     # Relationships
 
-    numbers:Mapped["PatientNumber"] = relationship(
+    numbers: Mapped[List["PatientNumber"]] = relationship(
         "PatientNumber",
         backref="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names:Mapped["Name"] = relationship(
+    names: Mapped[List["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details:Mapped["ContactDetail"] = relationship(
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses:Mapped["Address"] = relationship(
+    addresses: Mapped[List["Address"]] = relationship(
         "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     familydoctor: Mapped["FamilyDoctor"] = relationship(
@@ -255,22 +256,22 @@ class Patient(Base):
 class CauseOfDeath(Base):
     __tablename__ = "causeofdeath"
 
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = mapped_column(String(50))
-    diagnosingcliniciancode = mapped_column(String(100))
-    diagnosingcliniciancodestd = mapped_column(String(100))
-    diagnosingcliniciandesc = mapped_column(String(100))
-    diagnosiscode = mapped_column(String(100))
-    diagnosiscodestd = mapped_column(String(100))
-    diagnosisdesc = mapped_column(String(255))
-    comments = mapped_column(Text)
-    enteredon = mapped_column(DateTime)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    diagnosistype = Column(String(50))
+    diagnosingcliniciancode = Column(String(100))
+    diagnosingcliniciancodestd = Column(String(100))
+    diagnosingcliniciandesc = Column(String(100))
+    diagnosiscode = Column(String(100))
+    diagnosiscodestd = Column(String(100))
+    diagnosisdesc = Column(String(255))
+    comments = Column(Text)
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
     id: Mapped[str] = synonym(
@@ -292,29 +293,29 @@ class CauseOfDeath(Base):
 class FamilyDoctor(Base):
     __tablename__ = "familydoctor"
 
-    id = mapped_column(String, ForeignKey("patient.pid"), primary_key=True)
+    id = Column(String, ForeignKey("patient.pid"), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    gpname = mapped_column(String(100))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    gpname = Column(String(100))
 
-    gpid = mapped_column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
-    gppracticeid = mapped_column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
+    gpid = Column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
+    gppracticeid = Column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
 
-    addressuse = mapped_column(String(10))
-    fromtime = mapped_column(Date)
-    totime = mapped_column(Date)
-    street = mapped_column(String(100))
-    town = mapped_column(String(100))
-    county = mapped_column(String(100))
-    postcode = mapped_column(String(10))
-    countrycode = mapped_column(String(100))
-    countrycodestd = mapped_column(String(100))
-    countrydesc = mapped_column(String(100))
-    contactuse = mapped_column(String(10))
-    contactvalue = mapped_column(String(100))
-    email = mapped_column(String(100))
-    commenttext = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    addressuse = Column(String(10))
+    fromtime = Column(Date)
+    totime = Column(Date)
+    street = Column(String(100))
+    town = Column(String(100))
+    county = Column(String(100))
+    postcode = Column(String(10))
+    countrycode = Column(String(100))
+    countrycodestd = Column(String(100))
+    countrydesc = Column(String(100))
+    contactuse = Column(String(10))
+    contactvalue = Column(String(100))
+    email = Column(String(100))
+    commenttext = Column(String(100))
+    update_date = Column(DateTime)
 
     # Relationships
 
@@ -332,15 +333,15 @@ class FamilyDoctor(Base):
 class GPInfo(Base):
     __tablename__ = "ukrdc_ods_gp_codes"
 
-    code = mapped_column(String(8), primary_key=True)
+    code = Column(String(8), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    name = mapped_column(String(50))
-    address1 = mapped_column(String(35))
-    postcode = mapped_column(String(8))
-    phone = mapped_column(String(12))
-    type = mapped_column(Enum("GP", "PRACTICE", name="gp_type"))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    name = Column(String(50))
+    address1 = Column(String(35))
+    postcode = Column(String(8))
+    phone = Column(String(12))
+    type = Column(Enum("GP", "PRACTICE", name="gp_type"))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -352,75 +353,75 @@ class GPInfo(Base):
 class SocialHistory(Base):
     __tablename__ = "socialhistory"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    socialhabitcode = mapped_column(String(100))
-    socialhabitcodestd = mapped_column(String(100))
-    socialhabitdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    socialhabitcode = Column(String(100))
+    socialhabitcodestd = Column(String(100))
+    socialhabitdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class FamilyHistory(Base):
     __tablename__ = "familyhistory"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    familymembercode = mapped_column(String(100))
-    familymembercodestd = mapped_column(String(100))
-    familymemberdesc = mapped_column(String(100))
-    diagnosiscode = mapped_column(String(100))
-    diagnosiscodestd = mapped_column(String(100))
-    diagnosisdesc = mapped_column(String(100))
-    notetext = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    fromtime = mapped_column(DateTime)
-    totime = mapped_column(DateTime)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    familymembercode = Column(String(100))
+    familymembercodestd = Column(String(100))
+    familymemberdesc = Column(String(100))
+    diagnosiscode = Column(String(100))
+    diagnosiscodestd = Column(String(100))
+    diagnosisdesc = Column(String(100))
+    notetext = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Observation(Base):
     __tablename__ = "observation"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    observationtime = mapped_column(DateTime)
-    observationcode = mapped_column(String(100))
-    observationcodestd = mapped_column(String(100))
-    observationdesc = mapped_column(String(100))
-    observationvalue = mapped_column(String(100))
-    observationunits = mapped_column(String(100))
-    prepost = mapped_column(String(4))
-    commenttext = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    enteringorganizationcode = mapped_column(String(100))
-    enteringorganizationcodestd = mapped_column(String(100))
-    enteringorganizationdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    observationtime = Column(DateTime)
+    observationcode = Column(String(100))
+    observationcodestd = Column(String(100))
+    observationdesc = Column(String(100))
+    observationvalue = Column(String(100))
+    observationunits = Column(String(100))
+    prepost = Column(String(4))
+    commenttext = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    enteringorganizationcode = Column(String(100))
+    enteringorganizationcodestd = Column(String(100))
+    enteringorganizationdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -454,25 +455,25 @@ class Observation(Base):
 class OptOut(Base):
     __tablename__ = "optout"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    programname = mapped_column(String(100))
-    programdescription = mapped_column(String(100))
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    fromtime = mapped_column(Date)
-    totime = mapped_column(Date)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    programname = Column(String(100))
+    programdescription = Column(String(100))
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    fromtime = Column(Date)
+    totime = Column(Date)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -494,63 +495,63 @@ class OptOut(Base):
 class Allergy(Base):
     __tablename__ = "allergy"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    allergycode = mapped_column(String(100))
-    allergycodestd = mapped_column(String(100))
-    allergydesc = mapped_column(String(100))
-    allergycategorycode = mapped_column(String(100))
-    allergycategorycodestd = mapped_column(String(100))
-    allergycategorydesc = mapped_column(String(100))
-    severitycode = mapped_column(String(100))
-    severitycodestd = mapped_column(String(100))
-    severitydesc = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    discoverytime = mapped_column(DateTime)
-    confirmedtime = mapped_column(DateTime)
-    commenttext = mapped_column(String(500))
-    inactivetime = mapped_column(DateTime)
-    freetextallergy = mapped_column(String(500))
-    qualifyingdetails = mapped_column(String(500))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    allergycode = Column(String(100))
+    allergycodestd = Column(String(100))
+    allergydesc = Column(String(100))
+    allergycategorycode = Column(String(100))
+    allergycategorycodestd = Column(String(100))
+    allergycategorydesc = Column(String(100))
+    severitycode = Column(String(100))
+    severitycodestd = Column(String(100))
+    severitydesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    discoverytime = Column(DateTime)
+    confirmedtime = Column(DateTime)
+    commenttext = Column(String(500))
+    inactivetime = Column(DateTime)
+    freetextallergy = Column(String(500))
+    qualifyingdetails = Column(String(500))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Diagnosis(Base):
     __tablename__ = "diagnosis"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    diagnosistype = mapped_column(String(50))
-    diagnosingcliniciancode = mapped_column(String(100))
-    diagnosingcliniciancodestd = mapped_column(String(100))
-    diagnosingcliniciandesc = mapped_column(String(100))
-    diagnosiscode = mapped_column(String(100))
-    diagnosiscodestd = mapped_column(String(100))
-    diagnosisdesc = mapped_column(String(255))
-    comments = mapped_column(Text)
-    identificationtime = mapped_column(DateTime)
-    onsettime = mapped_column(DateTime)
-    enteredon = mapped_column(DateTime)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    encounternumber = mapped_column(String(100))
-    verificationstatus = mapped_column(String(100))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    diagnosistype = Column(String(50))
+    diagnosingcliniciancode = Column(String(100))
+    diagnosingcliniciancodestd = Column(String(100))
+    diagnosingcliniciandesc = Column(String(100))
+    diagnosiscode = Column(String(100))
+    diagnosiscodestd = Column(String(100))
+    diagnosisdesc = Column(String(255))
+    comments = Column(Text)
+    identificationtime = Column(DateTime)
+    onsettime = Column(DateTime)
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    encounternumber = Column(String(100))
+    verificationstatus = Column(String(100))
 
     # Synonyms
 
@@ -564,24 +565,24 @@ class Diagnosis(Base):
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
 
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = mapped_column(String(50))
-    diagnosiscode = mapped_column("diagnosiscode", String)
-    diagnosiscodestd = mapped_column("diagnosiscodestd", String)
-    diagnosisdesc = mapped_column("diagnosisdesc", String)
-    diagnosingcliniciancode = mapped_column(String(100))
-    diagnosingcliniciancodestd = mapped_column(String(100))
-    diagnosingcliniciandesc = mapped_column(String(100))
-    comments = mapped_column(String)
-    identificationtime = mapped_column("identificationtime", DateTime)
-    onsettime = mapped_column(DateTime)
-    enteredon = mapped_column(DateTime)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    diagnosistype = Column(String(50))
+    diagnosiscode = Column("diagnosiscode", String)
+    diagnosiscodestd = Column("diagnosiscodestd", String)
+    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosingcliniciancode = Column(String(100))
+    diagnosingcliniciancodestd = Column(String(100))
+    diagnosingcliniciandesc = Column(String(100))
+    comments = Column(String)
+    identificationtime = Column("identificationtime", DateTime)
+    onsettime = Column(DateTime)
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
     id: Mapped[str] = synonym("pid")  # see comment on cause of death
@@ -594,37 +595,37 @@ class RenalDiagnosis(Base):
 class DialysisSession(Base):
     __tablename__ = "dialysissession"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    proceduretypecode = mapped_column(String(100))
-    proceduretypecodestd = mapped_column(String(100))
-    proceduretypedesc = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    proceduretime = mapped_column(DateTime)
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    qhd19 = mapped_column(String(255))
-    qhd20 = mapped_column(String(255))
-    qhd21 = mapped_column(String(255))
-    qhd22 = mapped_column(String(255))
-    qhd30 = mapped_column(String(255))
-    qhd31 = mapped_column(String(255))
-    qhd32 = mapped_column(String(255))
-    qhd33 = mapped_column(String(255))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    proceduretime = Column(DateTime)
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    qhd19 = Column(String(255))
+    qhd20 = Column(String(255))
+    qhd21 = Column(String(255))
+    qhd22 = Column(String(255))
+    qhd30 = Column(String(255))
+    qhd31 = Column(String(255))
+    qhd32 = Column(String(255))
+    qhd33 = Column(String(255))
 
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -637,64 +638,64 @@ class DialysisSession(Base):
 class Transplant(Base):
     __tablename__ = "transplant"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
 
-    proceduretypecode = mapped_column(String(100))
-    proceduretypecodestd = mapped_column(String(100))
-    proceduretypedesc = mapped_column(String(100))
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
 
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
 
-    proceduretime = mapped_column(DateTime)
+    proceduretime = Column(DateTime)
 
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
 
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
 
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
 
-    tra64 = mapped_column(DateTime)
-    tra65 = mapped_column(String(255))
-    tra66 = mapped_column(String(255))
-    tra69 = mapped_column(DateTime)
-    tra76 = mapped_column(String(255))
-    tra77 = mapped_column(String(255))
-    tra78 = mapped_column(String(255))
-    tra79 = mapped_column(String(255))
-    tra80 = mapped_column(String(255))
-    tra8a = mapped_column(String(255))
-    tra81 = mapped_column(String(255))
-    tra82 = mapped_column(String(255))
-    tra83 = mapped_column(String(255))
-    tra84 = mapped_column(String(255))
-    tra85 = mapped_column(String(255))
-    tra86 = mapped_column(String(255))
-    tra87 = mapped_column(String(255))
-    tra88 = mapped_column(String(255))
-    tra89 = mapped_column(String(255))
-    tra90 = mapped_column(String(255))
-    tra91 = mapped_column(String(255))
-    tra92 = mapped_column(String(255))
-    tra93 = mapped_column(String(255))
-    tra94 = mapped_column(String(255))
-    tra95 = mapped_column(String(255))
-    tra96 = mapped_column(String(255))
-    tra97 = mapped_column(String(255))
-    tra98 = mapped_column(String(255))
+    tra64 = Column(DateTime)
+    tra65 = Column(String(255))
+    tra66 = Column(String(255))
+    tra69 = Column(DateTime)
+    tra76 = Column(String(255))
+    tra77 = Column(String(255))
+    tra78 = Column(String(255))
+    tra79 = Column(String(255))
+    tra80 = Column(String(255))
+    tra8a = Column(String(255))
+    tra81 = Column(String(255))
+    tra82 = Column(String(255))
+    tra83 = Column(String(255))
+    tra84 = Column(String(255))
+    tra85 = Column(String(255))
+    tra86 = Column(String(255))
+    tra87 = Column(String(255))
+    tra88 = Column(String(255))
+    tra89 = Column(String(255))
+    tra90 = Column(String(255))
+    tra91 = Column(String(255))
+    tra92 = Column(String(255))
+    tra93 = Column(String(255))
+    tra94 = Column(String(255))
+    tra95 = Column(String(255))
+    tra96 = Column(String(255))
+    tra97 = Column(String(255))
+    tra98 = Column(String(255))
 
-    update_date = mapped_column(DateTime)
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -707,103 +708,103 @@ class Transplant(Base):
 class VascularAccess(Base):
     __tablename__ = "vascularaccess"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
-    idx = mapped_column(Integer)
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+    idx = Column(Integer)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    proceduretypecode = mapped_column(String(100))
-    proceduretypecodestd = mapped_column(String(100))
-    proceduretypedesc = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    proceduretime = mapped_column(DateTime)
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    proceduretime = Column(DateTime)
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
 
-    acc19 = mapped_column(String(255))
-    acc20 = mapped_column(String(255))
-    acc21 = mapped_column(String(255))
-    acc22 = mapped_column(String(255))
-    acc30 = mapped_column(String(255))
-    acc40 = mapped_column(String(255))
+    acc19 = Column(String(255))
+    acc20 = Column(String(255))
+    acc21 = Column(String(255))
+    acc22 = Column(String(255))
+    acc30 = Column(String(255))
+    acc40 = Column(String(255))
 
-    update_date = mapped_column(DateTime)
+    update_date = Column(DateTime)
 
 
 class Procedure(Base):
     __tablename__ = "procedure"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    proceduretypecode = mapped_column(String(100))
-    proceduretypecodestd = mapped_column(String(100))
-    proceduretypedesc = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    proceduretime = mapped_column(DateTime)
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    proceduretypecode = Column(String(100))
+    proceduretypecodestd = Column(String(100))
+    proceduretypedesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    proceduretime = Column(DateTime)
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Encounter(Base):
     __tablename__ = "encounter"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    encounternumber = mapped_column(String(100))
-    encountertype = mapped_column(String(100))
-    fromtime = mapped_column(DateTime)
-    totime = mapped_column(DateTime)
-    admittingcliniciancode = mapped_column(String(100))
-    admittingcliniciancodestd = mapped_column(String(100))
-    admittingcliniciandesc = mapped_column(String(100))
-    admitreasoncode = mapped_column(String(100))
-    admitreasoncodestd = mapped_column(String(100))
-    admitreasondesc = mapped_column(String(100))
-    admissionsourcecode = mapped_column(String(100))
-    admissionsourcecodestd = mapped_column(String(100))
-    admissionsourcedesc = mapped_column(String(100))
-    dischargereasoncode = mapped_column(String(100))
-    dischargereasoncodestd = mapped_column(String(100))
-    dischargereasondesc = mapped_column(String(100))
-    dischargelocationcode = mapped_column(String(100))
-    dischargelocationcodestd = mapped_column(String(100))
-    dischargelocationdesc = mapped_column(String(100))
-    healthcarefacilitycode = mapped_column(String(100))
-    healthcarefacilitycodestd = mapped_column(String(100))
-    healthcarefacilitydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    visitdescription = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    encounternumber = Column(String(100))
+    encountertype = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+    admittingcliniciancode = Column(String(100))
+    admittingcliniciancodestd = Column(String(100))
+    admittingcliniciandesc = Column(String(100))
+    admitreasoncode = Column(String(100))
+    admitreasoncodestd = Column(String(100))
+    admitreasondesc = Column(String(100))
+    admissionsourcecode = Column(String(100))
+    admissionsourcecodestd = Column(String(100))
+    admissionsourcedesc = Column(String(100))
+    dischargereasoncode = Column(String(100))
+    dischargereasoncodestd = Column(String(100))
+    dischargereasondesc = Column(String(100))
+    dischargelocationcode = Column(String(100))
+    dischargelocationcodestd = Column(String(100))
+    dischargelocationdesc = Column(String(100))
+    healthcarefacilitycode = Column(String(100))
+    healthcarefacilitycodestd = Column(String(100))
+    healthcarefacilitydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    visitdescription = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -814,24 +815,24 @@ class Encounter(Base):
 class ProgramMembership(Base):
     __tablename__ = "programmembership"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    programname = mapped_column(String(100))
-    programdescription = mapped_column(String(100))
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    fromtime = mapped_column(Date)
-    totime = mapped_column(Date)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    programname = Column(String(100))
+    programdescription = Column(String(100))
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    fromtime = Column(Date)
+    totime = Column(Date)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -850,40 +851,40 @@ class ProgramMembership(Base):
 class ClinicalRelationship(Base):
     __tablename__ = "clinicalrelationship"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    facilitycode = mapped_column(String(100))
-    facilitycodestd = mapped_column(String(100))
-    facilitydesc = mapped_column(String(100))
-    fromtime = mapped_column(Date)
-    totime = mapped_column(Date)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    facilitycode = Column(String(100))
+    facilitycodestd = Column(String(100))
+    facilitydesc = Column(String(100))
+    fromtime = Column(Date)
+    totime = Column(Date)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Name(Base):
     __tablename__ = "name"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patient.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patient.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    nameuse = mapped_column(String(10))
-    prefix = mapped_column(String(10))
-    family = mapped_column(String(60))
-    given = mapped_column(String(60))
-    othergivennames = mapped_column(String(60))
-    suffix = mapped_column(String(10))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    nameuse = Column(String(10))
+    prefix = Column(String(10))
+    family = Column(String(60))
+    given = Column(String(60))
+    othergivennames = Column(String(60))
+    suffix = Column(String(10))
+    update_date = Column(DateTime)
 
     def __str__(self):
         return (
@@ -896,18 +897,18 @@ class Name(Base):
 class PatientNumber(Base):
     __tablename__ = "patientnumber"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patient.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patient.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    patientid = mapped_column(String(50), index=True)
-    numbertype = mapped_column(String(3))
-    organization = mapped_column(String(50))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    patientid = Column(String(50), index=True)
+    numbertype = Column(String(3))
+    organization = Column(String(50))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     def __str__(self):
         return (
@@ -920,22 +921,22 @@ class PatientNumber(Base):
 class Address(Base):
     __tablename__ = "address"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patient.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patient.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    addressuse = mapped_column(String(10))
-    fromtime = mapped_column(Date)
-    totime = mapped_column(Date)
-    street = mapped_column(String(100))
-    town = mapped_column(String(100))
-    county = mapped_column(String(100))
-    postcode = mapped_column(String(10))
-    countrycode = mapped_column(String(100))
-    countrycodestd = mapped_column(String(100))
-    countrydesc = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    addressuse = Column(String(10))
+    fromtime = Column(Date)
+    totime = Column(Date)
+    street = Column(String(100))
+    town = Column(String(100))
+    county = Column(String(100))
+    postcode = Column(String(10))
+    countrycode = Column(String(100))
+    countrycodestd = Column(String(100))
+    countrydesc = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -956,18 +957,18 @@ class Address(Base):
 class ContactDetail(Base):
     __tablename__ = "contactdetail"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patient.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patient.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    contactuse = mapped_column(String(10))
-    contactvalue = mapped_column(String(100))
-    commenttext = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    contactuse = Column(String(10))
+    contactvalue = Column(String(100))
+    commenttext = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -981,58 +982,58 @@ class ContactDetail(Base):
 class Medication(Base):
     __tablename__ = "medication"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
 
-    idx = mapped_column(Integer)
-    repositoryupdatedate = mapped_column(DateTime, nullable=False)
-    prescriptionnumber = mapped_column(String(100))
-    fromtime = mapped_column(DateTime)
-    totime = mapped_column(DateTime)
+    idx = Column(Integer)
+    repositoryupdatedate = Column(DateTime, nullable=False)
+    prescriptionnumber = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
 
-    orderedbycode = mapped_column(String(100))
-    orderedbycodestd = mapped_column(String(100))
-    orderedbydesc = mapped_column(String(100))
+    orderedbycode = Column(String(100))
+    orderedbycodestd = Column(String(100))
+    orderedbydesc = Column(String(100))
 
-    enteringorganizationcode = mapped_column(String(100))
-    enteringorganizationcodestd = mapped_column(String(100))
-    enteringorganizationdesc = mapped_column(String(100))
+    enteringorganizationcode = Column(String(100))
+    enteringorganizationcodestd = Column(String(100))
+    enteringorganizationdesc = Column(String(100))
 
-    routecode = mapped_column(String(10))
-    routecodestd = mapped_column(String(100))
-    routedesc = mapped_column(String(100))
+    routecode = Column(String(10))
+    routecodestd = Column(String(100))
+    routedesc = Column(String(100))
 
-    drugproductidcode = mapped_column(String(100))
-    drugproductidcodestd = mapped_column(String(100))
-    drugproductiddesc = mapped_column(String(100))
+    drugproductidcode = Column(String(100))
+    drugproductidcodestd = Column(String(100))
+    drugproductiddesc = Column(String(100))
 
-    drugproductgeneric = mapped_column(String(255))
-    drugproductlabelname = mapped_column(String(255))
+    drugproductgeneric = Column(String(255))
+    drugproductlabelname = Column(String(255))
 
-    drugproductformcode = mapped_column(String(100))
-    drugproductformcodestd = mapped_column(String(100))
-    drugproductformdesc = mapped_column(String(100))
+    drugproductformcode = Column(String(100))
+    drugproductformcodestd = Column(String(100))
+    drugproductformdesc = Column(String(100))
 
-    drugproductstrengthunitscode = mapped_column(String(100))
-    drugproductstrengthunitscodestd = mapped_column(String(100))
-    drugproductstrengthunitsdesc = mapped_column(String(100))
+    drugproductstrengthunitscode = Column(String(100))
+    drugproductstrengthunitscodestd = Column(String(100))
+    drugproductstrengthunitsdesc = Column(String(100))
 
-    frequency = mapped_column(String(255))
-    commenttext = mapped_column(String(1000))
-    dosequantity = mapped_column(Numeric(19, 2))
+    frequency = Column(String(255))
+    commenttext = Column(String(1000))
+    dosequantity = Column(Numeric(19, 2))
 
-    doseuomcode = mapped_column(String(100))
-    doseuomcodestd = mapped_column(String(100))
-    doseuomdesc = mapped_column(String(100))
+    doseuomcode = Column(String(100))
+    doseuomcodestd = Column(String(100))
+    doseuomdesc = Column(String(100))
 
-    indication = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
-    encounternumber = mapped_column(String(100))
+    indication = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
+    encounternumber = Column(String(100))
 
     # Synonyms
 
@@ -1062,27 +1063,27 @@ class Medication(Base):
 class Survey(Base):
     __tablename__ = "survey"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    surveytime = mapped_column(DateTime, nullable=False)
-    surveytypecode = mapped_column(String(100))
-    surveytypecodestd = mapped_column(String(100))
-    surveytypedesc = mapped_column(String(100))
-    typeoftreatment = mapped_column(String(100))
-    hdlocation = mapped_column(String(100))
-    template = mapped_column(String(100))
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    surveytime = Column(DateTime, nullable=False)
+    surveytypecode = Column(String(100))
+    surveytypecodestd = Column(String(100))
+    surveytypedesc = Column(String(100))
+    typeoftreatment = Column(String(100))
+    hdlocation = Column(String(100))
+    template = Column(String(100))
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Relationships
 
@@ -1101,32 +1102,32 @@ class Survey(Base):
 class Question(Base):
     __tablename__ = "question"
 
-    id = mapped_column(String, primary_key=True)
+    id = Column(String, primary_key=True)
 
-    surveyid = mapped_column(String, ForeignKey("survey.id"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    questiontypecode = mapped_column(String(100))
-    questiontypecodestd = mapped_column(String(100))
-    questiontypedesc = mapped_column(String(100))
-    response = mapped_column(String(100))
-    questiontext = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    surveyid = Column(String, ForeignKey("survey.id"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    questiontypecode = Column(String(100))
+    questiontypecodestd = Column(String(100))
+    questiontypedesc = Column(String(100))
+    response = Column(String(100))
+    questiontext = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Score(Base):
     __tablename__ = "score"
 
-    id = mapped_column(String, primary_key=True)
+    id = Column(String, primary_key=True)
 
-    surveyid = mapped_column(String, ForeignKey("survey.id"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    scorevalue = mapped_column(String(100))
-    scoretypecode = mapped_column(String(100))
-    scoretypecodestd = mapped_column(String(100))
-    scoretypedesc = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    surveyid = Column(String, ForeignKey("survey.id"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    scorevalue = Column(String(100))
+    scoretypecode = Column(String(100))
+    scoretypecodestd = Column(String(100))
+    scoretypedesc = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -1136,16 +1137,16 @@ class Score(Base):
 class Level(Base):
     __tablename__ = "level"
 
-    id = mapped_column(String, primary_key=True)
+    id = Column(String, primary_key=True)
 
-    surveyid = mapped_column(String, ForeignKey("survey.id"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    levelvalue = mapped_column(String(100))
-    leveltypecode = mapped_column(String(100))
-    leveltypecodestd = mapped_column(String(100))
-    leveltypedesc = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    surveyid = Column(String, ForeignKey("survey.id"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    levelvalue = Column(String(100))
+    leveltypecode = Column(String(100))
+    leveltypecodestd = Column(String(100))
+    leveltypedesc = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -1155,38 +1156,38 @@ class Level(Base):
 class Document(Base):
     __tablename__ = "document"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    repositoryupdatedate = mapped_column(DateTime, nullable=False)
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    documenttime = mapped_column(DateTime)
-    notetext = mapped_column(Text)
-    documenttypecode = mapped_column(String(100))
-    documenttypecodestd = mapped_column(String(100))
-    documenttypedesc = mapped_column(String(100))
-    cliniciancode = mapped_column(String(100))
-    cliniciancodestd = mapped_column(String(100))
-    cliniciandesc = mapped_column(String(100))
-    documentname = mapped_column(String(100))
-    statuscode = mapped_column(String(100))
-    statuscodestd = mapped_column(String(100))
-    statusdesc = mapped_column(String(100))
-    enteredbycode = mapped_column(String(100))
-    enteredbycodestd = mapped_column(String(100))
-    enteredbydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    filetype = mapped_column(String(100))
-    filename = mapped_column(String(100))
-    stream = mapped_column(LargeBinary)
-    documenturl = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    repositoryupdatedate = Column(DateTime, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    documenttime = Column(DateTime)
+    notetext = Column(Text)
+    documenttypecode = Column(String(100))
+    documenttypecodestd = Column(String(100))
+    documenttypedesc = Column(String(100))
+    cliniciancode = Column(String(100))
+    cliniciancodestd = Column(String(100))
+    cliniciandesc = Column(String(100))
+    documentname = Column(String(100))
+    statuscode = Column(String(100))
+    statuscodestd = Column(String(100))
+    statusdesc = Column(String(100))
+    enteredbycode = Column(String(100))
+    enteredbycodestd = Column(String(100))
+    enteredbydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    filetype = Column(String(100))
+    filename = Column(String(100))
+    stream = Column(LargeBinary)
+    documenturl = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -1196,49 +1197,49 @@ class Document(Base):
 class LabOrder(Base):
     __tablename__ = "laborder"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(
+    creation_date = Column(
         DateTime, nullable=False, index=True, server_default=text("now()")
     )
-    placerid = mapped_column(String(100))
-    fillerid = mapped_column(String(100))
-    receivinglocationcode = mapped_column(String(100))
-    receivinglocationcodestd = mapped_column(String(100))
-    receivinglocationdesc = mapped_column(String(100))
-    orderedbycode = mapped_column(String(100))
-    orderedbycodestd = mapped_column(String(100))
-    orderedbydesc = mapped_column(String(100))
-    orderitemcode = mapped_column(String(100))
-    orderitemcodestd = mapped_column(String(100))
-    orderitemdesc = mapped_column(String(100))
-    prioritycode = mapped_column(String(100))
-    prioritycodestd = mapped_column(String(100))
-    prioritydesc = mapped_column(String(100))
-    status = mapped_column(String(100))
-    ordercategorycode = mapped_column(String(100))
-    ordercategorycodestd = mapped_column(String(100))
-    ordercategorydesc = mapped_column(String(100))
-    specimensource = mapped_column(String(50))
-    specimenreceivedtime = mapped_column(DateTime)
-    specimencollectedtime = mapped_column(DateTime)
-    duration = mapped_column(String(50))
-    patientclasscode = mapped_column(String(100))
-    patientclasscodestd = mapped_column(String(100))
-    patientclassdesc = mapped_column(String(100))
-    enteredon = mapped_column(DateTime)
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    enteringorganizationcode = mapped_column(String(100))
-    enteringorganizationcodestd = mapped_column(String(100))
-    enteringorganizationdesc = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime, index=True)
-    repository_update_date = mapped_column(DateTime, index=True)
+    placerid = Column(String(100))
+    fillerid = Column(String(100))
+    receivinglocationcode = Column(String(100))
+    receivinglocationcodestd = Column(String(100))
+    receivinglocationdesc = Column(String(100))
+    orderedbycode = Column(String(100))
+    orderedbycodestd = Column(String(100))
+    orderedbydesc = Column(String(100))
+    orderitemcode = Column(String(100))
+    orderitemcodestd = Column(String(100))
+    orderitemdesc = Column(String(100))
+    prioritycode = Column(String(100))
+    prioritycodestd = Column(String(100))
+    prioritydesc = Column(String(100))
+    status = Column(String(100))
+    ordercategorycode = Column(String(100))
+    ordercategorycodestd = Column(String(100))
+    ordercategorydesc = Column(String(100))
+    specimensource = Column(String(50))
+    specimenreceivedtime = Column(DateTime)
+    specimencollectedtime = Column(DateTime)
+    duration = Column(String(50))
+    patientclasscode = Column(String(100))
+    patientclasscodestd = Column(String(100))
+    patientclassdesc = Column(String(100))
+    enteredon = Column(DateTime)
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    enteringorganizationcode = Column(String(100))
+    enteringorganizationcodestd = Column(String(100))
+    enteringorganizationdesc = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime, index=True)
+    repository_update_date = Column(DateTime, index=True)
 
     # Synonyms
 
@@ -1277,7 +1278,7 @@ class LabOrder(Base):
 
     # Relationships
 
-    result_items:Mapped["ResultItem"] = relationship(
+    result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
         lazy=GLOBAL_LAZY,
         back_populates="order",
@@ -1288,29 +1289,29 @@ class LabOrder(Base):
 class ResultItem(Base):
     __tablename__ = "resultitem"
 
-    id = mapped_column(String, primary_key=True)
+    id = Column(String, primary_key=True)
 
-    order_id = mapped_column("orderid", String, ForeignKey("laborder.id"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    resulttype = mapped_column(String(2))
-    serviceidcode = mapped_column(String(100))
-    serviceidcodestd = mapped_column(String(100))
-    serviceiddesc = mapped_column(String(100))
-    subid = mapped_column(String(50))
-    resultvalue = mapped_column(String(20))
-    resultvalueunits = mapped_column(String(30))
-    referencerange = mapped_column(String(30))
-    interpretationcodes = mapped_column(String(50))
-    status = mapped_column(String(5))
-    observationtime = mapped_column(DateTime)
-    commenttext = mapped_column(String(1000))
-    referencecomment = mapped_column(String(1000))
-    prepost = mapped_column(String(4))
-    enteredon = mapped_column(DateTime)
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    order_id = Column("orderid", String, ForeignKey("laborder.id"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    resulttype = Column(String(2))
+    serviceidcode = Column(String(100))
+    serviceidcodestd = Column(String(100))
+    serviceiddesc = Column(String(100))
+    subid = Column(String(50))
+    resultvalue = Column(String(20))
+    resultvalueunits = Column(String(30))
+    referencerange = Column(String(30))
+    interpretationcodes = Column(String(50))
+    status = Column(String(5))
+    observationtime = Column(DateTime)
+    commenttext = Column(String(1000))
+    referencecomment = Column(String(1000))
+    prepost = Column(String(4))
+    enteredon = Column(DateTime)
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
     # Proxies
 
@@ -1333,7 +1334,7 @@ class ResultItem(Base):
     comments: Mapped[str] = synonym("commenttext")
     reference_comment: Mapped[str] = synonym("referencecomment")
 
-    order:Mapped["LabOrder"] = relationship(
+    order: Mapped[List["LabOrder"]] = relationship(
         "LabOrder", back_populates="result_items"
     )
 
@@ -1347,17 +1348,17 @@ class ResultItem(Base):
 class PVData(Base):
     __tablename__ = "pvdata"
 
-    id = mapped_column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    id = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
 
-    diagnosisdate = mapped_column(Date)
+    diagnosisdate = Column(Date)
 
-    bloodgroup = mapped_column(String(10))
+    bloodgroup = Column(String(10))
 
-    rrtstatus = mapped_column(String(100))
-    tpstatus = mapped_column(String(100))
+    rrtstatus = Column(String(100))
+    tpstatus = Column(String(100))
 
     # Proxies
 
@@ -1382,13 +1383,13 @@ class PVData(Base):
 class PVDelete(Base):
     __tablename__ = "pvdelete"
 
-    did = mapped_column(Integer, primary_key=True)
+    did = Column(Integer, primary_key=True)
 
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    observationtime = mapped_column(DateTime)
-    serviceidcode = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    observationtime = Column(DateTime)
+    serviceidcode = Column(String(100))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -1399,50 +1400,50 @@ class PVDelete(Base):
 class Treatment(Base):
     __tablename__ = "treatment"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    idx = mapped_column(Integer)
-    encounternumber = mapped_column(String(100))
-    encountertype = mapped_column(String(100))
-    fromtime = mapped_column(DateTime)
-    totime = mapped_column(DateTime)
-    admittingcliniciancode = mapped_column(String(100))
-    admittingcliniciancodestd = mapped_column(String(100))
-    admittingcliniciandesc = mapped_column(String(100))
-    admitreasoncode = mapped_column(String(100))
-    admitreasoncodestd = mapped_column(String(100))
-    admitreasondesc = mapped_column(String(100))
-    admissionsourcecode = mapped_column(String(100))
-    admissionsourcecodestd = mapped_column(String(100))
-    admissionsourcedesc = mapped_column(String(100))
-    dischargereasoncode = mapped_column(String(100))
-    dischargereasoncodestd = mapped_column(String(100))
-    dischargereasondesc = mapped_column(String(100))
-    dischargelocationcode = mapped_column(String(100))
-    dischargelocationcodestd = mapped_column(String(100))
-    dischargelocationdesc = mapped_column(String(100))
-    healthcarefacilitycode = mapped_column(String(100))
-    healthcarefacilitycodestd = mapped_column(String(100))
-    healthcarefacilitydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    visitdescription = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    hdp01 = mapped_column(String(255))
-    hdp02 = mapped_column(String(255))
-    hdp03 = mapped_column(String(255))
-    hdp04 = mapped_column(String(255))
-    qbl05 = mapped_column(String(255))
-    qbl06 = mapped_column(String(255))
-    qbl07 = mapped_column(String(255))
-    erf61 = mapped_column(String(255))
-    pat35 = mapped_column(String(255))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    idx = Column(Integer)
+    encounternumber = Column(String(100))
+    encountertype = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+    admittingcliniciancode = Column(String(100))
+    admittingcliniciancodestd = Column(String(100))
+    admittingcliniciandesc = Column(String(100))
+    admitreasoncode = Column(String(100))
+    admitreasoncodestd = Column(String(100))
+    admitreasondesc = Column(String(100))
+    admissionsourcecode = Column(String(100))
+    admissionsourcecodestd = Column(String(100))
+    admissionsourcedesc = Column(String(100))
+    dischargereasoncode = Column(String(100))
+    dischargereasoncodestd = Column(String(100))
+    dischargereasondesc = Column(String(100))
+    dischargelocationcode = Column(String(100))
+    dischargelocationcodestd = Column(String(100))
+    dischargelocationdesc = Column(String(100))
+    healthcarefacilitycode = Column(String(100))
+    healthcarefacilitycodestd = Column(String(100))
+    healthcarefacilitydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    visitdescription = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    hdp01 = Column(String(255))
+    hdp02 = Column(String(255))
+    hdp03 = Column(String(255))
+    hdp04 = Column(String(255))
+    qbl05 = Column(String(255))
+    qbl06 = Column(String(255))
+    qbl07 = Column(String(255))
+    erf61 = Column(String(255))
+    pat35 = Column(String(255))
+    update_date = Column(DateTime)
 
     # Synonyms
 
@@ -1495,86 +1496,86 @@ class Treatment(Base):
 class TransplantList(Base):
     __tablename__ = "transplantlist"
 
-    id = mapped_column(String, primary_key=True)
-    pid = mapped_column(String, ForeignKey("patientrecord.pid"))
+    id = Column(String, primary_key=True)
+    pid = Column(String, ForeignKey("patientrecord.pid"))
 
-    idx = mapped_column(Integer)
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    encounternumber = mapped_column(String(100))
-    encountertype = mapped_column(String(100))
-    fromtime = mapped_column(DateTime)
-    totime = mapped_column(DateTime)
-    admittingcliniciancode = mapped_column(String(100))
-    admittingcliniciancodestd = mapped_column(String(100))
-    admittingcliniciandesc = mapped_column(String(100))
-    admitreasoncode = mapped_column(String(100))
-    admitreasoncodestd = mapped_column(String(100))
-    admitreasondesc = mapped_column(String(100))
-    admissionsourcecode = mapped_column(String(100))
-    admissionsourcecodestd = mapped_column(String(100))
-    admissionsourcedesc = mapped_column(String(100))
-    dischargereasoncode = mapped_column(String(100))
-    dischargereasoncodestd = mapped_column(String(100))
-    dischargereasondesc = mapped_column(String(100))
-    dischargelocationcode = mapped_column(String(100))
-    dischargelocationcodestd = mapped_column(String(100))
-    dischargelocationdesc = mapped_column(String(100))
-    healthcarefacilitycode = mapped_column(String(100))
-    healthcarefacilitycodestd = mapped_column(String(100))
-    healthcarefacilitydesc = mapped_column(String(100))
-    enteredatcode = mapped_column(String(100))
-    enteredatcodestd = mapped_column(String(100))
-    enteredatdesc = mapped_column(String(100))
-    visitdescription = mapped_column(String(100))
-    updatedon = mapped_column(DateTime)
-    actioncode = mapped_column(String(3))
-    externalid = mapped_column(String(100))
-    update_date = mapped_column(DateTime)
+    idx = Column(Integer)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    encounternumber = Column(String(100))
+    encountertype = Column(String(100))
+    fromtime = Column(DateTime)
+    totime = Column(DateTime)
+    admittingcliniciancode = Column(String(100))
+    admittingcliniciancodestd = Column(String(100))
+    admittingcliniciandesc = Column(String(100))
+    admitreasoncode = Column(String(100))
+    admitreasoncodestd = Column(String(100))
+    admitreasondesc = Column(String(100))
+    admissionsourcecode = Column(String(100))
+    admissionsourcecodestd = Column(String(100))
+    admissionsourcedesc = Column(String(100))
+    dischargereasoncode = Column(String(100))
+    dischargereasoncodestd = Column(String(100))
+    dischargereasondesc = Column(String(100))
+    dischargelocationcode = Column(String(100))
+    dischargelocationcodestd = Column(String(100))
+    dischargelocationdesc = Column(String(100))
+    healthcarefacilitycode = Column(String(100))
+    healthcarefacilitycodestd = Column(String(100))
+    healthcarefacilitydesc = Column(String(100))
+    enteredatcode = Column(String(100))
+    enteredatcodestd = Column(String(100))
+    enteredatdesc = Column(String(100))
+    visitdescription = Column(String(100))
+    updatedon = Column(DateTime)
+    actioncode = Column(String(3))
+    externalid = Column(String(100))
+    update_date = Column(DateTime)
 
 
 class Code(Base):
     __tablename__ = "code_list"
 
-    coding_standard = mapped_column(String(256), primary_key=True)
-    code = mapped_column(String(256), primary_key=True)
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    description = mapped_column(String(256))
-    object_type = mapped_column(String(256))
-    update_date = mapped_column(DateTime)
-    units = mapped_column(String(256))
-    pkb_reference_range = mapped_column(String(10))
-    pkb_comment = mapped_column(String(365))
+    coding_standard = Column(String(256), primary_key=True)
+    code = Column(String(256), primary_key=True)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    description = Column(String(256))
+    object_type = Column(String(256))
+    update_date = Column(DateTime)
+    units = Column(String(256))
+    pkb_reference_range = Column(String(10))
+    pkb_comment = Column(String(365))
 
 
 class CodeExclusion(Base):
     __tablename__ = "code_exclusion"
 
-    coding_standard = mapped_column(String, primary_key=True)
-    code = mapped_column(String, primary_key=True)
-    system = mapped_column(String, primary_key=True)
+    coding_standard = Column(String, primary_key=True)
+    code = Column(String, primary_key=True)
+    system = Column(String, primary_key=True)
 
 
 class CodeMap(Base):
     __tablename__ = "code_map"
 
-    source_coding_standard = mapped_column(String(256), primary_key=True)
-    source_code = mapped_column(String(256), primary_key=True)
-    destination_coding_standard = mapped_column(String(256), primary_key=True)
-    destination_code = mapped_column(String(256), primary_key=True)
+    source_coding_standard = Column(String(256), primary_key=True)
+    source_code = Column(String(256), primary_key=True)
+    destination_coding_standard = Column(String(256), primary_key=True)
+    destination_code = Column(String(256), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
 
 
 class Facility(Base):
     __tablename__ = "facility"
 
-    code = mapped_column("code", String, primary_key=True)
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    pkb_out = mapped_column(Boolean, server_default=text("false"))
-    pkb_in = mapped_column(Boolean, server_default=text("false"))
-    pkb_msg_exclusions = mapped_column(ARRAY(Text()))
-    update_date = mapped_column(DateTime)
+    code = Column("code", String, primary_key=True)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    pkb_out = Column(Boolean, server_default=text("false"))
+    pkb_in = Column(Boolean, server_default=text("false"))
+    pkb_msg_exclusions = Column(ARRAY(Text()))
+    update_date = Column(DateTime)
 
     # Proxies
 
@@ -1591,63 +1592,63 @@ class Facility(Base):
 class RRCodes(Base):
     __tablename__ = "rr_codes"
 
-    id = mapped_column(String, primary_key=True)
-    rr_code = mapped_column("rr_code", String, primary_key=True)
+    id = Column(String, primary_key=True)
+    rr_code = Column("rr_code", String, primary_key=True)
 
-    description_1 = mapped_column(String(255))
-    description_2 = mapped_column(String(70))
-    description_3 = mapped_column(String(60))
+    description_1 = Column(String(255))
+    description_2 = Column(String(70))
+    description_3 = Column(String(60))
 
-    old_value = mapped_column(String(10))
-    old_value_2 = mapped_column(String(10))
-    new_value = mapped_column(String(10))
+    old_value = Column(String(10))
+    old_value_2 = Column(String(10))
+    new_value = Column(String(10))
 
 
 class Locations(Base):
     __tablename__ = "locations"
 
-    centre_code = mapped_column(String(10), primary_key=True)
-    centre_name = mapped_column(String(255))
-    country_code = mapped_column(String(6))
-    region_code = mapped_column(String(10))
-    paed_unit = mapped_column(Integer)
+    centre_code = Column(String(10), primary_key=True)
+    centre_name = Column(String(255))
+    country_code = Column(String(6))
+    region_code = Column(String(10))
+    paed_unit = Column(Integer)
 
 
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key = mapped_column(String(5), primary_key=True)
+    upload_key = Column(String(5), primary_key=True)
 
-    table_name = mapped_column("TABLE_NAME", String(30), nullable=False)
-    feild_name = mapped_column(String(30), nullable=False)
-    code_id = mapped_column(String(10))
-    mandatory = mapped_column(Numeric(1, 0))
+    table_name = Column("TABLE_NAME", String(30), nullable=False)
+    feild_name = Column(String(30), nullable=False)
+    code_id = Column(String(10))
+    mandatory = Column(Numeric(1, 0))
 
-    type = mapped_column("TYPE", String(1))
+    type = Column("TYPE", String(1))
 
-    alt_constraint = mapped_column(String(30))
-    alt_desc = mapped_column(String(30))
-    extra_val = mapped_column(String(1))
-    error_type = mapped_column(Integer)
-    paed_mand = mapped_column(Numeric(1, 0))
-    ckd5_mand_numeric = mapped_column("ckd5_mand", Numeric(1, 0))
-    dependant_field = mapped_column(String(30))
-    alt_validation = mapped_column(String(30))
+    alt_constraint = Column(String(30))
+    alt_desc = Column(String(30))
+    extra_val = Column(String(1))
+    error_type = Column(Integer)
+    paed_mand = Column(Numeric(1, 0))
+    ckd5_mand_numeric = Column("ckd5_mand", Numeric(1, 0))
+    dependant_field = Column(String(30))
+    alt_validation = Column(String(30))
 
-    file_prefix = mapped_column(String(20))
+    file_prefix = Column(String(20))
 
-    load_min = mapped_column(Numeric(38, 4))
-    load_max = mapped_column(Numeric(38, 4))
-    remove_min = mapped_column(Numeric(38, 4))
-    remove_max = mapped_column(Numeric(38, 4))
-    in_month = mapped_column(Numeric(1, 0))
-    aki_mand = mapped_column(Numeric(1, 0))
-    rrt_mand = mapped_column(Numeric(1, 0))
-    cons_mand = mapped_column(Numeric(1, 0))
-    ckd4_mand = mapped_column(Numeric(1, 0))
-    valid_before_dob = mapped_column(Numeric(1, 0))
-    valid_after_dod = mapped_column(Numeric(1, 0))
-    in_quarter = mapped_column(Numeric(1, 0))
+    load_min = Column(Numeric(38, 4))
+    load_max = Column(Numeric(38, 4))
+    remove_min = Column(Numeric(38, 4))
+    remove_max = Column(Numeric(38, 4))
+    in_month = Column(Numeric(1, 0))
+    aki_mand = Column(Numeric(1, 0))
+    rrt_mand = Column(Numeric(1, 0))
+    cons_mand = Column(Numeric(1, 0))
+    ckd4_mand = Column(Numeric(1, 0))
+    valid_before_dob = Column(Numeric(1, 0))
+    valid_after_dod = Column(Numeric(1, 0))
+    in_quarter = Column(Numeric(1, 0))
 
     # Synonyms
 
@@ -1657,27 +1658,27 @@ class RRDataDefinition(Base):
 class ModalityCodes(Base):
     __tablename__ = "modality_codes"
 
-    registry_code = mapped_column(String(8), primary_key=True)
+    registry_code = Column(String(8), primary_key=True)
 
-    registry_code_desc = mapped_column(String(100))
-    registry_code_type = mapped_column(String(3), nullable=False)
-    acute = mapped_column(BIT(1), nullable=False)
-    transfer_in = mapped_column(BIT(1), nullable=False)
-    ckd = mapped_column(BIT(1), nullable=False)
-    cons = mapped_column(BIT(1), nullable=False)
-    rrt = mapped_column(BIT(1), nullable=False)
-    equiv_modality = mapped_column(String(8))
-    end_of_care = mapped_column(BIT(1), nullable=False)
-    is_imprecise = mapped_column(BIT(1), nullable=False)
-    nhsbt_transplant_type = mapped_column(String(4))
-    transfer_out = mapped_column(BIT(1))
+    registry_code_desc = Column(String(100))
+    registry_code_type = Column(String(3), nullable=False)
+    acute = Column(BIT(1), nullable=False)
+    transfer_in = Column(BIT(1), nullable=False)
+    ckd = Column(BIT(1), nullable=False)
+    cons = Column(BIT(1), nullable=False)
+    rrt = Column(BIT(1), nullable=False)
+    equiv_modality = Column(String(8))
+    end_of_care = Column(BIT(1), nullable=False)
+    is_imprecise = Column(BIT(1), nullable=False)
+    nhsbt_transplant_type = Column(String(4))
+    transfer_out = Column(BIT(1))
 
 
 class SatelliteMap(Base):
     __tablename__ = "satellite_map"
 
-    satellite_code = mapped_column(String(10), primary_key=True)
-    main_unit_code = mapped_column(String(10), primary_key=True)
+    satellite_code = Column(String(10), primary_key=True)
+    main_unit_code = Column(String(10), primary_key=True)
 
-    creation_date = mapped_column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = mapped_column(DateTime)
+    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column(DateTime)
