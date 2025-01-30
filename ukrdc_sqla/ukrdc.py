@@ -24,16 +24,15 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    if sqlalchemy.__version__.startswith("2."):
-        from sqlalchemy.orm import DynamicMapped
-        DynamicRel = DynamicMapped
-    else:
-        from sqlalchemy.orm import Query
-        DynamicRel = Query
+
+if sqlalchemy.__version__.startswith("2."):
+    from sqlalchemy.orm import DynamicMapped
+    DynamicRel = DynamicMapped
 else:
-    DynamicRel = None
+    from sqlalchemy.orm import Query
+    DynamicRel = Query
+
+
 
 
 metadata = MetaData()
