@@ -25,14 +25,10 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
 
-if sqlalchemy.__version__.startswith("2."):
-    from sqlalchemy.orm import DynamicMapped
-    DynamicRel = DynamicMapped
+if sqlalchemy.__version__.startswith("2"):
+    from sqlalchemy.orm import DynamicMapped as DynamicRel
 else:
-    from sqlalchemy.orm import Query
-    DynamicRel = Query
-
-
+    from sqlalchemy.orm import Mapped as DynamicRel
 
 
 metadata = MetaData()
@@ -133,7 +129,9 @@ class PatientRecord(Base):
     transplants: DynamicRel["Transplant"] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    opt_outs: DynamicRel["OptOut"] = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    opt_outs: DynamicRel["OptOut"] = relationship(
+        "OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     clinical_relationships: Mapped[List["ClinicalRelationship"]] = relationship(
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
@@ -141,7 +139,9 @@ class PatientRecord(Base):
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
-    pvdelete: DynamicRel["Survey"] = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    pvdelete: DynamicRel["Survey"] = relationship(
+        "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
 
     # Synonyms
     id: Mapped[str] = synonym("pid")
@@ -341,8 +341,10 @@ class FamilyDoctor(Base):
 
     # Relationships
 
-    gp_info:Mapped["GPInfo"] = relationship("GPInfo", foreign_keys=[gpid], uselist=False)
-    gp_practice_info:Mapped["GPInfo"] = relationship(
+    gp_info: Mapped["GPInfo"] = relationship(
+        "GPInfo", foreign_keys=[gpid], uselist=False
+    )
+    gp_practice_info: Mapped["GPInfo"] = relationship(
         "GPInfo", foreign_keys=[gppracticeid], uselist=False
     )
 
@@ -1155,9 +1157,11 @@ class Survey(Base):
 
     # Relationships
 
-    questions:Mapped[List["Question"]] = relationship("Question", cascade="all, delete-orphan")
-    scores:Mapped[List["Score"]] = relationship("Score", cascade="all, delete-orphan")
-    levels:Mapped[List["Level"]] = relationship("Level", cascade="all, delete-orphan")
+    questions: Mapped[List["Question"]] = relationship(
+        "Question", cascade="all, delete-orphan"
+    )
+    scores: Mapped[List["Score"]] = relationship("Score", cascade="all, delete-orphan")
+    levels: Mapped[List["Level"]] = relationship("Level", cascade="all, delete-orphan")
 
     def __str__(self):
         return (
@@ -1439,12 +1443,12 @@ class PVData(Base):
     tpstatus_desc = association_proxy("tpstatus_info", "description")
 
     # Relationships
-    rrtstatus_info:Mapped[List["Code"]]= relationship(
+    rrtstatus_info: Mapped[List["Code"]] = relationship(
         "Code",
         primaryjoin="and_(remote(Code.coding_standard)=='PV_RRTSTATUS', foreign(PVData.rrtstatus)==remote(Code.code))",
     )
 
-    tpstatus_info:Mapped[List["Code"]] = relationship(
+    tpstatus_info: Mapped[List["Code"]] = relationship(
         "Code",
         primaryjoin="and_(remote(Code.coding_standard)=='PV_TPSTATUS', foreign(PVData.tpstatus)==remote(Code.code))",
     )
@@ -1559,12 +1563,12 @@ class Treatment(Base):
 
     # Relationships
 
-    admit_reason_code_item:Mapped[List["Code"]] = relationship(
+    admit_reason_code_item: Mapped[List["Code"]] = relationship(
         "Code",
         primaryjoin="and_(foreign(Treatment.admit_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.admit_reason_code)==remote(Code.code))",
     )
 
-    discharge_reason_code_item:Mapped[List["Code"]] = relationship(
+    discharge_reason_code_item: Mapped[List["Code"]] = relationship(
         "Code",
         primaryjoin="and_(foreign(Treatment.discharge_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.discharge_reason_code)==remote(Code.code))",
     )
@@ -1668,7 +1672,7 @@ class Facility(Base):
 
     # Relationships
 
-    code_info:Mapped[List["Code"]] = relationship(
+    code_info: Mapped[List["Code"]] = relationship(
         "Code",
         primaryjoin="and_(remote(Code.coding_standard)=='RR1+', foreign(Facility.code)==remote(Code.code))",
     )
