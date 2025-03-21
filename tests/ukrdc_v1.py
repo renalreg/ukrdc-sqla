@@ -255,9 +255,7 @@ class FamilyDoctor(Base):
     commenttext = Column(String)
 
     def __str__(self):
-        return (
-            f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
-        )
+        return f"{self.__class__.__name__}({self.id}) <{self.gpname} {self.gpid}>"
 
 
 class GPInfo(Base):
@@ -478,11 +476,7 @@ class Name(Base):
     suffix = Column(String)
 
     def __str__(self):
-        return (
-            f"{self.__class__.__name__}({self.pid}) <"
-            f"{self.given} {self.family}"
-            f">"
-        )
+        return f"{self.__class__.__name__}({self.pid}) <{self.given} {self.family}>"
 
 
 class PatientNumber(Base):
