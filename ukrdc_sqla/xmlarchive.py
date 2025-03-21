@@ -1,3 +1,10 @@
+"""
+Not to be confused with the main ukrdc database models. These models are for
+querying the removed_xml_archive on the ukrdc cluster. These are pretty similar
+to the v5 database models (by design because they are a stopgap until we have
+the capacity to store it)
+"""
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped, synonym
 from sqlalchemy import (
