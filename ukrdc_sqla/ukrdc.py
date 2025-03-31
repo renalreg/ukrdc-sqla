@@ -243,7 +243,9 @@ class Patient(Base):
         types = {"NHS", "CHI", "HSC"}
         for number in self.numbers or []:
             if number.numbertype == "NI" and number.organization in types:
-                return (number.patientid, number.organization) if org else number.patientid
+                return (
+                    (number.patientid, number.organization) if org else number.patientid
+                )
         return None
 
     @property
