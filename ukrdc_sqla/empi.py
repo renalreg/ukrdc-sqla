@@ -92,6 +92,11 @@ class LinkRecord(Base):
     lastupdated = Column("lastupdated", DateTime, nullable=False)
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
+    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    master_record: Mapped["MasterRecord"] = relationship(
+        "MasterRecord", back_populates="links"
+    )
+
     def __str__(self):
         return (
             f"LinkRecord({self.id}) <"
@@ -203,6 +208,11 @@ class WorkItem(Base):
     update_description: Mapped[str] = synonym("updatedesc")
 
     attributes = Column("attributes", String)
+
+    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    master_record: Mapped["MasterRecord"] = relationship(
+        "MasterRecord", back_populates="links"
+    )
 
     def __str__(self):
         return f"WorkItem({self.id}) <{self.person_id}, {self.master_id}>"
