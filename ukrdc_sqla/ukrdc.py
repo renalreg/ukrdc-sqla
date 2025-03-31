@@ -1,7 +1,7 @@
 """Models which relate to the main UKRDC database"""
 
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Union, Tuple
 
 from sqlalchemy import (
     Boolean,
@@ -235,12 +235,17 @@ class Patient(Base):
         return None
 
     @property
-    def first_ni_number(self) -> Optional[str]:
-        """Find the first nhs,chi or hsc number for a patient."""
-        types = "NHS", "CHI", "HSC"
+    def first_ni_number(
+        self, org: bool = False
+    ) -> Optional[Union[str, Tuple[str, str]]]:
+        """Find the first NHS, CHI, or HSC number for a patient.
+        Returns a string by default, or a tuple if org=True."""
+        types = {"NHS", "CHI", "HSC"}
         for number in self.numbers or []:
             if number.numbertype == "NI" and number.organization in types:
-                return number.patientid
+                return (
+                    (number.patientid, number.organization) if org else number.patientid
+                )
         return None
 
     @property
