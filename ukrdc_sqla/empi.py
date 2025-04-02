@@ -92,9 +92,9 @@ class LinkRecord(Base):
     lastupdated = Column("lastupdated", DateTime, nullable=False)
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
-    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    person: Mapped["Person"] = relationship("Person", back_populates="link_records")
     master_record: Mapped["MasterRecord"] = relationship(
-        "MasterRecord", back_populates="links"
+        "MasterRecord", back_populates="link_records"
     )
 
     def __str__(self):
@@ -209,9 +209,9 @@ class WorkItem(Base):
 
     attributes = Column("attributes", String)
 
-    person: Mapped["Person"] = relationship("Person", back_populates="links")
+    person: Mapped["Person"] = relationship("Person", back_populates="work_items")
     master_record: Mapped["MasterRecord"] = relationship(
-        "MasterRecord", back_populates="links"
+        "MasterRecord", back_populates="work_items"
     )
 
     def __str__(self):
