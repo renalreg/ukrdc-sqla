@@ -49,10 +49,10 @@ class MasterRecord(Base):
     creation_date: Mapped[datetime.datetime] = synonym("creationdate")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
-        "LinkRecord", backref="master_record", cascade="all, delete-orphan"
+        "LinkRecord", back_populates="master_record", cascade="all, delete-orphan"
     )
     work_items: Mapped[List["WorkItem"]] = relationship(
-        "WorkItem", backref="master_record", cascade="all, delete-orphan"
+        "WorkItem", back_populates="master_record", cascade="all, delete-orphan"
     )
 
     def __str__(self):
@@ -160,10 +160,10 @@ class Person(Base):
     skip_duplicate_check: Mapped[bool] = synonym("skipduplicatecheck")
 
     link_records: Mapped[List["LinkRecord"]] = relationship(
-        "LinkRecord", backref="person", cascade="all, delete-orphan"
+        "LinkRecord", back_populates="person", cascade="all, delete-orphan"
     )
     work_items: Mapped[List["WorkItem"]] = relationship(
-        "WorkItem", backref="person", cascade="all, delete-orphan"
+        "WorkItem", back_populates="person", cascade="all, delete-orphan"
     )
     xref_entries: Mapped[List["PidXRef"]] = relationship(
         "PidXRef", back_populates="person", cascade="all, delete-orphan"
