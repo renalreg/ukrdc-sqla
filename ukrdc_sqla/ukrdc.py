@@ -742,9 +742,9 @@ class VascularAccess(Base):
     actioncode = Column(String(3))
     externalid = Column(String(100))
 
-    acc19 = Column(String(255))
-    acc20 = Column(String(255))
-    acc21 = Column(String(255))
+    acc19 = Column(DateTime)
+    acc20 = Column(DateTime)
+    acc21 = Column(DateTime)
     acc22 = Column(String(255))
     acc30 = Column(String(255))
     acc40 = Column(String(255))
