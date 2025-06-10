@@ -3,8 +3,7 @@
 from typing import Any, List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship, declarative_base
 
 metadata = MetaData()
 Base: Any = declarative_base(metadata=metadata)
