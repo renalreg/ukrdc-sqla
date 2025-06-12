@@ -1,6 +1,6 @@
 """Models which relate to the errors database"""
 
-from typing import Any, List
+from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String
 from sqlalchemy.orm import Mapped, relationship, declarative_base
