@@ -1337,12 +1337,6 @@ class ResultItem(Base):
         "LabOrder", back_populates="result_items"
     )
 
-    # Relationships
-
-    order: Mapped[List[LabOrder]] = relationship(
-        "LabOrder", back_populates="result_items"
-    )
-
 
 class PVData(Base):
     __tablename__ = "pvdata"
