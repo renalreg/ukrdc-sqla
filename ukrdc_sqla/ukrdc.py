@@ -1333,7 +1333,7 @@ class ResultItem(Base):
     comments: Mapped[str] = synonym("commenttext")
     reference_comment: Mapped[str] = synonym("referencecomment")
 
-    order: Mapped[List["LabOrder"]] = relationship(
+    order: Mapped["LabOrder"] = relationship(
         "LabOrder", back_populates="result_items"
     )
 
