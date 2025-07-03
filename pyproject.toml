@@ -3,10 +3,10 @@ authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = "SQLAlchemy models for the UKRDC"
 name = "ukrdc-sqla"
 readme = "README.md"
-version = "2.6.3"
+version = "2.6.4"
 
 [tool.poetry.dependencies]
-SQLAlchemy = ">=1.4.25,<3.0.0"
+SQLAlchemy = {version = ">=1.4.25,<3.0.0", extras = ["mypy"]}
 python = ">=3.8.0,<4.0"
 
 [tool.poetry.group.dev.dependencies]
