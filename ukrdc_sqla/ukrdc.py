@@ -1310,7 +1310,7 @@ class ResultItem(Base):
     serviceidcodestd = Column(String(100))
     serviceiddesc = Column(String(100))
     subid = Column(String(50))
-    resultvalue = Column(String(20))
+    resultvalue = Column(String(30))
     resultvalueunits = Column(String(30))
     referencerange = Column(String(30))
     interpretationcodes = Column(String(50))
