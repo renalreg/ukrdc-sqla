@@ -5,8 +5,7 @@ to the v5 database models (by design because they are a stopgap until we have
 the capacity to store it)
 """
 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Mapped, synonym
+from sqlalchemy.orm import relationship, Mapped, synonym, declarative_base
 from sqlalchemy import (
     MetaData,
     Column,
