@@ -78,7 +78,7 @@ class Treatment(Base):
     # anyway.
     idx = Column(Integer)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -102,7 +102,7 @@ class Assessment(Base):
 
     # keys
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -126,7 +126,7 @@ class DialysisPrescription(Base):
 
     # keys
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -148,7 +148,7 @@ class Diagnosis(Base):
     __tablename__ = "diagnosis"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -173,7 +173,7 @@ class CauseOfDeath(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -204,7 +204,7 @@ class RenalDiagnosis(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
