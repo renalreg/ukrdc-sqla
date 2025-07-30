@@ -66,10 +66,8 @@ class Latest(Base):
     message: Mapped[List["Message"]] = relationship("Message", back_populates="latests")
 
 
-
 Index("messages_ni_idx", Message.ni)
 Index("messages_msg_status_idx", Message.msg_status)
 Index("messages_received_idx", Message.received)
 Index("messages_facility_idx", Message.facility)
 Index("messages_filename_idx", Message.filename)
-
