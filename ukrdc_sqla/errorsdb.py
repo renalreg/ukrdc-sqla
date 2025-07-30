@@ -33,7 +33,11 @@ class Message(Base):
     msg_status = Column("msg_status", String)
     connector_index = Column(Integer)
     connector_name = Column(String)
-    resolved_by = Column(Integer)
+    resolved_by = Column(
+        String,
+        ForeignKey("channels.id"),
+        default="4b6135e3-a401-4d61-a5bf-0c09f4dbf9f2",
+    )
 
     # Metadata
     ni = Column("ni", String)
