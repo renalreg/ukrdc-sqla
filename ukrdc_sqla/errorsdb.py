@@ -13,10 +13,13 @@ class Channel(Base):
     __tablename__ = "channels"
 
     id = Column(String, primary_key=True)
-
     name = Column("name", String)
-    store_first_message = Column("store_first_message", Boolean)
-    store_last_message = Column("store_last_message", Boolean)
+    direction = Column(String)
+    enabled = Column(Boolean, default=False)
+    store_first_message = Column(Boolean, default=False)
+    store_last_message = Column(Boolean, default=False)
+
+    messages: Mapped[List["Message"]] = relationship("Message", backref="channel")
 
 
 class Message(Base):
@@ -28,6 +31,11 @@ class Message(Base):
     channel_id = Column("channel_id", String, ForeignKey("channels.id"))
     received = Column("received", DateTime)
     msg_status = Column("msg_status", String)
+    connector_index = Column(Integer)
+    connector_name = Column(String)
+    resolved_by = Column(Integer)
+
+    # Metadata
     ni = Column("ni", String)
     filename = Column("filename", String)
     facility = Column("facility", String)
@@ -50,4 +58,4 @@ class Latest(Base):
     facility = Column("facility", String, primary_key=True)
 
     message_id = Column("message_id", Integer, ForeignKey("messages.id"))
-    message: Mapped[Message] = relationship("Message", back_populates="latests")
+    message: Mapped[List["Message"]] = relationship("Message", back_populates="latests")
