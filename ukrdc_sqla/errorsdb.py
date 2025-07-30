@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String
 from sqlalchemy.orm import Mapped, relationship, declarative_base
+from sqlalchemy.sql.schema import Index
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -63,3 +64,12 @@ class Latest(Base):
 
     message_id = Column("message_id", Integer, ForeignKey("messages.id"))
     message: Mapped[List["Message"]] = relationship("Message", back_populates="latests")
+
+
+
+Index("messages_ni_idx", Message.ni)
+Index("messages_msg_status_idx", Message.msg_status)
+Index("messages_received_idx", Message.received)
+Index("messages_facility_idx", Message.facility)
+Index("messages_filename_idx", Message.filename)
+
