@@ -20,6 +20,13 @@ class Channel(Base):
     store_first_message = Column(Boolean, default=False)
     store_last_message = Column(Boolean, default=False)
 
+    # Channel that can mark errors in this channel as RESOLVED
+    resolved_by = Column(
+        String,
+        ForeignKey("channels.id"),
+        default="4b6135e3-a401-4d61-a5bf-0c09f4dbf9f2",
+    )
+
     messages: Mapped[List["Message"]] = relationship("Message", backref="channel")
 
 
@@ -34,11 +41,7 @@ class Message(Base):
     msg_status = Column("msg_status", String)
     connector_index = Column(Integer)
     connector_name = Column(String)
-    resolved_by = Column(
-        String,
-        ForeignKey("channels.id"),
-        default="4b6135e3-a401-4d61-a5bf-0c09f4dbf9f2",
-    )
+    resolved_by = Column(Integer)
 
     # Metadata
     ni = Column("ni", String)
