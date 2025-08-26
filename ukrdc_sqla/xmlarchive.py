@@ -231,3 +231,18 @@ class RenalDiagnosis(Base):
     updatedon = Column(DateTime)
 
     externalid = Column(String(100))
+
+
+class PatientNumberSubstitute(Base):
+    """Create a lookup for instances where the patient number cannot be
+    shortened to the character limit of the ukrdc. Note that we don't link to
+    patient_demog because this is just and integer lookup.
+    """
+
+    __tablename__ = "patientnumberalias"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # original ukrdc patient number
+    ukrdc_patientid = Column(String(50))
+    ukrdc_organisation = Column(String(50))
