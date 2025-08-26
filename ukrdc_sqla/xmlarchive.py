@@ -233,7 +233,7 @@ class RenalDiagnosis(Base):
     externalid = Column(String(100))
 
 
-class PatientNumberAlias(Base):
+class PatientNumberSubstitute(Base):
     """Create a lookup for instances where the patient number cannot be
     shortened to the character limit of the ukrdc. Note that we don't link to
     patient_demog because this is just and integer lookup.
