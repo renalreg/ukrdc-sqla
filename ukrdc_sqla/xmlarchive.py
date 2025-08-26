@@ -231,3 +231,18 @@ class RenalDiagnosis(Base):
     updatedon = Column(DateTime)
 
     externalid = Column(String(100))
+
+class PatientNumberAlias(Base):
+    """Record instances of where the patient number cannot be shortened to the
+    point of allowing it to be loaded.
+    """
+
+    __tablename__ = "patientnumberalias"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
+
+    # original ukrdc patient number
+    ukrdc_patientid = Column(String(50))
+    ukrdc_organisation = Column(String(50))
+    
