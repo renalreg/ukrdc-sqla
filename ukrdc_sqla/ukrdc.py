@@ -1290,7 +1290,7 @@ class ResultItem(Base):
 
     id = Column(String, primary_key=True)
 
-    order_id = Column("orderid", String, ForeignKey("laborder.id"))
+    orderid = Column("orderid", String, ForeignKey("laborder.id"))
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     resulttype = Column(String(2))
     serviceidcode = Column(String(100))
@@ -1317,7 +1317,7 @@ class ResultItem(Base):
     pid = association_proxy("order", "pid")
 
     # Synonyms
-
+    order_id: Mapped[str] = synonym("orderid")
     result_type: Mapped[str] = synonym("resulttype")
     entered_on: Mapped[datetime.datetime] = synonym("enteredon")
     pre_post: Mapped[str] = synonym("prepost")
