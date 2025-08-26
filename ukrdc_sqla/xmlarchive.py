@@ -235,13 +235,13 @@ class RenalDiagnosis(Base):
 
 class PatientNumberAlias(Base):
     """Create a lookup for instances where the patient number cannot be
-    shortened to the character limit of the ukrdc
+    shortened to the character limit of the ukrdc. Note that we don't link to
+    patient_demog because this is just and integer lookup.
     """
 
     __tablename__ = "patientnumberalias"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     # original ukrdc patient number
     ukrdc_patientid = Column(String(50))
