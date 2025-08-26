@@ -232,9 +232,10 @@ class RenalDiagnosis(Base):
 
     externalid = Column(String(100))
 
+
 class PatientNumberAlias(Base):
-    """Record instances of where the patient number cannot be shortened to the
-    point of allowing it to be loaded.
+    """Create a lookup for instances where the patient number cannot be
+    shortened to the character limit of the ukrdc
     """
 
     __tablename__ = "patientnumberalias"
@@ -245,4 +246,3 @@ class PatientNumberAlias(Base):
     # original ukrdc patient number
     ukrdc_patientid = Column(String(50))
     ukrdc_organisation = Column(String(50))
-    
