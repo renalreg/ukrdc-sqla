@@ -239,7 +239,7 @@ class PatientNumberSubstitute(Base):
     patient_demog because this is just and integer lookup.
     """
 
-    __tablename__ = "patientnumberalias"
+    __tablename__ = "patientnumbersubstitute"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
