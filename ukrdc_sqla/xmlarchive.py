@@ -5,8 +5,7 @@ to the v5 database models (by design because they are a stopgap until we have
 the capacity to store it)
 """
 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Mapped, synonym
+from sqlalchemy.orm import relationship, Mapped, synonym, declarative_base
 from sqlalchemy import (
     MetaData,
     Column,
@@ -79,7 +78,7 @@ class Treatment(Base):
     # anyway.
     idx = Column(Integer)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -103,7 +102,7 @@ class Assessment(Base):
 
     # keys
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -127,7 +126,7 @@ class DialysisPrescription(Base):
 
     # keys
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -149,7 +148,7 @@ class Diagnosis(Base):
     __tablename__ = "diagnosis"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -174,7 +173,7 @@ class CauseOfDeath(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -205,7 +204,7 @@ class RenalDiagnosis(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    patientid = Column(Integer, ForeignKey("patient_demog.id"))
+    patientid = Column(Integer, ForeignKey("patient_demog.id", ondelete="CASCADE"))
 
     creation_date = Column(DateTime, nullable=False, server_default=func.now())
     update_date = Column(DateTime, onupdate=func.now())
@@ -232,3 +231,18 @@ class RenalDiagnosis(Base):
     updatedon = Column(DateTime)
 
     externalid = Column(String(100))
+
+
+class PatientNumberSubstitute(Base):
+    """Create a lookup for instances where the patient number cannot be
+    shortened to the character limit of the ukrdc. Note that we don't link to
+    patient_demog because this is just and integer lookup.
+    """
+
+    __tablename__ = "patientnumbersubstitute"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # original ukrdc patient number
+    ukrdc_patientid = Column(String(50))
+    ukrdc_organisation = Column(String(50))
