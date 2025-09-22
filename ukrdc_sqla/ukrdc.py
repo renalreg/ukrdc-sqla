@@ -1673,3 +1673,10 @@ class SatelliteMap(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     update_date = Column(DateTime)
+
+
+class ValueExclusion(Base):
+    __tablename__ = "value_exclusion"
+
+    system = Column(String(20), primary_key=True)
+    norm_value = Column(String(100), primary_key=True)
