@@ -1566,6 +1566,9 @@ class Facility(Base):
     pkb_out = Column(Boolean, server_default=text("false"))
     pkb_in = Column(Boolean, server_default=text("false"))
     pkb_msg_exclusions = Column(ARRAY(Text()))
+    ukrdc_out_pkb = Column(Boolean, server_default=text("false"))
+    pv_out_pkb = Column(Boolean, server_default=text("false"))
+    
     update_date = Column(DateTime)
 
     # Proxies
