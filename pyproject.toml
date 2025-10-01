@@ -4,7 +4,7 @@ description = "SQLAlchemy models for the UKRDC"
 name = "ukrdc-sqla"
 readme = "README.md"
 
-version = "2.9.0"
+version = "2.9.1"
 
 [tool.poetry.dependencies]
 SQLAlchemy = ">=1.4.25,<3.0.0"
