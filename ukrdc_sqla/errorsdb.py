@@ -66,7 +66,7 @@ class Latest(Base):
     facility = Column("facility", String, primary_key=True)
 
     message_id = Column("message_id", Integer, ForeignKey("messages.id"))
-    message: Mapped[List["Message"]] = relationship("Message", back_populates="latests")
+    message: Mapped["Message"] = relationship("Message", back_populates="latests")
 
 
 Index("messages_ni_idx", Message.ni)
