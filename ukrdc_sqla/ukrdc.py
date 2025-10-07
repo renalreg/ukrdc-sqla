@@ -1558,28 +1558,52 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
+class FacilityTypeEnum(str, Enum):
+    ADULT_RENAL_CENTRE = "Adult Renal Centre"
+    PAEDIATRIC_RENAL_CENTRE = "Paediatric Renal Centre"
+    MULTIPLE_CENTRE = "Multiple Centre"
+    OTHER = "Other"
+
 class Facility(Base):
-    __tablename__ = "facility"
+    __tablename__ = "facility_new"
 
-    code = Column("code", String, primary_key=True)
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    pkb_out = Column(Boolean, server_default=text("false"))
-    pkb_in = Column(Boolean, server_default=text("false"))
-    pkb_msg_exclusions = Column(ARRAY(Text()))
-    ukrdc_out_pkb = Column(Boolean, server_default=text("false"))
-    pv_out_pkb = Column(Boolean, server_default=text("false"))
+    # New columns matching SQL schema
+    facilitycode = Column("facilitycode", String(100), primary_key=True)
+    facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
+    facilitytype = Column("facilitytype", Enum(FacilityTypeEnum), primary_key=True, nullable=False)
+    pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
+    pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
+    ukrdcoutpkb = Column("ukrdcoutpkb", Boolean, nullable=False, server_default=text("false"))
+    pvoutpkb = Column("pvoutpkb", Boolean, nullable=False, server_default=text("false"))
+    startdate = Column("startdate", Date)
+    enddate = Column("enddate", DateTime)
+    firstdataquarter = Column("firstdataquarter", Integer)
+    pkboutstartdate = Column("pkboutstartdate", DateTime)
+    creation_date = Column("creation_date", DateTime, nullable=False, server_default=text("now()"))
+    update_date = Column("update_date", DateTime, nullable=False, server_default=text("now()"))
 
-    update_date = Column(DateTime)
+    # Foreign Key to code_list
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["facilitycode", "facilitycodestd"],
+            ["extract.code_list.code", "extract.code_list.coding_standard"],
+            onupdate="CASCADE",
+            ondelete="RESTRICT"
+        ),
+    )
 
-    # Proxies
+    # Synonyms for old column names (backward compatibility)
+    code = synonym("facilitycode")
+    coding_standard = synonym("facilitycodestd")
+    # Add more if needed, e.g., pkb_out = synonym("pkbout")
 
+    # Proxies and Relationships (adjusted for new columns)
     description = association_proxy("code_info", "description")
-
-    # Relationships
 
     code_info = relationship(
         "Code",
-        primaryjoin="and_(remote(Code.coding_standard)=='RR1+', foreign(Facility.code)==remote(Code.code))",
+        primaryjoin="and_(remote(Code.coding_standard)==foreign(Facility.facilitycodestd), "
+                    "foreign(Facility.facilitycode)==remote(Code.code))",
     )
 
 
