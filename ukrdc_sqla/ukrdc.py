@@ -5,6 +5,7 @@ from typing import List, Optional, Union, Tuple
 
 from sqlalchemy import (
     Boolean,
+    ForeignKeyConstraint,
     Column,
     Date,
     DateTime,
@@ -18,6 +19,7 @@ from sqlalchemy import (
     Text,
     text,
 )
+from enum import Enum as pyEnum
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
@@ -1558,11 +1560,12 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
-class FacilityTypeEnum(str, Enum):
+class FacilityTypeEnum(str, pyEnum):
     ADULT_RENAL_CENTRE = "Adult Renal Centre"
     PAEDIATRIC_RENAL_CENTRE = "Paediatric Renal Centre"
     MULTIPLE_CENTRE = "Multiple Centre"
     OTHER = "Other"
+
 
 class Facility(Base):
     __tablename__ = "facility_new"
@@ -1570,17 +1573,25 @@ class Facility(Base):
     # New columns matching SQL schema
     facilitycode = Column("facilitycode", String(100), primary_key=True)
     facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
-    facilitytype = Column("facilitytype", Enum(FacilityTypeEnum), primary_key=True, nullable=False)
+    facilitytype = Column(
+        "facilitytype", Enum(FacilityTypeEnum), primary_key=True, nullable=False
+    )
     pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
     pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
-    ukrdcoutpkb = Column("ukrdcoutpkb", Boolean, nullable=False, server_default=text("false"))
+    ukrdcoutpkb = Column(
+        "ukrdcoutpkb", Boolean, nullable=False, server_default=text("false")
+    )
     pvoutpkb = Column("pvoutpkb", Boolean, nullable=False, server_default=text("false"))
     startdate = Column("startdate", Date)
     enddate = Column("enddate", DateTime)
     firstdataquarter = Column("firstdataquarter", Integer)
     pkboutstartdate = Column("pkboutstartdate", DateTime)
-    creation_date = Column("creation_date", DateTime, nullable=False, server_default=text("now()"))
-    update_date = Column("update_date", DateTime, nullable=False, server_default=text("now()"))
+    creation_date = Column(
+        "creation_date", DateTime, nullable=False, server_default=text("now()")
+    )
+    update_date = Column(
+        "update_date", DateTime, nullable=False, server_default=text("now()")
+    )
 
     # Foreign Key to code_list
     __table_args__ = (
@@ -1588,23 +1599,29 @@ class Facility(Base):
             ["facilitycode", "facilitycodestd"],
             ["extract.code_list.code", "extract.code_list.coding_standard"],
             onupdate="CASCADE",
-            ondelete="RESTRICT"
+            ondelete="RESTRICT",
         ),
     )
 
     # Synonyms for old column names (backward compatibility)
     code = synonym("facilitycode")
     coding_standard = synonym("facilitycodestd")
-    # Add more if needed, e.g., pkb_out = synonym("pkbout")
+    pkb_out = synonym("pkbout")
+    pkb_msg_exclusions = synonym("pkbmessageexclusions")
 
-    # Proxies and Relationships (adjusted for new columns)
     description = association_proxy("code_info", "description")
 
     code_info = relationship(
         "Code",
         primaryjoin="and_(remote(Code.coding_standard)==foreign(Facility.facilitycodestd), "
-                    "foreign(Facility.facilitycode)==remote(Code.code))",
+        "foreign(Facility.facilitycode)==remote(Code.code))",
     )
+
+    # v1 compatibility: provide a placeholder pkb_inboud flag to represent
+    # depricated column
+    @property
+    def pkb_in(self) -> bool:
+        return False
 
 
 class RRCodes(Base):
@@ -1693,13 +1710,29 @@ class ModalityCodes(Base):
 
 
 class SatelliteMap(Base):
-    __tablename__ = "satellite_map"
+    __tablename__ = "vwe_satellite_map"
 
     satellite_code = Column(String(10), primary_key=True)
     main_unit_code = Column(String(10), primary_key=True)
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = Column(DateTime)
+    # attributes for backwards compatability
+    @property
+    def creation_date(self) -> bool:
+        return False
+
+    @property
+    def update_date(self) -> bool:
+        return False
+
+
+class FacilityRelationship(Base):
+    __tablename__ = "vwe_facility_relationship"
+
+    parentfacilitycode = Column(String(100), primary_key=True)
+    parentfacilitycodestd = Column(String(100), primary_key=True)
+    childfacilitycode = Column(String(100), primary_key=True)
+    childfacilitycodestd = Column(String(100), primary_key=True)
+    relationshiptype = Column(String(50))
 
 
 class ValueExclusion(Base):
