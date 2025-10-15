@@ -1,6 +1,6 @@
 """Models which relate to the main UKRDC database"""
 
-import datetime, enum
+import datetime
 from typing import List, Optional, Union, Tuple
 
 from sqlalchemy import (
@@ -9,7 +9,6 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
-    Enum,
     ForeignKey,
     Integer,
     LargeBinary,
