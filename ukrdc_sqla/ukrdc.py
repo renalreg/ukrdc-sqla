@@ -18,7 +18,7 @@ from sqlalchemy import (
     String,
     Text,
     text,
-    Enum
+    Enum,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -1560,16 +1560,13 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
-
 class Facility(Base):
     __tablename__ = "facility_new"
 
     # New columns matching SQL schema
     facilitycode = Column("facilitycode", String(100), primary_key=True)
     facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
-    facilitytype = Column(
-        "facilitytype", String(100), primary_key=True, nullable=False
-    )
+    facilitytype = Column("facilitytype", String(100), primary_key=True, nullable=False)
     pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
     pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
     ukrdcoutpkb = Column(
