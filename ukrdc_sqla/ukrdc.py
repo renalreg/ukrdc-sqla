@@ -1560,23 +1560,6 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
-"""
-class FacilityTypeEnum(enum.Enum):
-    ADULT_RENAL_CENTRE = "Adult Renal Centre"
-    PAEDIATRIC_RENAL_CENTRE = "Paediatric Renal Centre"
-    MULTIPLE_CENTRE = "Multiple Centre"
-    OTHER = "Other"
-"""
-FacilityTypeEnum = Enum(
-    "FacilityTypeEnum",
-    {
-        "ADULT_RENAL_CENTRE": "Adult Renal Centre",
-        "PAEDIATRIC_RENAL_CENTRE": "Paediatric Renal Centre",
-        "MULTIPLE_CENTRE": "Multiple Centre",
-        "OTHER": "Other",
-    },
-    type=str,
-)
 
 class Facility(Base):
     __tablename__ = "facility_new"
@@ -1585,7 +1568,7 @@ class Facility(Base):
     facilitycode = Column("facilitycode", String(100), primary_key=True)
     facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
     facilitytype = Column(
-        "facilitytype", Enum(FacilityTypeEnum), primary_key=True, nullable=False
+        "facilitytype", String(100), primary_key=True, nullable=False
     )
     pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
     pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
