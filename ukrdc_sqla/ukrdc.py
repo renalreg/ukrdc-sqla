@@ -1,6 +1,6 @@
 """Models which relate to the main UKRDC database"""
 
-import datetime
+import datetime, enum
 from typing import List, Optional, Union, Tuple
 
 from sqlalchemy import (
@@ -18,8 +18,8 @@ from sqlalchemy import (
     String,
     Text,
     text,
+    Enum
 )
-from enum import Enum as pyEnum
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
@@ -1560,7 +1560,7 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
-class FacilityTypeEnum(str, pyEnum):
+class FacilityTypeEnum(enum.Enum):
     ADULT_RENAL_CENTRE = "Adult Renal Centre"
     PAEDIATRIC_RENAL_CENTRE = "Paediatric Renal Centre"
     MULTIPLE_CENTRE = "Multiple Centre"
