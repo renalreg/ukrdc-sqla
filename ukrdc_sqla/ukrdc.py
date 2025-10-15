@@ -1560,12 +1560,23 @@ class CodeMap(Base):
     update_date = Column(DateTime)
 
 
+"""
 class FacilityTypeEnum(enum.Enum):
     ADULT_RENAL_CENTRE = "Adult Renal Centre"
     PAEDIATRIC_RENAL_CENTRE = "Paediatric Renal Centre"
     MULTIPLE_CENTRE = "Multiple Centre"
     OTHER = "Other"
-
+"""
+FacilityTypeEnum = Enum(
+    "FacilityTypeEnum",
+    {
+        "ADULT_RENAL_CENTRE": "Adult Renal Centre",
+        "PAEDIATRIC_RENAL_CENTRE": "Paediatric Renal Centre",
+        "MULTIPLE_CENTRE": "Multiple Centre",
+        "OTHER": "Other",
+    },
+    type=str,
+)
 
 class Facility(Base):
     __tablename__ = "facility_new"
