@@ -1565,14 +1565,14 @@ class Facility(Base):
     # New columns matching SQL schema
     facilitycode = Column("facilitycode", String(100), primary_key=True)
     facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
-    facilitytype = Column("facilitytype", String(100), primary_key=True, nullable=False)
+    facilitytype = Column("facilitytype", String(100), nullable=False)
     pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
     pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
     ukrdcoutpkb = Column(
         "ukrdcoutpkb", Boolean, nullable=False, server_default=text("false")
     )
     pvoutpkb = Column("pvoutpkb", Boolean, nullable=False, server_default=text("false"))
-    startdate = Column("startdate", Date)
+    startdate = Column("startdate", DateTime)
     enddate = Column("enddate", DateTime)
     firstdataquarter = Column("firstdataquarter", Integer)
     pkboutstartdate = Column("pkboutstartdate", DateTime)
