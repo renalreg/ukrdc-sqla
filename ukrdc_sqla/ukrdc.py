@@ -1683,3 +1683,23 @@ class ValueExclusion(Base):
 
     system = Column(String(20), primary_key=True)
     norm_value = Column(String(100), primary_key=True)
+
+
+class File(Base):
+    __tablename__ = "file"
+
+    sendingfacility = Column(String(7), primary_key=True)
+    sendingextract = Column(String(6), primary_key=True)
+    ni = Column(String(50), primary_key=True)
+
+    filename = Column(String(255), nullable=False)
+    checksum = Column(String(64), nullable=False)
+    status = Column(String(20), nullable=False)
+    received_on = Column(DateTime, nullable=False)
+
+    creation_date = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("now()"),
+    )
+    update_date = Column(DateTime)
