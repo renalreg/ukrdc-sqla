@@ -1,12 +1,13 @@
 """Models which relate to the main UKRDC database"""
 
 import datetime
-from typing import List, Optional, Union, Tuple
+from dataclasses import dataclass
+from typing import List, Optional, Union, Tuple, Any
 
 from sqlalchemy import (
     Boolean,
     ForeignKeyConstraint,
-    Column,
+    Column as Col,
     Date,
     DateTime,
     ForeignKey,
@@ -21,7 +22,79 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import Mapped, relationship, synonym, declarative_base
+from sqlalchemy.orm import (
+    Mapped,
+    relationship,
+    synonym,
+    declarative_base,
+    InstrumentedAttribute,
+)
+
+
+@dataclass
+class ColumnInfo:
+    label: str
+    description: str
+
+
+class Column(Col):
+    """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
+
+    When `sqla_info` is set, its `description` field is also applied as the SQL
+    comment automatically.
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        sqla_info: Optional[ColumnInfo] = None,
+        **kwargs: Any,
+    ):
+        # Ensure .info dict exists
+        info = dict(kwargs.pop("info", {}) or {})
+        if sqla_info:
+            info["sqla_info"] = sqla_info
+            # If no explicit comment is provided, use description this will populate the database with comments
+            if "comment" not in kwargs and sqla_info.description:
+                kwargs["comment"] = sqla_info.description
+        # Call base Column constructor
+        super().__init__(*args, info=info, **kwargs)
+
+    # Provide a typed property for easy access
+    @property
+    def sqla_info(self) -> Optional[ColumnInfo]:
+        return self.info.get("sqla_info")
+
+
+def column_names(
+    *items: Union[
+        InstrumentedAttribute,
+        List[InstrumentedAttribute],
+        Tuple[InstrumentedAttribute, ...],
+    ],
+) -> Union[str, List[str]]:
+    """
+    Convert one or more SQLAlchemy InstrumentedAttribute(s) into their column names.
+
+    Examples:
+        column_names(User.id)                   -> "id"
+        column_names([User.id, User.age])       -> ["id", "age"]
+        column_names(User.id, User.age)         -> ["id", "age"]
+    """
+    # Case 1: multiple positional arguments
+    if len(items) > 1:
+        return [item.name for item in items]
+
+    # Single argument
+    item = items[0]
+
+    if isinstance(item, (list, tuple)):
+        return [x.name for x in item]
+
+    return item.name
+
+
+cols = column_names
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
@@ -146,34 +219,191 @@ class PatientRecord(Base):
 class Patient(Base):
     __tablename__ = "patient"
 
-    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
-
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    birthtime = Column(DateTime)
-    deathtime = Column(DateTime)
-    gender = Column(String(2))
-    countryofbirth = Column(String(3))
-    ethnicgroupcode = Column(String(100))
-    ethnicgroupcodestd = Column(String(100))
-    ethnicgroupdesc = Column(String(100))
-    occupationcode = Column(String(100))
-    occupationcodestd = Column(String(100))
-    occupationdesc = Column(String(100))
-    primarylanguagecode = Column(String(100))
-    primarylanguagecodestd = Column(String(100))
-    primarylanguagedesc = Column(String(100))
-    death = Column(Boolean)
-    persontocontactname = Column(String(100))
-    persontocontact_relationship = Column(String(20))
-    persontocontact_contactnumber = Column(String(20))
-    persontocontact_contactnumbertype = Column(String(20))
-    persontocontact_contactnumbercomments = Column(String(200))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    bloodgroup = Column(String(100))
-    bloodrhesus = Column(String(100))
-    update_date = Column(DateTime)
+    pid = Column(
+        String,
+        ForeignKey("patientrecord.pid"),
+        primary_key=True,
+        sqla_info=ColumnInfo(
+            label="Patient ID",
+            description="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
+    )
+    creation_date = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("now()"),
+        sqla_info=ColumnInfo(
+            label="Creation Date",
+            description="Date and time when the record was created.",
+        ),
+    )
+    birthtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Date of Birth", description="Patient’s date of birth."
+        ),
+    )
+    deathtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Date of Death",
+            description="Patient’s date of death, if applicable.",
+        ),
+    )
+    gender = Column(
+        String(2),
+        sqla_info=ColumnInfo(
+            label="Gender",
+            description="Administrative gender of the patient (1, 2, 9).",
+        ),
+    )
+    countryofbirth = Column(
+        String(3),
+        sqla_info=ColumnInfo(
+            label="Country of Birth",
+            description="Country code representing the patient’s country of birth from NHS Data Dictionary ISO 3166-1. Use the 3-char alphabetic code.",
+        ),
+    )
+    ethnicgroupcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Ethnic Group Code",
+            description="Code representing the patient’s ethnic group from NHS Data Dictionary: https://www.datadictionary.nhs.uk/data_elements/ethnic_category.html",
+        ),
+    )
+    ethnicgroupcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Ethnic Group Code Standard",
+            description="Coding standard used for the ethnic group code (NHS_DATA_DICTIONARY).",
+        ),
+    )
+    ethnicgroupdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Ethnic Group Description",
+            description="Text description of the patient’s ethnic group.",
+        ),
+    )
+    occupationcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Occupation Code",
+            description="Code representing the patient’s occupation from NHS Data Dictionary.",
+        ),
+    )
+    occupationcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Occupation Code Standard",
+            description="Coding standard used for the occupation code (NHS_DATA_DICTIONARY_EMPLOYMENT_STATUS).",
+        ),
+    )
+    occupationdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Occupation Description",
+            description="Text description of the patient’s occupation.",
+        ),
+    )
+    primarylanguagecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Primary Language Code",
+            description="Code representing the patient’s primary language from NHS Data Dictionary.",
+        ),
+    )
+    primarylanguagecodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Primary Language Code Standard",
+            description="Coding standard used for the primary language code (NHS_DATA_DICTIONARY_LANGUAGE_CODE).",
+        ),
+    )
+    primarylanguagedesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Primary Language Description",
+            description="Text description of the patient’s primary language.",
+        ),
+    )
+    death = Column(
+        Boolean,
+        sqla_info=ColumnInfo(
+            label="Deceased",
+            description="Indicates whether the patient is deceased.",
+        ),
+    )
+    persontocontactname = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Contact Person Name",
+            description="Name of the person to contact about the patient's care. This element should not be submitted without prior discussion with the UKRR.",
+        ),
+    )
+    persontocontact_relationship = Column(
+        String(20),
+        sqla_info=ColumnInfo(
+            label="Contact Person Relationship",
+            description="Relationship of the contact person to the patient.",
+        ),
+    )
+    persontocontact_contactnumber = Column(
+        String(20),
+        sqla_info=ColumnInfo(
+            label="Contact Person Number",
+            description="Telephone number of the contact person.",
+        ),
+    )
+    persontocontact_contactnumbertype = Column(
+        String(20),
+        sqla_info=ColumnInfo(
+            label="Contact Number Type", description="Type of contact number."
+        ),
+    )
+    persontocontact_contactnumbercomments = Column(
+        String(200),
+        sqla_info=ColumnInfo(
+            label="Contact Number Comments",
+            description="Additional comments related to the contact number.",
+        ),
+    )
+    updatedon = Column(
+        DateTime,
+        sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
+    )
+    actioncode = Column(
+        String(3),
+        sqla_info=ColumnInfo(
+            label="Action Code",
+            description="Code representing the action performed on the patient record.",
+        ),
+    )
+    externalid = Column(
+        String(100),
+        sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
+    )
+    bloodgroup = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Blood Group",
+            description="Patient’s blood type, current, from NHS Data Dictionary (A, B, AB, 0).",
+        ),
+    )
+    bloodrhesus = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Blood Rhesus",
+            description="Patient’s blood rhesus, current, from NHS Data Dictionary (POS, NEG).",
+        ),
+    )
+    update_date = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Update Date",
+            description="Date and time when the record was last updated.",
+        ),
+    )
 
     # Synonyms
     id: Mapped[str] = synonym("pid")
@@ -400,32 +630,176 @@ class FamilyHistory(Base):
 class Observation(Base):
     __tablename__ = "observation"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
-
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    observationtime = Column(DateTime)
-    observationcode = Column(String(100))
-    observationcodestd = Column(String(100))
-    observationdesc = Column(String(100))
-    observationvalue = Column(String(100))
-    observationunits = Column(String(100))
-    prepost = Column(String(4))
-    commenttext = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    enteringorganizationcode = Column(String(100))
-    enteringorganizationcodestd = Column(String(100))
-    enteringorganizationdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    id = Column(
+        String,
+        primary_key=True,
+        sqla_info=ColumnInfo(
+            label="Observation ID",
+            description="Unique identifier for the observation record.",
+        ),
+    )
+    pid = Column(
+        String,
+        ForeignKey("patientrecord.pid"),
+        sqla_info=ColumnInfo(
+            label="Patient ID",
+            description="Identifier of the patient associated with this observation.",
+        ),
+    )
+    creation_date = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("now()"),
+        sqla_info=ColumnInfo(
+            label="Creation Date",
+            description="Date and time when the observation record was created.",
+        ),
+    )
+    idx = Column(
+        Integer,
+        sqla_info=ColumnInfo(label="Index", description="Index for the observation."),
+    )
+    observationtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Observation Time",
+            description="Date and time when the observation was made.",
+        ),
+    )
+    observationcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Observation Code",
+            description="Code for the observation - UKRR, PV or SNOMED Coding Standards.",
+        ),
+    )
+    observationcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Observation Code Standard",
+            description="Coding standard used for the observation code (UKRR, PV, SNOMED).",
+        ),
+    )
+    observationdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Observation Description",
+            description="Text description of the observation recorded.",
+        ),
+    )
+    observationvalue = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Observation Value",
+            description="The measured or observed value.",
+        ),
+    )
+    observationunits = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Observation Units",
+            description="Units of measurement for the observation value.",
+        ),
+    )
+    prepost = Column(
+        String(4),
+        sqla_info=ColumnInfo(
+            label="Pre/Post Indicator",
+            description="Indicates whether the observation was made PRE or POST dialysis (PRE, POST, UNK, NA).",
+        ),
+    )
+    commenttext = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Comment Text",
+            description="Free-text comment associated with the observation.",
+        ),
+    )
+    cliniciancode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Clinician Code",
+            description="Code identifying the clinician associated with this observation.",
+        ),
+    )
+    cliniciancodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Clinician Code Standard",
+            description="Coding standard used for the clinician code.",
+        ),
+    )
+    cliniciandesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Clinician Description",
+            description="Name or description of the clinician.",
+        ),
+    )
+    enteredatcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entered At Code",
+            description="Code for the location where the observation was entered.",
+        ),
+    )
+    enteredatcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entered At Code Standard",
+            description="Coding standard used for the entered-at code.",
+        ),
+    )
+    enteredatdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entered At Description",
+            description="Text description of the location where the observation was entered.",
+        ),
+    )
+    enteringorganizationcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entering Organization Code",
+            description="Code identifying the organization entering the observation.",
+        ),
+    )
+    enteringorganizationcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entering Organization Code Standard",
+            description="Coding standard used for the entering organization code.",
+        ),
+    )
+    enteringorganizationdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Entering Organization Description",
+            description="Text description of the organization entering the observation.",
+        ),
+    )
+    updatedon = Column(
+        DateTime,
+        sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
+    )
+    actioncode = Column(
+        String(3),
+        sqla_info=ColumnInfo(
+            label="Action Code",
+            description="Code representing the action performed on the observation record.",
+        ),
+    )
+    externalid = Column(
+        String(100),
+        sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
+    )
+    update_date = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Update Date",
+            description="Date and time when the record was last updated.",
+        ),
+    )
 
     # Synonyms
 
@@ -1289,29 +1663,152 @@ class LabOrder(Base):
 class ResultItem(Base):
     __tablename__ = "resultitem"
 
-    id = Column(String, primary_key=True)
-
-    orderid = Column("orderid", String, ForeignKey("laborder.id"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    resulttype = Column(String(2))
-    serviceidcode = Column(String(100))
-    serviceidcodestd = Column(String(100))
-    serviceiddesc = Column(String(100))
-    subid = Column(String(50))
-    resultvalue = Column(String(20))
-    resultvalueunits = Column(String(30))
-    referencerange = Column(String(30))
-    interpretationcodes = Column(String(50))
-    status = Column(String(5))
-    observationtime = Column(DateTime)
-    commenttext = Column(String(1000))
-    referencecomment = Column(String(1000))
-    prepost = Column(String(4))
-    enteredon = Column(DateTime)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    id = Column(
+        String,
+        primary_key=True,
+        sqla_info=ColumnInfo(
+            label="Result Item ID",
+            description="Unique identifier for the result item.",
+        ),
+    )
+    orderid = Column(
+        "orderid",
+        String,
+        ForeignKey("laborder.id"),
+        sqla_info=ColumnInfo(
+            label="Order ID",
+            description="Identifier of the related laboratory order.",
+        ),
+    )
+    creation_date = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("now()"),
+        sqla_info=ColumnInfo(
+            label="Creation Date",
+            description="Date and time when the result item was created.",
+        ),
+    )
+    resulttype = Column(
+        String(2),
+        sqla_info=ColumnInfo(label="Result Type", description="Type of result."),
+    )
+    serviceidcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Service ID Code",
+            description="Test code identifying the laboratory service or test performed.",
+        ),
+    )
+    serviceidcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Service ID Code Standard",
+            description="Coding standard used for the service ID (SNOMED, LOINC, UKRR, PV, LOCAL).",
+        ),
+    )
+    serviceiddesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+            label="Service ID Description",
+            description="Text description of the laboratory service or test performed.",
+        ),
+    )
+    subid = Column(
+        String(50), sqla_info=ColumnInfo(label="Sub ID", description="Sub-Test Id.")
+    )
+    resultvalue = Column(
+        String(20),
+        sqla_info=ColumnInfo(
+            label="Result Value",
+            description="The measured or observed value.",
+        ),
+    )
+    resultvalueunits = Column(
+        String(30),
+        sqla_info=ColumnInfo(
+            label="Result Value Units",
+            description="Units of measurement for the result value.",
+        ),
+    )
+    referencerange = Column(
+        String(30),
+        sqla_info=ColumnInfo(
+            label="Reference Range",
+            description="Reference range for the test result.",
+        ),
+    )
+    interpretationcodes = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+            label="Interpretation Codes",
+            description="Code(s) indicating interpretation of the result (POS, NEG, UNK).",
+        ),
+    )
+    status = Column(
+        String(5),
+        sqla_info=ColumnInfo(
+            label="Result Status",
+            description="Status of the result (F, P, D).",
+        ),
+    )
+    observationtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Observation Time",
+            description="Date and time when the observation or measurement was made.",
+        ),
+    )
+    commenttext = Column(
+        String(1000),
+        sqla_info=ColumnInfo(
+            label="Comment Text",
+            description="Free-text comment associated with the result.",
+        ),
+    )
+    referencecomment = Column(
+        String(1000),
+        sqla_info=ColumnInfo(
+            label="Reference Comment",
+            description="Reference comment provided with the result.",
+        ),
+    )
+    prepost = Column(
+        String(4),
+        sqla_info=ColumnInfo(
+            label="Pre/Post Indicator",
+            description="Indicates whether the sample was taken PRE or POST dialysis (PRE, POST, UNK, NA).",
+        ),
+    )
+    enteredon = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Entered On",
+            description="Date and time when the result was entered into the system.",
+        ),
+    )
+    updatedon = Column(
+        DateTime,
+        sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
+    )
+    actioncode = Column(
+        String(3),
+        sqla_info=ColumnInfo(
+            label="Action Code",
+            description="Code representing the action performed on the result record.",
+        ),
+    )
+    externalid = Column(
+        String(100),
+        sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
+    )
+    update_date = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+            label="Update Date",
+            description="Date and time when the record was last updated.",
+        ),
+    )
 
     # Proxies
 
@@ -1730,3 +2227,23 @@ class ValueExclusion(Base):
 
     system = Column(String(20), primary_key=True)
     norm_value = Column(String(100), primary_key=True)
+
+
+class File(Base):
+    __tablename__ = "file"
+
+    sendingfacility = Column(String(7), primary_key=True)
+    sendingextract = Column(String(6), primary_key=True)
+    ni = Column(String(50), primary_key=True)
+
+    filename = Column(String(255), nullable=False)
+    checksum = Column(String(64), nullable=False)
+    status = Column(String(20), nullable=False)
+    received_on = Column(DateTime, nullable=False)
+
+    creation_date = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("now()"),
+    )
+    update_date = Column(DateTime)
