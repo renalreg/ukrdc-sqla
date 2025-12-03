@@ -918,7 +918,7 @@ class Diagnosis(Base):
     diagnosiscode = Column(String(100))
     diagnosiscodestd = Column(String(100))
     diagnosisdesc = Column(String(255))
-    comments: Mapped[str | None] = mapped_column(Text)
+    comments: Mapped[Optional[str]] = mapped_column(Text)
     identificationtime = Column(DateTime)
     onsettime = Column(DateTime)
     enteredon = Column(DateTime)
