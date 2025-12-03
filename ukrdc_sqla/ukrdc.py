@@ -44,6 +44,7 @@ class Column(Col):
     When `sqla_info` is set, its `description` field is also applied as the SQL
     comment automatically.
     """
+    inherit_cache = True # this tells sqlalchemy that it can compile like normal
 
     def __init__(
         self,
