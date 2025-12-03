@@ -27,6 +27,8 @@ from sqlalchemy.orm import (
     synonym,
     declarative_base,
     InstrumentedAttribute,
+    DynamicMapped,
+    mapped_column,
 )
 
 
@@ -106,7 +108,7 @@ class PatientRecord(Base):
 
     pid = Column(String, primary_key=True)
 
-    sendingfacility = Column(String(7), nullable=False)
+    sendingfacility: Mapped[str] = mapped_column(String(7), nullable=False)
     sendingextract = Column(String(6), nullable=False)
     localpatientid = Column(String(17), nullable=False)
     repositorycreationdate = Column(DateTime, nullable=False)
@@ -127,7 +129,7 @@ class PatientRecord(Base):
     patient: Mapped["Patient"] = relationship(
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders: Mapped[List["LabOrder"]] = relationship(
+    lab_orders: DynamicMapped["LabOrder"] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     result_items: Mapped[List["ResultItem"]] = relationship(
@@ -138,7 +140,7 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship(
+    observations: DynamicMapped["Observation"] = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     social_histories: Mapped[List["SocialHistory"]] = relationship(
@@ -156,10 +158,10 @@ class PatientRecord(Base):
     cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+    renaldiagnoses: DynamicMapped["RenalDiagnosis"] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: Mapped[List["Medication"]] = relationship(
+    medications: DynamicMapped["Medication"] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
@@ -171,7 +173,7 @@ class PatientRecord(Base):
     procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: DynamicMapped["Document"] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     encounters: Mapped[List["Encounter"]] = relationship(
@@ -180,7 +182,7 @@ class PatientRecord(Base):
     transplantlists: Mapped[List["TransplantList"]] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: Mapped[List["Treatment"]] = relationship(
+    treatments: DynamicMapped["Treatment"] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     program_memberships: Mapped[List["ProgramMembership"]] = relationship(
@@ -443,7 +445,7 @@ class Patient(Base):
     names: Mapped[List["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: Mapped[List["ContactDetail"]] = relationship(
+    contact_details: DynamicMapped["ContactDetail"] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     addresses: Mapped[List["Address"]] = relationship(
@@ -571,7 +573,7 @@ class GPInfo(Base):
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     name = Column(String(50))
     address1 = Column(String(35))
-    postcode = Column(String(8))
+    postcode: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     phone = Column(String(12))
     type = Column(Enum("GP", "PRACTICE", name="gp_type"))
     update_date = Column(DateTime)
@@ -916,7 +918,7 @@ class Diagnosis(Base):
     diagnosiscode = Column(String(100))
     diagnosiscodestd = Column(String(100))
     diagnosisdesc = Column(String(255))
-    comments = Column(Text)
+    comments: Mapped[Optional[str]] = mapped_column(Text)
     identificationtime = Column(DateTime)
     onsettime = Column(DateTime)
     enteredon = Column(DateTime)
@@ -1305,7 +1307,7 @@ class Address(Base):
     street = Column(String(100))
     town = Column(String(100))
     county = Column(String(100))
-    postcode = Column(String(10))
+    postcode: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     countrycode = Column(String(100))
     countrycodestd = Column(String(100))
     countrydesc = Column(String(100))
