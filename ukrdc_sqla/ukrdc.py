@@ -2094,7 +2094,7 @@ class Facility(Base):
     code = synonym("facilitycode")
     coding_standard = synonym("facilitycodestd")
     pkb_out = synonym("pkbout")
-    pkb_msg_exclusions = synonym("pkbmessageexclusions")
+    pkb_msg_exclusions = synonym("pkbmsgexclusions")
 
     description = association_proxy("code_info", "description")
 
