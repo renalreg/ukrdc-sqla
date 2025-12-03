@@ -27,7 +27,7 @@ from sqlalchemy.orm import (
     synonym,
     declarative_base,
     InstrumentedAttribute,
-    DynamicMapped, 
+    DynamicMapped,
     mapped_column,
 )
 
