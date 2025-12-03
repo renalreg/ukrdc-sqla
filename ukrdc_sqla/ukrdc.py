@@ -45,6 +45,8 @@ class Column(Col):
     comment automatically.
     """
 
+    inherit_cache = True  # this tells sqlalchemy that it can compile like normal
+
     def __init__(
         self,
         *args: Any,
