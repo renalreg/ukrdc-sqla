@@ -2063,6 +2063,7 @@ class Facility(Base):
     __tablename__ = "facility"
 
     code = Column("code", String, primary_key=True)
+    sendingextract = Column(String(6), nullable=True)
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     pkb_out = Column(Boolean, server_default=text("false"))
     pkb_in = Column(Boolean, server_default=text("false"))
