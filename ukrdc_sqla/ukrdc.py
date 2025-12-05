@@ -28,6 +28,7 @@ from sqlalchemy.orm import (
     declarative_base,
     DynamicMapped,
     mapped_column,
+    InstrumentedAttribute,
 )
 
 
@@ -68,7 +69,7 @@ class Column(Col):
         return self.info.get("sqla_info")
 
 
-def column_name(col: Col) -> str:
+def column_name(col: Union[Col, InstrumentedAttribute]) -> str:
     """
     Return the column name for a single SQLAlchemy InstrumentedAttribute.
 
@@ -78,7 +79,7 @@ def column_name(col: Col) -> str:
     return col.name
 
 def column_names(
-    *items: Union[Col, Iterable[Col]],
+    *items: Union[Union[Col, InstrumentedAttribute], Iterable[Union[Col, InstrumentedAttribute]]],
 ) -> List[str]:
     """
     Return a list of column names for one or more SQLAlchemy InstrumentedAttributes.
