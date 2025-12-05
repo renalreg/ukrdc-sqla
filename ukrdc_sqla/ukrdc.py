@@ -2,7 +2,7 @@
 
 import datetime
 from dataclasses import dataclass
-from typing import List, Optional, Union, Tuple, Any
+from typing import List, Optional, Union, Tuple, Any, Iterable
 
 from sqlalchemy import (
     Boolean,
@@ -68,32 +68,36 @@ class Column(Col):
         return self.info.get("sqla_info")
 
 
-def column_names(
-    *items: Union[
-        Col,
-        List[Col],
-        Tuple[Col, ...],
-    ],
-) -> Union[str, List[str]]:
+def column_name(col: Col) -> str:
     """
-    Convert one or more SQLAlchemy InstrumentedAttribute(s) into their column names.
+    Return the column name for a single SQLAlchemy InstrumentedAttribute.
+
+    Example:
+        column_name(User.id) -> "id"
+    """
+    return col.name
+
+def column_names(
+    *items: Union[Col, Iterable[Col]],
+) -> List[str]:
+    """
+    Return a list of column names for one or more SQLAlchemy InstrumentedAttributes.
 
     Examples:
-        column_names(User.id)                   -> "id"
-        column_names([User.id, User.age])       -> ["id", "age"]
-        column_names(User.id, User.age)         -> ["id", "age"]
+        column_names(User.id)                  -> ["id"]
+        column_names(User.id, User.age)        -> ["id", "age"]
+        column_names([User.id, User.age])      -> ["id", "age"]
     """
-    # Case 1: multiple positional arguments
-    if len(items) > 1:
-        return [item.name for item in items]
+    names: List[str] = []
 
-    # Single argument
-    item = items[0]
+    for item in items:
+        if isinstance(item, Iterable):
+            for x in item:
+                names.append(x.name)
+        else:
+            names.append(item.name)
 
-    if isinstance(item, (list, tuple)):
-        return [x.name for x in item]
-
-    return item.name
+    return names
 
 
 metadata = MetaData()
