@@ -2095,6 +2095,9 @@ class Facility(Base):
     coding_standard = synonym("facilitycodestd")
     pkb_out = synonym("pkbout")
     pkb_msg_exclusions = synonym("pkbmsgexclusions")
+    rdastartdate = synonym("startdate")
+    rdaenddate = synonym("enddate")
+    rdafirstdataquarter = synonym("firstdataquarter")
 
     description = association_proxy("code_info", "description")
 
