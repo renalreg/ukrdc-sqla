@@ -26,7 +26,6 @@ from sqlalchemy.orm import (
     relationship,
     synonym,
     declarative_base,
-    InstrumentedAttribute,
     DynamicMapped,
     mapped_column,
 )
@@ -71,9 +70,9 @@ class Column(Col):
 
 def column_names(
     *items: Union[
-        InstrumentedAttribute,
-        List[InstrumentedAttribute],
-        Tuple[InstrumentedAttribute, ...],
+        Col,
+        List[Col],
+        Tuple[Col, ...],
     ],
 ) -> Union[str, List[str]]:
     """
@@ -96,8 +95,6 @@ def column_names(
 
     return item.name
 
-
-cols = column_names
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
