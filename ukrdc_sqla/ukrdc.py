@@ -27,7 +27,6 @@ from sqlalchemy.orm import (
     relationship,
     synonym,
     declarative_base,
-    InstrumentedAttribute,
     DynamicMapped,
     mapped_column,
 )
@@ -69,36 +68,6 @@ class Column(Col):
     def sqla_info(self) -> Optional[ColumnInfo]:
         return self.info.get("sqla_info")
 
-
-def column_names(
-    *items: Union[
-        InstrumentedAttribute,
-        List[InstrumentedAttribute],
-        Tuple[InstrumentedAttribute, ...],
-    ],
-) -> Union[str, List[str]]:
-    """
-    Convert one or more SQLAlchemy InstrumentedAttribute(s) into their column names.
-
-    Examples:
-        column_names(User.id)                   -> "id"
-        column_names([User.id, User.age])       -> ["id", "age"]
-        column_names(User.id, User.age)         -> ["id", "age"]
-    """
-    # Case 1: multiple positional arguments
-    if len(items) > 1:
-        return [item.name for item in items]
-
-    # Single argument
-    item = items[0]
-
-    if isinstance(item, (list, tuple)):
-        return [x.name for x in item]
-
-    return item.name
-
-
-cols = column_names
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
