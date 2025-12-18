@@ -2174,3 +2174,12 @@ class File(Base):
         server_default=text("now()"),
     )
     update_date = Column(DateTime)
+
+class FacilityRelationship(Base):
+    __tablename__ = "vwe_facility_relationship"
+
+    parentfacilitycode = Column(String(100), primary_key=True)
+    parentfacilitycodestd = Column(String(100), primary_key=True)
+    childfacilitycode = Column(String(100), primary_key=True)
+    childfacilitycodestd = Column(String(100), primary_key=True)
+    relationshiptype = Column(String(50))
