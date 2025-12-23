@@ -2057,7 +2057,7 @@ class Facility(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ["facilitycode", "facilitycodestd"],
-            ["extract.code_list.code", "extract.code_list.coding_standard"],
+            ["code_list.code", "code_list.coding_standard"],
             onupdate="CASCADE",
             ondelete="RESTRICT",
         ),
