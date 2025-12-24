@@ -2122,7 +2122,7 @@ class RRDataDefinition(Base):
     code_id = Column(String(10))
     mandatory = Column(Numeric(1, 0))
 
-    type = Column("TYPE", String(1))
+    code_type = Column("TYPE", String(1))
 
     alt_constraint = Column(String(30))
     alt_desc = Column(String(30))
@@ -2150,7 +2150,8 @@ class RRDataDefinition(Base):
 
     # Synonyms
 
-    code_type: Mapped[str] = synonym("type")
+    code_type: Mapped[str] = synonym("code_type")
+    ckd5_mand: Mapped[str] = synonym("ckd5_mand_numeric")
 
 
 class ModalityCodes(Base):
