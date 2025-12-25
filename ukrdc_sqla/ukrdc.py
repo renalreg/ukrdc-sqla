@@ -2038,6 +2038,8 @@ class Facility(Base):
     facilitytype = Column("facilitytype", String(100), nullable=False)
     pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
     pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
+    pkb_pv_msg_exclusions = Column("pkb_pv_msg_exclusions", ARRAY(Text))
+    pkb_ukrdc_msg_exclusions = Column("pkb_ukrdc_msg_exclusions", ARRAY(Text))
     ukrdcoutpkb = Column(
         "ukrdcoutpkb", Boolean, nullable=False, server_default=text("false")
     )
