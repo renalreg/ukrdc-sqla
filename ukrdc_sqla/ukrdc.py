@@ -2118,7 +2118,7 @@ class RRDataDefinition(Base):
     upload_key = Column(String(5), primary_key=True)
 
     table_name = Column("TABLE_NAME", String(30), nullable=False)
-    feild_name = Column(String(30), nullable=False)
+    field_name = Column(String(30), nullable=False)
     code_id = Column(String(10))
     mandatory = Column(Numeric(1, 0))
 
@@ -2150,8 +2150,10 @@ class RRDataDefinition(Base):
 
     # Synonyms
 
-    code_type: Mapped[str] = synonym("code_type")
+    TYPE: Mapped[str] = synonym("code_type")
     ckd5_mand: Mapped[str] = synonym("ckd5_mand_numeric")
+    # historical typo for compatibility tests
+    feild_name: Mapped[str] = synonym("field_name")
 
 
 class ModalityCodes(Base):
