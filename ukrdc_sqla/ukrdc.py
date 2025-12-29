@@ -2152,6 +2152,9 @@ class RRDataDefinition(Base):
 
     TYPE: Mapped[str] = synonym("code_type")
     ckd5_mand: Mapped[str] = synonym("ckd5_mand_numeric")
+    # historical typo for compatibility tests
+    feild_name: Mapped[str] = synonym("field_name")
+
 
 class ModalityCodes(Base):
     __tablename__ = "modality_codes"
