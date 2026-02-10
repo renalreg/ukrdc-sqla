@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
+        run: python -m pip install poetry
 
       - name: Install Dependencies
         run: |
@@ -53,7 +53,7 @@ jobs:
           python-version: 3.9
 
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
+        run: python -m pip install poetry
 
       - name: Set Poetry config
         env:
