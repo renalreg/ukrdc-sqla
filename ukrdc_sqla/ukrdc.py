@@ -20,7 +20,7 @@ from sqlalchemy import (
     text,
     Enum,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BIT
+from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
     Mapped,
@@ -73,6 +73,17 @@ metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
 GLOBAL_LAZY = "dynamic"
+
+
+class SendingExtractMetadata(Base):
+    """Metadata about sending extracts including schedule status and configuration."""
+
+    __tablename__ = "sendingextractmetadata"
+
+    sendingextract = Column(String(100), primary_key=True)
+    on_schedule = Column(BIT(1), nullable=False)
+    metadata_ = Column("metadata", JSON, nullable=True)
+    comment = Column(Text, nullable=True)
 
 
 class PatientRecord(Base):
