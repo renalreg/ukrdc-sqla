@@ -468,13 +468,37 @@ class CauseOfDeath(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(String(50))
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(String(100))
-    diagnosiscodestd = Column(String(100))
-    diagnosisdesc = Column(String(255))
+    diagnosiscode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="",
+        ),
+    )
+    diagnosiscodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="",
+        ),
+    )
+    diagnosisdesc = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="",
+        ),
+    )
     comments = Column(Text)
     enteredon = Column(DateTime)
     updatedon = Column(DateTime)
@@ -883,13 +907,37 @@ class Diagnosis(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
-    diagnosistype = Column(String(50))
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(String(100))
-    diagnosiscodestd = Column(String(100))
-    diagnosisdesc = Column(String(255))
+    diagnosiscode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="",
+        ),
+    )
+    diagnosiscodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="",
+        ),
+    )
+    diagnosisdesc = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="",
+        ),
+    )
     comments: Mapped[Optional[str]] = mapped_column(Text)
     identificationtime = Column(DateTime)
     onsettime = Column(DateTime)
@@ -919,10 +967,37 @@ class RenalDiagnosis(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(String(50))
-    diagnosiscode = Column("diagnosiscode", String)
-    diagnosiscodestd = Column("diagnosiscodestd", String)
-    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="",
+        ),
+    )
+    diagnosiscode = Column(
+        "diagnosiscode",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="",
+        ),
+    )
+    diagnosiscodestd = Column(
+        "diagnosiscodestd",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="",
+        ),
+    )
+    diagnosisdesc = Column(
+        "diagnosisdesc",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
@@ -951,13 +1026,25 @@ class DialysisSession(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
-    proceduretypecode = Column(String(100))
+    proceduretypecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     proceduretypecodestd = Column(String(100))
     proceduretypedesc = Column(String(100))
     cliniciancode = Column(String(100))
     cliniciancodestd = Column(String(100))
     cliniciandesc = Column(String(100))
-    proceduretime = Column(DateTime)
+    proceduretime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     enteredbycode = Column(String(100))
     enteredbycodestd = Column(String(100))
     enteredbydesc = Column(String(100))
@@ -965,11 +1052,23 @@ class DialysisSession(Base):
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
     qhd19 = Column(String(255))
-    qhd20 = Column(String(255))
+    qhd20 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     qhd21 = Column(String(255))
     qhd22 = Column(String(255))
     qhd30 = Column(String(255))
-    qhd31 = Column(String(255))
+    qhd31 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     qhd32 = Column(String(255))
     qhd33 = Column(String(255))
 
@@ -995,7 +1094,13 @@ class Transplant(Base):
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
 
-    proceduretypecode = Column(String(100))
+    proceduretypecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     proceduretypecodestd = Column(String(100))
     proceduretypedesc = Column(String(100))
 
@@ -1003,26 +1108,62 @@ class Transplant(Base):
     cliniciancodestd = Column(String(100))
     cliniciandesc = Column(String(100))
 
-    proceduretime = Column(DateTime)
+    proceduretime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
     enteredbycode = Column(String(100))
     enteredbycodestd = Column(String(100))
     enteredbydesc = Column(String(100))
 
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
+    enteredatcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    enteredatcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    enteredatdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
     updatedon = Column(DateTime)
     actioncode = Column(String(3))
     externalid = Column(String(100))
 
-    tra64 = Column(DateTime)
+    tra64 = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     tra65 = Column(String(255))
     tra66 = Column(String(255))
     tra69 = Column(DateTime)
     tra76 = Column(String(255))
-    tra77 = Column(String(255))
+    tra77 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     tra78 = Column(String(255))
     tra79 = Column(String(255))
     tra80 = Column(String(255))
@@ -1337,8 +1478,20 @@ class Medication(Base):
     idx = Column(Integer)
     repositoryupdatedate = Column(DateTime, nullable=False)
     prescriptionnumber = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
+    fromtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    totime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
     orderedbycode = Column(String(100))
     orderedbycodestd = Column(String(100))
@@ -1348,16 +1501,52 @@ class Medication(Base):
     enteringorganizationcodestd = Column(String(100))
     enteringorganizationdesc = Column(String(100))
 
-    routecode = Column(String(10))
+    routecode = Column(
+        String(10),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     routecodestd = Column(String(100))
     routedesc = Column(String(100))
 
-    drugproductidcode = Column(String(100))
-    drugproductidcodestd = Column(String(100))
-    drugproductiddesc = Column(String(100))
+    drugproductidcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    drugproductidcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    drugproductiddesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
-    drugproductgeneric = Column(String(255))
-    drugproductlabelname = Column(String(255))
+    drugproductgeneric = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    drugproductlabelname = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
     drugproductformcode = Column(String(100))
     drugproductformcodestd = Column(String(100))
@@ -1367,11 +1556,35 @@ class Medication(Base):
     drugproductstrengthunitscodestd = Column(String(100))
     drugproductstrengthunitsdesc = Column(String(100))
 
-    frequency = Column(String(255))
-    commenttext = Column(String(1000))
-    dosequantity = Column(Numeric(19, 2))
+    frequency = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    commenttext = Column(
+        String(1000),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    dosequantity = Column(
+        Numeric(19, 2),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
 
-    doseuomcode = Column(String(100))
+    doseuomcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     doseuomcodestd = Column(String(100))
     doseuomdesc = Column(String(100))
 
@@ -1869,26 +2082,110 @@ class Treatment(Base):
     idx = Column(Integer)
     encounternumber = Column(String(100))
     encountertype = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
+    fromtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="From Time",
+        description="Start of Treatment",
+        ),
+    )
+    totime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="To Time",
+        description="End of Treatment",
+        ),
+    )
     admittingcliniciancode = Column(String(100))
     admittingcliniciancodestd = Column(String(100))
     admittingcliniciandesc = Column(String(100))
-    admitreasoncode = Column(String(100))
-    admitreasoncodestd = Column(String(100))
-    admitreasondesc = Column(String(100))
-    admissionsourcecode = Column(String(100))
-    admissionsourcecodestd = Column(String(100))
-    admissionsourcedesc = Column(String(100))
+    admitreasoncode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admit Reason Code",
+        description="Modality",
+        ),
+    )
+    admitreasoncodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admit Reason Code Standard",
+        description="",
+        ),
+    )
+    admitreasondesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    admissionsourcecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    admissionsourcecodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    admissionsourcedesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     dischargereasoncode = Column(String(100))
     dischargereasoncodestd = Column(String(100))
     dischargereasondesc = Column(String(100))
-    dischargelocationcode = Column(String(100))
-    dischargelocationcodestd = Column(String(100))
-    dischargelocationdesc = Column(String(100))
-    healthcarefacilitycode = Column(String(100))
-    healthcarefacilitycodestd = Column(String(100))
-    healthcarefacilitydesc = Column(String(100))
+    dischargelocationcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    dischargelocationcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    dischargelocationdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    healthcarefacilitycode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    healthcarefacilitycodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
+    healthcarefacilitydesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     enteredatcode = Column(String(100))
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
@@ -1900,7 +2197,13 @@ class Treatment(Base):
     hdp02 = Column(String(255))
     hdp03 = Column(String(255))
     hdp04 = Column(String(255))
-    qbl05 = Column(String(255))
+    qbl05 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="",
+        description="",
+        ),
+    )
     qbl06 = Column(String(255))
     qbl07 = Column(String(255))
     erf61 = Column(String(255))
