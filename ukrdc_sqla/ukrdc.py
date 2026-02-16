@@ -479,13 +479,37 @@ class CauseOfDeath(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(String(50))
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="Type of cause of death diagnosis",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(String(100))
-    diagnosiscodestd = Column(String(100))
-    diagnosisdesc = Column(String(255))
+    diagnosiscode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="Code representing the cause of death diagnosis)",
+        ),
+    )
+    diagnosiscodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="Coding standard used for the cause of death diagnosis)",
+        ),
+    )
+    diagnosisdesc = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="Text description of the cause of death diagnosis",
+        ),
+    )
     comments = Column(Text)
     enteredon = Column(DateTime)
     updatedon = Column(DateTime)
@@ -894,13 +918,37 @@ class Diagnosis(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
-    diagnosistype = Column(String(50))
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="Type of diagnosis",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(String(100))
-    diagnosiscodestd = Column(String(100))
-    diagnosisdesc = Column(String(255))
+    diagnosiscode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="Code representing the diagnosis. This should also include any diagnosis that has been submitted elsewhere as a Primary Renal Diagnosis.",
+        ),
+    )
+    diagnosiscodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="Coding standard used for the diagnosis",
+        ),
+    )
+    diagnosisdesc = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="Text description of the diagnosis",
+        ),
+    )
     comments: Mapped[Optional[str]] = mapped_column(Text)
     identificationtime = Column(DateTime)
     onsettime = Column(DateTime)
@@ -930,10 +978,37 @@ class RenalDiagnosis(Base):
     pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(String(50))
-    diagnosiscode = Column("diagnosiscode", String)
-    diagnosiscodestd = Column("diagnosiscodestd", String)
-    diagnosisdesc = Column("diagnosisdesc", String)
+    diagnosistype = Column(
+        String(50),
+        sqla_info=ColumnInfo(
+        label="Diagnosis Type",
+        description="Type of renal diagnosis",
+        ),
+    )
+    diagnosiscode = Column(
+        "diagnosiscode",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code",
+        description="Code representing the renal diagnosis",
+        ),
+    )
+    diagnosiscodestd = Column(
+        "diagnosiscodestd",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Code Standard",
+        description="Coding standard used for the renal diagnosis",
+        ),
+    )
+    diagnosisdesc = Column(
+        "diagnosisdesc",
+        String,
+        sqla_info=ColumnInfo(
+        label="Diagnosis Description",
+        description="Text description of the renal diagnosis",
+        ),
+    )
     diagnosingcliniciancode = Column(String(100))
     diagnosingcliniciancodestd = Column(String(100))
     diagnosingcliniciandesc = Column(String(100))
@@ -962,13 +1037,25 @@ class DialysisSession(Base):
 
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
-    proceduretypecode = Column(String(100))
+    proceduretypecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Procedure Type Code",
+        description="Code representing dialysis procedure type",
+        ),
+    )
     proceduretypecodestd = Column(String(100))
     proceduretypedesc = Column(String(100))
     cliniciancode = Column(String(100))
     cliniciancodestd = Column(String(100))
     cliniciandesc = Column(String(100))
-    proceduretime = Column(DateTime)
+    proceduretime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="Procedure Time",
+        description="Date and time of dialysis session",
+        ),
+    )
     enteredbycode = Column(String(100))
     enteredbycodestd = Column(String(100))
     enteredbydesc = Column(String(100))
@@ -976,11 +1063,23 @@ class DialysisSession(Base):
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
     qhd19 = Column(String(255))
-    qhd20 = Column(String(255))
+    qhd20 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="QHD20",
+        description="Vascular access used",
+        ),
+    )
     qhd21 = Column(String(255))
     qhd22 = Column(String(255))
     qhd30 = Column(String(255))
-    qhd31 = Column(String(255))
+    qhd31 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="QHD31",
+        description="Time dialysed in minutes",
+        ),
+    )
     qhd32 = Column(String(255))
     qhd33 = Column(String(255))
 
@@ -1006,7 +1105,13 @@ class Transplant(Base):
     creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
     idx = Column(Integer)
 
-    proceduretypecode = Column(String(100))
+    proceduretypecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Procedure Type Code",
+        description="Code representing transplant procedure type",
+        ),
+    )
     proceduretypecodestd = Column(String(100))
     proceduretypedesc = Column(String(100))
 
@@ -1014,26 +1119,62 @@ class Transplant(Base):
     cliniciancodestd = Column(String(100))
     cliniciandesc = Column(String(100))
 
-    proceduretime = Column(DateTime)
+    proceduretime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="Procedure Time",
+        description="Date of kidney transplant",
+        ),
+    )
 
     enteredbycode = Column(String(100))
     enteredbycodestd = Column(String(100))
     enteredbydesc = Column(String(100))
 
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
+    enteredatcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Entered At Code",
+        description="Code for the location where the transplant information was entered",
+        ),
+    )
+    enteredatcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Entered At Code Standard",
+        description="Coding standard used for the entered-at code",
+        ),
+    )
+    enteredatdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Entered At Description",
+        description="Text description of the location where the transplant information was entered",
+        ),
+    )
 
     updatedon = Column(DateTime)
     actioncode = Column(String(3))
     externalid = Column(String(100))
 
-    tra64 = Column(DateTime)
+    tra64 = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="TRA64",
+        description="Date of kidney transplant failure",
+        ),
+    )
     tra65 = Column(String(255))
     tra66 = Column(String(255))
     tra69 = Column(DateTime)
     tra76 = Column(String(255))
-    tra77 = Column(String(255))
+    tra77 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="TRA77",
+        description="Donor type, NHSBT type",
+        ),
+    )
     tra78 = Column(String(255))
     tra79 = Column(String(255))
     tra80 = Column(String(255))
@@ -1348,8 +1489,20 @@ class Medication(Base):
     idx = Column(Integer)
     repositoryupdatedate = Column(DateTime, nullable=False)
     prescriptionnumber = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
+    fromtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="From Time",
+        description="Start time of the prescription",
+        ),
+    )
+    totime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="To Time",
+        description="End time of the prescription",
+        ),
+    )
 
     orderedbycode = Column(String(100))
     orderedbycodestd = Column(String(100))
@@ -1359,16 +1512,52 @@ class Medication(Base):
     enteringorganizationcodestd = Column(String(100))
     enteringorganizationdesc = Column(String(100))
 
-    routecode = Column(String(10))
+    routecode = Column(
+        String(10),
+        sqla_info=ColumnInfo(
+        label="Route Code",
+        description="Code representing medication route",
+        ),
+    )
     routecodestd = Column(String(100))
     routedesc = Column(String(100))
 
-    drugproductidcode = Column(String(100))
-    drugproductidcodestd = Column(String(100))
-    drugproductiddesc = Column(String(100))
+    drugproductidcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Drug Product ID Code",
+        description="Code of the drug product",
+        ),
+    )
+    drugproductidcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Drug Product ID Code Standard",
+        description="Coding standard used for the drug product",
+        ),
+    )
+    drugproductiddesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Drug Product ID Description",
+        description="Text description of the drug product",
+        ),
+    )
 
-    drugproductgeneric = Column(String(255))
-    drugproductlabelname = Column(String(255))
+    drugproductgeneric = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label=" Drug Product Generic",
+        description="Drug product generic",
+        ),
+    )
+    drugproductlabelname = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Drug Product Label Name",
+        description="Drug product label name",
+        ),
+    )
 
     drugproductformcode = Column(String(100))
     drugproductformcodestd = Column(String(100))
@@ -1378,11 +1567,35 @@ class Medication(Base):
     drugproductstrengthunitscodestd = Column(String(100))
     drugproductstrengthunitsdesc = Column(String(100))
 
-    frequency = Column(String(255))
-    commenttext = Column(String(1000))
-    dosequantity = Column(Numeric(19, 2))
+    frequency = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="Frequency",
+        description="Medication frequency",
+        ),
+    )
+    commenttext = Column(
+        String(1000),
+        sqla_info=ColumnInfo(
+        label="Comment Text",
+        description="Free-text comment associated with the medication",
+        ),
+    )
+    dosequantity = Column(
+        Numeric(19, 2),
+        sqla_info=ColumnInfo(
+        label="Dose Quantity",
+        description="Dose of the medication",
+        ),
+    )
 
-    doseuomcode = Column(String(100))
+    doseuomcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Dose UoM Code",
+        description="Medication units code",
+        ),
+    )
     doseuomcodestd = Column(String(100))
     doseuomdesc = Column(String(100))
 
@@ -1880,26 +2093,110 @@ class Treatment(Base):
     idx = Column(Integer)
     encounternumber = Column(String(100))
     encountertype = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
+    fromtime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="From Time",
+        description="Start of treatment date",
+        ),
+    )
+    totime = Column(
+        DateTime,
+        sqla_info=ColumnInfo(
+        label="To Time",
+        description="End of treatment date",
+        ),
+    )
     admittingcliniciancode = Column(String(100))
     admittingcliniciancodestd = Column(String(100))
     admittingcliniciandesc = Column(String(100))
-    admitreasoncode = Column(String(100))
-    admitreasoncodestd = Column(String(100))
-    admitreasondesc = Column(String(100))
-    admissionsourcecode = Column(String(100))
-    admissionsourcecodestd = Column(String(100))
-    admissionsourcedesc = Column(String(100))
+    admitreasoncode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Reason Code",
+        description="Treatment modality code",
+        ),
+    )
+    admitreasoncodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Reason Code Standard",
+        description="Treatment modality code standard",
+        ),
+    )
+    admitreasondesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Reason Description",
+        description="Text description of treatment modality",
+        ),
+    )
+    admissionsourcecode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Source Code",
+        description="Code representing prior main renal unit",
+        ),
+    )
+    admissionsourcecodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Source Code Standard",
+        description="Coding standard used for the admission source",
+        ),
+    )
+    admissionsourcedesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Admission Source Description",
+        description="Text description of admission source",
+        ),
+    )
     dischargereasoncode = Column(String(100))
     dischargereasoncodestd = Column(String(100))
     dischargereasondesc = Column(String(100))
-    dischargelocationcode = Column(String(100))
-    dischargelocationcodestd = Column(String(100))
-    dischargelocationdesc = Column(String(100))
-    healthcarefacilitycode = Column(String(100))
-    healthcarefacilitycodestd = Column(String(100))
-    healthcarefacilitydesc = Column(String(100))
+    dischargelocationcode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Discharge Location Code",
+        description="Code representing destination main renal unit",
+        ),
+    )
+    dischargelocationcodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Discharge location Code Standard",
+        description="Coding standard used for the discharge location code",
+        ),
+    )
+    dischargelocationdesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Discharge Location Description",
+        description="Text description of discharge location",
+        ),
+    )
+    healthcarefacilitycode = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Healthcare Facility Code",
+        description="Code representing the treatment centre",
+        ),
+    )
+    healthcarefacilitycodestd = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Healthcare Facility Code Standard",
+        description="Coding standard used for the treatment centre",
+        ),
+    )
+    healthcarefacilitydesc = Column(
+        String(100),
+        sqla_info=ColumnInfo(
+        label="Healthcare Facility Description",
+        description="Text description of the treatment centre",
+        ),
+    )
     enteredatcode = Column(String(100))
     enteredatcodestd = Column(String(100))
     enteredatdesc = Column(String(100))
@@ -1911,7 +2208,13 @@ class Treatment(Base):
     hdp02 = Column(String(255))
     hdp03 = Column(String(255))
     hdp04 = Column(String(255))
-    qbl05 = Column(String(255))
+    qbl05 = Column(
+        String(255),
+        sqla_info=ColumnInfo(
+        label="QBL05",
+        description="HD treatment location",
+        ),
+    )
     qbl06 = Column(String(255))
     qbl07 = Column(String(255))
     erf61 = Column(String(255))
