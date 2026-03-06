@@ -2,7 +2,7 @@
 
 import datetime
 from dataclasses import dataclass
-from typing import List, Optional, Union, Tuple, Any
+from typing import List, Optional, Union, Tuple, Any, TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -27,7 +27,6 @@ from sqlalchemy.orm import (
     relationship,
     synonym,
     declarative_base,
-    DynamicMapped,
     mapped_column,
 )
 
@@ -37,36 +36,38 @@ class ColumnInfo:
     label: str
     description: str
 
+if TYPE_CHECKING:
+    Column = Any
+else:
+    class Column(Col):
+        """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
 
-class Column(Col):
-    """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
+        When `sqla_info` is set, its `description` field is also applied as the SQL
+        comment automatically.
+        """
 
-    When `sqla_info` is set, its `description` field is also applied as the SQL
-    comment automatically.
-    """
+        inherit_cache = True  # this tells sqlalchemy that it can compile like normal
 
-    inherit_cache = True  # this tells sqlalchemy that it can compile like normal
+        def __init__(
+            self,
+            *args: Any,
+            sqla_info: Optional[ColumnInfo] = None,
+            **kwargs: Any,
+        ):
+            # Ensure .info dict exists
+            info = dict(kwargs.pop("info", {}) or {})
+            if sqla_info:
+                info["sqla_info"] = sqla_info
+                # If no explicit comment is provided, use description this will populate the database with comments
+                if "comment" not in kwargs and sqla_info.description:
+                    kwargs["comment"] = sqla_info.description
+            # Call base Column constructor
+            super().__init__(*args, info=info, **kwargs)
 
-    def __init__(
-        self,
-        *args: Any,
-        sqla_info: Optional[ColumnInfo] = None,
-        **kwargs: Any,
-    ):
-        # Ensure .info dict exists
-        info = dict(kwargs.pop("info", {}) or {})
-        if sqla_info:
-            info["sqla_info"] = sqla_info
-            # If no explicit comment is provided, use description this will populate the database with comments
-            if "comment" not in kwargs and sqla_info.description:
-                kwargs["comment"] = sqla_info.description
-        # Call base Column constructor
-        super().__init__(*args, info=info, **kwargs)
-
-    # Provide a typed property for easy access
-    @property
-    def sqla_info(self) -> Optional[ColumnInfo]:
-        return self.info.get("sqla_info")
+        # Provide a typed property for easy access
+        @property
+        def sqla_info(self) -> Optional[ColumnInfo]:
+            return self.info.get("sqla_info")
 
 
 metadata = MetaData()
@@ -112,7 +113,7 @@ class PatientRecord(Base):
     patient: Mapped["Patient"] = relationship(
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders: DynamicMapped["LabOrder"] = relationship(
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     result_items: Mapped[List["ResultItem"]] = relationship(
@@ -123,7 +124,7 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: DynamicMapped["Observation"] = relationship(
+    observations: Mapped[List["Observation"]] = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     social_histories: Mapped[List["SocialHistory"]] = relationship(
@@ -141,10 +142,10 @@ class PatientRecord(Base):
     cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: DynamicMapped["RenalDiagnosis"] = relationship(
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: DynamicMapped["Medication"] = relationship(
+    medications: Mapped[List["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
@@ -156,7 +157,7 @@ class PatientRecord(Base):
     procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: DynamicMapped["Document"] = relationship(
+    documents: Mapped[List["Document"]] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     encounters: Mapped[List["Encounter"]] = relationship(
@@ -165,7 +166,7 @@ class PatientRecord(Base):
     transplantlists: Mapped[List["TransplantList"]] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: DynamicMapped["Treatment"] = relationship(
+    treatments: Mapped[List["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     program_memberships: Mapped[List["ProgramMembership"]] = relationship(
@@ -428,7 +429,7 @@ class Patient(Base):
     names: Mapped[List["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: DynamicMapped["ContactDetail"] = relationship(
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     addresses: Mapped[List["Address"]] = relationship(
