@@ -2,7 +2,7 @@
 
 import datetime
 from dataclasses import dataclass
-from typing import List, Optional, Union, Tuple, Any
+from typing import List, Optional, Union, Tuple, Any, TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -37,36 +37,38 @@ class ColumnInfo:
     label: str
     description: str
 
+if TYPE_CHECKING:
+    Column = Any
+else:
+    class Column(Col):
+        """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
 
-class Column(Col):
-    """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
+        When `sqla_info` is set, its `description` field is also applied as the SQL
+        comment automatically.
+        """
 
-    When `sqla_info` is set, its `description` field is also applied as the SQL
-    comment automatically.
-    """
+        inherit_cache = True  # this tells sqlalchemy that it can compile like normal
 
-    inherit_cache = True  # this tells sqlalchemy that it can compile like normal
+        def __init__(
+            self,
+            *args: Any,
+            sqla_info: Optional[ColumnInfo] = None,
+            **kwargs: Any,
+        ):
+            # Ensure .info dict exists
+            info = dict(kwargs.pop("info", {}) or {})
+            if sqla_info:
+                info["sqla_info"] = sqla_info
+                # If no explicit comment is provided, use description this will populate the database with comments
+                if "comment" not in kwargs and sqla_info.description:
+                    kwargs["comment"] = sqla_info.description
+            # Call base Column constructor
+            super().__init__(*args, info=info, **kwargs)
 
-    def __init__(
-        self,
-        *args: Any,
-        sqla_info: Optional[ColumnInfo] = None,
-        **kwargs: Any,
-    ):
-        # Ensure .info dict exists
-        info = dict(kwargs.pop("info", {}) or {})
-        if sqla_info:
-            info["sqla_info"] = sqla_info
-            # If no explicit comment is provided, use description this will populate the database with comments
-            if "comment" not in kwargs and sqla_info.description:
-                kwargs["comment"] = sqla_info.description
-        # Call base Column constructor
-        super().__init__(*args, info=info, **kwargs)
-
-    # Provide a typed property for easy access
-    @property
-    def sqla_info(self) -> Optional[ColumnInfo]:
-        return self.info.get("sqla_info")
+        # Provide a typed property for easy access
+        @property
+        def sqla_info(self) -> Optional[ColumnInfo]:
+            return self.info.get("sqla_info")
 
 
 metadata = MetaData()
