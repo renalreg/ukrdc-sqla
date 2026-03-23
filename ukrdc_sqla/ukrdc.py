@@ -1260,7 +1260,7 @@ class ProgramMembership(Base):
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
-            f"{self.program_name} {self.from_time}"
+            f"{self.programname} {self.fromtime}"
             f">"
         )
 
@@ -1386,7 +1386,7 @@ class ContactDetail(Base):
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <{self.use}:{self.value}>"
+        return f"{self.__class__.__name__}({self.pid}) <{self.contactuse}:{self.contactvalue}>"
 
 
 class Medication(Base):
