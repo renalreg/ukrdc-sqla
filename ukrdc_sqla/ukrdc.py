@@ -1,19 +1,19 @@
 """Models which relate to the main UKRDC database"""
 
-import datetime
 from dataclasses import dataclass
+from datetime import date
+from datetime import datetime
+from decimal import Decimal
 from typing import List, Optional, Union, Tuple, Any
 
 from sqlalchemy import (
     Boolean,
     ForeignKeyConstraint,
-    Column as Col,
     Date,
     DateTime,
     ForeignKey,
     Integer,
     LargeBinary,
-    MetaData,
     Numeric,
     String,
     Text,
@@ -26,9 +26,9 @@ from sqlalchemy.orm import (
     Mapped,
     relationship,
     synonym,
-    declarative_base,
-    DynamicMapped,
-    mapped_column,
+    mapped_column as _mapped_column,
+    DeclarativeBase,
+    MappedColumn,
 )
 
 
@@ -38,39 +38,29 @@ class ColumnInfo:
     description: str
 
 
-class Column(Col):
-    """A Column subclass that supports typed metadata via a ColumnInfo dataclass.
-
-    When `sqla_info` is set, its `description` field is also applied as the SQL
-    comment automatically.
-    """
-
-    inherit_cache = True  # this tells sqlalchemy that it can compile like normal
-
-    def __init__(
-        self,
-        *args: Any,
-        sqla_info: Optional[ColumnInfo] = None,
-        **kwargs: Any,
-    ):
-        # Ensure .info dict exists
-        info = dict(kwargs.pop("info", {}) or {})
-        if sqla_info:
-            info["sqla_info"] = sqla_info
-            # If no explicit comment is provided, use description this will populate the database with comments
-            if "comment" not in kwargs and sqla_info.description:
-                kwargs["comment"] = sqla_info.description
-        # Call base Column constructor
-        super().__init__(*args, info=info, **kwargs)
-
-    # Provide a typed property for easy access
-    @property
-    def sqla_info(self) -> Optional[ColumnInfo]:
-        return self.info.get("sqla_info")
+def mapped_column(
+    *args: Any,
+    sqla_info: Optional[ColumnInfo] = None,
+    **kwargs: Any,
+) -> MappedColumn:
+    """A mapped_column wrapper that supports typed metadata via a ColumnInfo dataclass."""
+    info = dict(kwargs.pop("info", {}) or {})
+    if sqla_info:
+        info["sqla_info"] = sqla_info
+        if "comment" not in kwargs and sqla_info.description:
+            kwargs["comment"] = sqla_info.description
+    return _mapped_column(*args, info=info, **kwargs)
 
 
-metadata = MetaData()
-Base = declarative_base(metadata=metadata)
+def get_column_info(model, column_name: str) -> Optional[ColumnInfo]:
+    """Retrieve ColumnInfo for a given column by name."""
+    col = model.__table__.c[column_name]
+    return col.info.get("sqla_info")
+
+
+class Base(DeclarativeBase):
+    pass
+
 
 GLOBAL_LAZY = "dynamic"
 
@@ -80,39 +70,44 @@ class SendingExtractMetadata(Base):
 
     __tablename__ = "sendingextractmetadata"
 
-    sendingextract = Column(String(100), primary_key=True)
-    on_schedule = Column(BIT(1), nullable=False)
-    metadata_ = Column("metadata", JSON, nullable=True)
-    comment = Column(Text, nullable=True)
+    sendingextract: Mapped[str] = mapped_column(String(100), primary_key=True)
+    on_schedule: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata", JSON, nullable=True
+    )
+    comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
 
 class PatientRecord(Base):
     __tablename__ = "patientrecord"
 
-    pid = Column(String, primary_key=True)
-
+    pid: Mapped[str] = mapped_column(String, primary_key=True)
     sendingfacility: Mapped[str] = mapped_column(String(7), nullable=False)
-    sendingextract = Column(String(6), nullable=False)
-    localpatientid = Column(String(17), nullable=False)
-    repositorycreationdate = Column(DateTime, nullable=False)
-    repositoryupdatedate = Column(DateTime, nullable=False)
-    migrated = Column(Boolean, nullable=False, server_default=text("false"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    ukrdcid = Column(String(10), index=True)
-    channelname = Column(String(50))
-    channelid = Column(String(50))
-    extracttime = Column(String(50))
-    startdate = Column(DateTime)
-    stopdate = Column(DateTime)
-    schemaversion = Column(String(50))
-    update_date = Column(DateTime)
+    sendingextract: Mapped[str] = mapped_column(String(6), nullable=False)
+    localpatientid: Mapped[str] = mapped_column(String(17), nullable=False)
+    repositorycreationdate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    repositoryupdatedate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    migrated: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    ukrdcid: Mapped[Optional[str]] = mapped_column(String(10), index=True)
+    channelname: Mapped[Optional[str]] = mapped_column(String(50))
+    channelid: Mapped[Optional[str]] = mapped_column(String(50))
+    extracttime: Mapped[Optional[str]] = mapped_column(String(50))
+    startdate: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    stopdate: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    schemaversion: Mapped[Optional[str]] = mapped_column(String(50))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Relationships
 
     patient: Mapped["Patient"] = relationship(
-        "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
+        "Patient", back_populates="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders: DynamicMapped["LabOrder"] = relationship(
+    lab_orders: Mapped[List["LabOrder"]] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     result_items: Mapped[List["ResultItem"]] = relationship(
@@ -123,8 +118,11 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: DynamicMapped["Observation"] = relationship(
-        "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    observations: Mapped[List["Observation"]] = relationship(
+        "Observation",
+        back_populates="record",
+        lazy=GLOBAL_LAZY,
+        cascade="all, delete-orphan",
     )
     social_histories: Mapped[List["SocialHistory"]] = relationship(
         "SocialHistory", cascade="all, delete-orphan"
@@ -141,10 +139,10 @@ class PatientRecord(Base):
     cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: DynamicMapped["RenalDiagnosis"] = relationship(
+    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: DynamicMapped["Medication"] = relationship(
+    medications: Mapped[List["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
@@ -156,7 +154,7 @@ class PatientRecord(Base):
     procedures: Mapped[List["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: DynamicMapped["Document"] = relationship(
+    documents: Mapped[List["Document"]] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     encounters: Mapped[List["Encounter"]] = relationship(
@@ -165,7 +163,7 @@ class PatientRecord(Base):
     transplantlists: Mapped[List["TransplantList"]] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: DynamicMapped["Treatment"] = relationship(
+    treatments: Mapped[List["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     program_memberships: Mapped[List["ProgramMembership"]] = relationship(
@@ -181,21 +179,17 @@ class PatientRecord(Base):
     surveys: Mapped[List["Survey"]] = relationship(
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
-    pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-
-    # Synonyms
-    id: Mapped[str] = synonym("pid")
-    extract_time: Mapped[datetime.datetime] = synonym("extracttime")
-    repository_creation_date: Mapped[datetime.datetime] = synonym(
-        "repositorycreationdate"
+    pvdata: Mapped["PVData"] = relationship(
+        "PVData", uselist=False, cascade="all, delete-orphan"
     )
-    repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
+    pvdelete: Mapped["PVDelete"] = relationship(
+        "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
-            f"UKRDCID:{self.ukrdcid} CREATED:{self.repository_creation_date}"
+            f"UKRDCID:{self.ukrdcid} CREATED:{self.repositorycreationdate}"
             f">"
         )
 
@@ -203,7 +197,7 @@ class PatientRecord(Base):
 class Patient(Base):
     __tablename__ = "patient"
 
-    pid = Column(
+    pid: Mapped[str] = mapped_column(
         String,
         ForeignKey("patientrecord.pid"),
         primary_key=True,
@@ -212,7 +206,7 @@ class Patient(Base):
             description="Unique identifier for the patient record, referencing patientrecord.pid.",
         ),
     )
-    creation_date = Column(
+    creation_date: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         server_default=text("now()"),
@@ -221,167 +215,167 @@ class Patient(Base):
             description="Date and time when the record was created.",
         ),
     )
-    birthtime = Column(
+    birthtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Date of Birth", description="Patient’s date of birth."
         ),
     )
-    deathtime = Column(
+    deathtime: Mapped[datetime] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Date of Death",
             description="Patient’s date of death, if applicable.",
         ),
     )
-    gender = Column(
+    gender: Mapped[Optional[str]] = mapped_column(
         String(2),
         sqla_info=ColumnInfo(
             label="Gender",
             description="Administrative gender of the patient (1, 2, 9).",
         ),
     )
-    countryofbirth = Column(
+    countryofbirth: Mapped[Optional[str]] = mapped_column(
         String(3),
         sqla_info=ColumnInfo(
             label="Country of Birth",
             description="Country code representing the patient’s country of birth from NHS Data Dictionary ISO 3166-1. Use the 3-char alphabetic code.",
         ),
     )
-    ethnicgroupcode = Column(
+    ethnicgroupcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Ethnic Group Code",
             description="Code representing the patient’s ethnic group from NHS Data Dictionary: https://www.datadictionary.nhs.uk/data_elements/ethnic_category.html",
         ),
     )
-    ethnicgroupcodestd = Column(
+    ethnicgroupcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Ethnic Group Code Standard",
             description="Coding standard used for the ethnic group code (NHS_DATA_DICTIONARY).",
         ),
     )
-    ethnicgroupdesc = Column(
+    ethnicgroupdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Ethnic Group Description",
             description="Text description of the patient’s ethnic group.",
         ),
     )
-    occupationcode = Column(
+    occupationcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Occupation Code",
             description="Code representing the patient’s occupation from NHS Data Dictionary.",
         ),
     )
-    occupationcodestd = Column(
+    occupationcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Occupation Code Standard",
             description="Coding standard used for the occupation code (NHS_DATA_DICTIONARY_EMPLOYMENT_STATUS).",
         ),
     )
-    occupationdesc = Column(
+    occupationdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Occupation Description",
             description="Text description of the patient’s occupation.",
         ),
     )
-    primarylanguagecode = Column(
+    primarylanguagecode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Primary Language Code",
             description="Code representing the patient’s primary language from NHS Data Dictionary.",
         ),
     )
-    primarylanguagecodestd = Column(
+    primarylanguagecodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Primary Language Code Standard",
             description="Coding standard used for the primary language code (NHS_DATA_DICTIONARY_LANGUAGE_CODE).",
         ),
     )
-    primarylanguagedesc = Column(
+    primarylanguagedesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Primary Language Description",
             description="Text description of the patient’s primary language.",
         ),
     )
-    death = Column(
+    death: Mapped[Optional[bool]] = mapped_column(
         Boolean,
         sqla_info=ColumnInfo(
             label="Deceased",
             description="Indicates whether the patient is deceased.",
         ),
     )
-    persontocontactname = Column(
+    persontocontactname: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Contact Person Name",
             description="Name of the person to contact about the patient's care. This element should not be submitted without prior discussion with the UKRR.",
         ),
     )
-    persontocontact_relationship = Column(
+    persontocontact_relationship: Mapped[Optional[str]] = mapped_column(
         String(20),
         sqla_info=ColumnInfo(
             label="Contact Person Relationship",
             description="Relationship of the contact person to the patient.",
         ),
     )
-    persontocontact_contactnumber = Column(
+    persontocontact_contactnumber: Mapped[Optional[str]] = mapped_column(
         String(20),
         sqla_info=ColumnInfo(
             label="Contact Person Number",
             description="Telephone number of the contact person.",
         ),
     )
-    persontocontact_contactnumbertype = Column(
+    persontocontact_contactnumbertype: Mapped[Optional[str]] = mapped_column(
         String(20),
         sqla_info=ColumnInfo(
             label="Contact Number Type", description="Type of contact number."
         ),
     )
-    persontocontact_contactnumbercomments = Column(
+    persontocontact_contactnumbercomments: Mapped[Optional[str]] = mapped_column(
         String(200),
         sqla_info=ColumnInfo(
             label="Contact Number Comments",
             description="Additional comments related to the contact number.",
         ),
     )
-    updatedon = Column(
+    updatedon: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
     )
-    actioncode = Column(
+    actioncode: Mapped[Optional[str]] = mapped_column(
         String(3),
         sqla_info=ColumnInfo(
             label="Action Code",
             description="Code representing the action performed on the patient record.",
         ),
     )
-    externalid = Column(
+    externalid: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
     )
-    bloodgroup = Column(
+    bloodgroup: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Blood Group",
             description="Patient’s blood type, current, from NHS Data Dictionary (A, B, AB, 0).",
         ),
     )
-    bloodrhesus = Column(
+    bloodrhesus: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Blood Rhesus",
             description="Patient’s blood rhesus, current, from NHS Data Dictionary (POS, NEG).",
         ),
     )
-    update_date = Column(
+    update_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Update Date",
@@ -389,46 +383,17 @@ class Patient(Base):
         ),
     )
 
-    # Synonyms
-    id: Mapped[str] = synonym("pid")
-    birth_time: Mapped[datetime.datetime] = synonym("birthtime")
-    death_time: Mapped[datetime.datetime] = synonym("deathtime")
-    country_of_birth: Mapped[str] = synonym("countryofbirth")
-    ethnic_group_code: Mapped[str] = synonym("ethnicgroupcode")
-    ethnic_group_code_std = synonym("ethnicgroupcodestd")
-    ethnic_group_description: Mapped[str] = synonym("ethnicgroupdesc")
-    person_to_contact_name: Mapped[str] = synonym("persontocontactname")
-    person_to_contact_number: Mapped[str] = synonym("persontocontact_contactnumber")
-    person_to_contact_relationship: Mapped[str] = synonym(
-        "persontocontact_relationship"
-    )
-    person_to_contact_number_comments: Mapped[str] = synonym(
-        "persontocontact_numbercomments"
-    )
-    person_to_contact_number_type: Mapped[str] = synonym(
-        "persontocontact_contactnumbertype"
-    )
-    occupation_code: Mapped[str] = synonym("occupationcode")
-    occupation_codestd: Mapped[str] = synonym("occupationcodestd")
-    occupation_description: Mapped[str] = synonym("occupationdesc")
-    primary_language: Mapped[str] = synonym("primarylanguagecode")
-    primary_language_codestd: Mapped[str] = synonym("primarylanguagecodestd")
-    primary_language_description: Mapped[str] = synonym("primarylanguagedesc")
-    dead: Mapped[bool] = synonym("death")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-
     # Relationships
-
     numbers: Mapped[List["PatientNumber"]] = relationship(
         "PatientNumber",
-        backref="patient",
+        back_populates="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
     names: Mapped[List["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: DynamicMapped["ContactDetail"] = relationship(
+    contact_details: Mapped[List["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     addresses: Mapped[List["Address"]] = relationship(
@@ -439,7 +404,7 @@ class Patient(Base):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.pid}) <{self.birth_time}>"
+        return f"{self.__class__.__name__}({self.pid}) <{self.birthtime}>"
 
     @property
     def name(self) -> Optional["Name"]:
@@ -476,95 +441,91 @@ class Patient(Base):
 class CauseOfDeath(Base):
     __tablename__ = "causeofdeath"
 
-    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    pid: Mapped[str] = mapped_column(
+        String, ForeignKey("patientrecord.pid"), primary_key=True
+    )
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    diagnosistype: Mapped[Optional[str]] = mapped_column(
         String(50),
         sqla_info=ColumnInfo(
             label="Diagnosis Type",
             description="Type of cause of death diagnosis",
         ),
     )
-    diagnosingcliniciancode = Column(String(100))
-    diagnosingcliniciancodestd = Column(String(100))
-    diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(
+    diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosiscode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Diagnosis Code",
             description="Code representing the cause of death diagnosis)",
         ),
     )
-    diagnosiscodestd = Column(
+    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Diagnosis Code Standard",
             description="Coding standard used for the cause of death diagnosis)",
         ),
     )
-    diagnosisdesc = Column(
+    diagnosisdesc: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="Diagnosis Description",
             description="Text description of the cause of death diagnosis",
         ),
     )
-    comments = Column(Text)
-    enteredon = Column(DateTime)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-    id: Mapped[str] = synonym(
-        "pid"
-    )  # this will not be correct if the primary key changes
-    diagnosis_type: Mapped[str] = synonym("diagnosistype")
-    diagnosing_clinician_code: Mapped[str] = synonym("diagnosingcliniciancode")
-    diagnosing_clinician_code_std: Mapped[str] = synonym("diagnosingcliniciancodestd")
-    diagnosing_clinician_desc: Mapped[str] = synonym("diagnosingcliniciandesc")
-    diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-    diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-    diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
-    entered_on: Mapped[datetime.datetime] = synonym("enteredon")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-    action_code: Mapped[str] = synonym("actioncode")
-    external_id: Mapped[str] = synonym("externalid")
+    comments: Mapped[Optional[str]] = mapped_column(Text)
+    enteredon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class FamilyDoctor(Base):
     __tablename__ = "familydoctor"
 
-    id = Column(String, ForeignKey("patient.pid"), primary_key=True)
+    id: Mapped[str] = mapped_column(String, ForeignKey("patient.pid"), primary_key=True)
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    gpname = Column(String(100))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    gpname: Mapped[Optional[str]] = mapped_column(String(100))
 
-    gpid = Column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
-    gppracticeid = Column(String(20), ForeignKey("ukrdc_ods_gp_codes.code"))
+    gpid: Mapped[Optional[str]] = mapped_column(
+        String(20), ForeignKey("ukrdc_ods_gp_codes.code")
+    )
+    gppracticeid: Mapped[Optional[str]] = mapped_column(
+        String(20), ForeignKey("ukrdc_ods_gp_codes.code")
+    )
 
-    addressuse = Column(String(10))
-    fromtime = Column(Date)
-    totime = Column(Date)
-    street = Column(String(100))
-    town = Column(String(100))
-    county = Column(String(100))
-    postcode = Column(String(10))
-    countrycode = Column(String(100))
-    countrycodestd = Column(String(100))
-    countrydesc = Column(String(100))
-    contactuse = Column(String(10))
-    contactvalue = Column(String(100))
-    email = Column(String(100))
-    commenttext = Column(String(100))
-    update_date = Column(DateTime)
+    addressuse: Mapped[Optional[str]] = mapped_column(String(10))
+    fromtime: Mapped[Optional[date]] = mapped_column(Date)
+    totime: Mapped[Optional[date]] = mapped_column(Date)
+    street: Mapped[Optional[str]] = mapped_column(String(100))
+    town: Mapped[Optional[str]] = mapped_column(String(100))
+    county: Mapped[Optional[str]] = mapped_column(String(100))
+    postcode: Mapped[Optional[str]] = mapped_column(String(10))
+    countrycode: Mapped[Optional[str]] = mapped_column(String(100))
+    countrycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    countrydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    contactuse: Mapped[Optional[str]] = mapped_column(String(10))
+    contactvalue: Mapped[Optional[str]] = mapped_column(String(100))
+    email: Mapped[Optional[str]] = mapped_column(String(100))
+    commenttext: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Relationships
 
-    gp_info = relationship("GPInfo", foreign_keys=[gpid], uselist=False)
-    gp_practice_info = relationship(
+    gp_info: Mapped["GPInfo"] = relationship(
+        "GPInfo", foreign_keys=[gpid], uselist=False
+    )
+    gp_practice_info: Mapped["GPInfo"] = relationship(
         "GPInfo", foreign_keys=[gppracticeid], uselist=False
     )
 
@@ -575,70 +536,76 @@ class FamilyDoctor(Base):
 class GPInfo(Base):
     __tablename__ = "ukrdc_ods_gp_codes"
 
-    code = Column(String(8), primary_key=True)
+    code: Mapped[str] = mapped_column(String(8), primary_key=True)
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    name = Column(String(50))
-    address1 = Column(String(35))
-    postcode: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    phone = Column(String(12))
-    type = Column(Enum("GP", "PRACTICE", name="gp_type"))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    name: Mapped[Optional[str]] = mapped_column(String(50))
+    address1: Mapped[Optional[str]] = mapped_column(String(35))
+    postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
+    phone: Mapped[Optional[str]] = mapped_column(String(12))
+    type: Mapped[Optional[str]] = mapped_column(Enum("GP", "PRACTICE", name="gp_type"))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Synonyms
 
-    gpname: Mapped[str] = synonym("name")
-    street: Mapped[str] = synonym("address1")
-    contactvalue: Mapped[str] = synonym("phone")
+    gpname: Mapped[Optional[str]] = synonym("name")
+    street: Mapped[Optional[str]] = synonym("address1")
+    contactvalue: Mapped[Optional[str]] = synonym("phone")
 
 
 class SocialHistory(Base):
     __tablename__ = "socialhistory"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    socialhabitcode = Column(String(100))
-    socialhabitcodestd = Column(String(100))
-    socialhabitdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    socialhabitcode: Mapped[Optional[str]] = mapped_column(String(100))
+    socialhabitcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    socialhabitdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class FamilyHistory(Base):
     __tablename__ = "familyhistory"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    familymembercode = Column(String(100))
-    familymembercodestd = Column(String(100))
-    familymemberdesc = Column(String(100))
-    diagnosiscode = Column(String(100))
-    diagnosiscodestd = Column(String(100))
-    diagnosisdesc = Column(String(100))
-    notetext = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    familymembercode: Mapped[Optional[str]] = mapped_column(String(100))
+    familymembercodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    familymemberdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosiscode: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosisdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    notetext: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Observation(Base):
     __tablename__ = "observation"
 
-    id = Column(
+    id: Mapped[str] = mapped_column(
         String,
         primary_key=True,
         sqla_info=ColumnInfo(
@@ -646,7 +613,7 @@ class Observation(Base):
             description="Unique identifier for the observation record.",
         ),
     )
-    pid = Column(
+    pid: Mapped[str] = mapped_column(
         String,
         ForeignKey("patientrecord.pid"),
         sqla_info=ColumnInfo(
@@ -654,7 +621,7 @@ class Observation(Base):
             description="Identifier of the patient associated with this observation.",
         ),
     )
-    creation_date = Column(
+    creation_date: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         server_default=text("now()"),
@@ -663,145 +630,145 @@ class Observation(Base):
             description="Date and time when the observation record was created.",
         ),
     )
-    idx = Column(
+    idx: Mapped[Optional[int]] = mapped_column(
         Integer,
         sqla_info=ColumnInfo(label="Index", description="Index for the observation."),
     )
-    observationtime = Column(
+    observationtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Observation Time",
             description="Date and time when the observation was made.",
         ),
     )
-    observationcode = Column(
+    observationcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Observation Code",
             description="Code for the observation - UKRR, PV or SNOMED Coding Standards.",
         ),
     )
-    observationcodestd = Column(
+    observationcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Observation Code Standard",
             description="Coding standard used for the observation code (UKRR, PV, SNOMED).",
         ),
     )
-    observationdesc = Column(
+    observationdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Observation Description",
             description="Text description of the observation recorded.",
         ),
     )
-    observationvalue = Column(
+    observationvalue: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Observation Value",
             description="The measured or observed value.",
         ),
     )
-    observationunits = Column(
+    observationunits: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Observation Units",
             description="Units of measurement for the observation value.",
         ),
     )
-    prepost = Column(
+    prepost: Mapped[Optional[str]] = mapped_column(
         String(4),
         sqla_info=ColumnInfo(
             label="Pre/Post Indicator",
             description="Indicates whether the observation was made PRE or POST dialysis (PRE, POST, UNK, NA).",
         ),
     )
-    commenttext = Column(
+    commenttext: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Comment Text",
             description="Free-text comment associated with the observation.",
         ),
     )
-    cliniciancode = Column(
+    cliniciancode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Clinician Code",
             description="Code identifying the clinician associated with this observation.",
         ),
     )
-    cliniciancodestd = Column(
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Clinician Code Standard",
             description="Coding standard used for the clinician code.",
         ),
     )
-    cliniciandesc = Column(
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Clinician Description",
             description="Name or description of the clinician.",
         ),
     )
-    enteredatcode = Column(
+    enteredatcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Code",
             description="Code for the location where the observation was entered.",
         ),
     )
-    enteredatcodestd = Column(
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Code Standard",
             description="Coding standard used for the entered-at code.",
         ),
     )
-    enteredatdesc = Column(
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Description",
             description="Text description of the location where the observation was entered.",
         ),
     )
-    enteringorganizationcode = Column(
+    enteringorganizationcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entering Organization Code",
             description="Code identifying the organization entering the observation.",
         ),
     )
-    enteringorganizationcodestd = Column(
+    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entering Organization Code Standard",
             description="Coding standard used for the entering organization code.",
         ),
     )
-    enteringorganizationdesc = Column(
+    enteringorganizationdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entering Organization Description",
             description="Text description of the organization entering the observation.",
         ),
     )
-    updatedon = Column(
+    updatedon: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
     )
-    actioncode = Column(
+    actioncode: Mapped[Optional[str]] = mapped_column(
         String(3),
         sqla_info=ColumnInfo(
             label="Action Code",
             description="Code representing the action performed on the observation record.",
         ),
     )
-    externalid = Column(
+    externalid: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
     )
-    update_date = Column(
+    update_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Update Date",
@@ -809,31 +776,10 @@ class Observation(Base):
         ),
     )
 
-    # Synonyms
-
-    observation_time: Mapped[datetime.datetime] = synonym("observationtime")
-    observation_code: Mapped[str] = synonym("observationcode")
-    observation_code_std: Mapped[str] = synonym("observationcodestd")
-    observation_desc: Mapped[str] = synonym("observationdesc")
-    observation_value: Mapped[str] = synonym("observationvalue")
-    observation_units: Mapped[str] = synonym("observationunits")
-    comment_text: Mapped[str] = synonym("commenttext")
-    clinician_code: Mapped[str] = synonym("cliniciancode")
-    clinician_code_std: Mapped[str] = synonym("cliniciancodestd")
-    clinician_desc: Mapped[str] = synonym("cliniciandesc")
-    entered_at: Mapped[str] = synonym("enteredatcode")
-    entered_at_description: Mapped[str] = synonym("enteredatdesc")
-    entering_organization_code: Mapped[str] = synonym("enteringorganizationcode")
-    entering_organization_description: Mapped[str] = synonym("enteringorganizationdesc")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-    action_code: Mapped[str] = synonym("actioncode")
-    external_id: Mapped[str] = synonym("externalid")
-    pre_post: Mapped[str] = synonym("prepost")
-
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
-            f"{self.observation_code} {self.observation_value}"
+            f"{self.observationcode} {self.observationvalue}"
             f">"
         )
 
@@ -841,108 +787,98 @@ class Observation(Base):
 class OptOut(Base):
     __tablename__ = "optout"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    programname = Column(String(100))
-    programdescription = Column(String(100))
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    fromtime = Column(Date)
-    totime = Column(Date)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    program_name: Mapped[str] = synonym("programname")
-    program_description: Mapped[str] = synonym("programdescription")
-    entered_by_code: Mapped[str] = synonym("enteredbycode")
-    entered_by_code_std: Mapped[str] = synonym("enteredbycodestd")
-    entered_by_desc: Mapped[str] = synonym("enteredbydesc")
-    entered_at_code: Mapped[str] = synonym("enteredatcode")
-    entered_at_code_std: Mapped[str] = synonym("enteredatcodestd")
-    entered_at_desc: Mapped[str] = synonym("enteredatdesc")
-    from_time: Mapped[datetime.date] = synonym("fromtime")
-    to_time: Mapped[datetime.date] = synonym("totime")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-    action_code: Mapped[str] = synonym("actioncode")
-    external_id: Mapped[str] = synonym("externalid")
+    creation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    programname: Mapped[Optional[str]] = mapped_column(String(100))
+    programdescription: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[date]] = mapped_column(Date)
+    totime: Mapped[Optional[date]] = mapped_column(Date)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Allergy(Base):
     __tablename__ = "allergy"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    allergycode = Column(String(100))
-    allergycodestd = Column(String(100))
-    allergydesc = Column(String(100))
-    allergycategorycode = Column(String(100))
-    allergycategorycodestd = Column(String(100))
-    allergycategorydesc = Column(String(100))
-    severitycode = Column(String(100))
-    severitycodestd = Column(String(100))
-    severitydesc = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    discoverytime = Column(DateTime)
-    confirmedtime = Column(DateTime)
-    commenttext = Column(String(500))
-    inactivetime = Column(DateTime)
-    freetextallergy = Column(String(500))
-    qualifyingdetails = Column(String(500))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    allergycode: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    allergydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycategorycode: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycategorycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycategorydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    severitycode: Mapped[Optional[str]] = mapped_column(String(100))
+    severitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    severitydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    discoverytime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    confirmedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    commenttext: Mapped[Optional[str]] = mapped_column(String(500))
+    inactivetime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    freetextallergy: Mapped[Optional[str]] = mapped_column(String(500))
+    qualifyingdetails: Mapped[Optional[str]] = mapped_column(String(500))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Diagnosis(Base):
     __tablename__ = "diagnosis"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    diagnosistype = Column(
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    diagnosistype: Mapped[Optional[str]] = mapped_column(
         String(50),
         sqla_info=ColumnInfo(
             label="Diagnosis Type",
             description="Type of diagnosis",
         ),
     )
-    diagnosingcliniciancode = Column(String(100))
-    diagnosingcliniciancodestd = Column(String(100))
-    diagnosingcliniciandesc = Column(String(100))
-    diagnosiscode = Column(
+    diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosiscode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Diagnosis Code",
             description="Code representing the diagnosis. This should also include any diagnosis that has been submitted elsewhere as a Primary Renal Diagnosis.",
         ),
     )
-    diagnosiscodestd = Column(
+    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Diagnosis Code Standard",
             description="Coding standard used for the diagnosis",
         ),
     )
-    diagnosisdesc = Column(
+    diagnosisdesc: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="Diagnosis Description",
@@ -950,42 +886,38 @@ class Diagnosis(Base):
         ),
     )
     comments: Mapped[Optional[str]] = mapped_column(Text)
-    identificationtime = Column(DateTime)
-    onsettime = Column(DateTime)
-    enteredon = Column(DateTime)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    encounternumber = Column(String(100))
-    verificationstatus = Column(String(100))
-
-    # Synonyms
-
-    diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-    diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-    diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
-    identification_time: Mapped[datetime.datetime] = synonym("identificationtime")
-    onset_time: Mapped[datetime.datetime] = synonym("onsettime")
+    identificationtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    onsettime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
+    verificationstatus: Mapped[Optional[str]] = mapped_column(String(100))
 
 
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
 
-    pid = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    pid: Mapped[str] = mapped_column(
+        String, ForeignKey("patientrecord.pid"), primary_key=True
+    )
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    diagnosistype = Column(
+    creation_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    diagnosistype: Mapped[Optional[str]] = mapped_column(
         String(50),
         sqla_info=ColumnInfo(
             label="Diagnosis Type",
             description="Type of renal diagnosis",
         ),
     )
-    diagnosiscode = Column(
+    diagnosiscode: Mapped[Optional[str]] = mapped_column(
         "diagnosiscode",
         String,
         sqla_info=ColumnInfo(
@@ -993,7 +925,7 @@ class RenalDiagnosis(Base):
             description="Code representing the renal diagnosis",
         ),
     )
-    diagnosiscodestd = Column(
+    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
         "diagnosiscodestd",
         String,
         sqla_info=ColumnInfo(
@@ -1001,7 +933,7 @@ class RenalDiagnosis(Base):
             description="Coding standard used for the renal diagnosis",
         ),
     )
-    diagnosisdesc = Column(
+    diagnosisdesc: Mapped[Optional[str]] = mapped_column(
         "diagnosisdesc",
         String,
         sqla_info=ColumnInfo(
@@ -1009,117 +941,109 @@ class RenalDiagnosis(Base):
             description="Text description of the renal diagnosis",
         ),
     )
-    diagnosingcliniciancode = Column(String(100))
-    diagnosingcliniciancodestd = Column(String(100))
-    diagnosingcliniciandesc = Column(String(100))
-    comments = Column(String)
-    identificationtime = Column("identificationtime", DateTime)
-    onsettime = Column(DateTime)
-    enteredon = Column(DateTime)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-    id: Mapped[str] = synonym("pid")  # see comment on cause of death
-    diagnosis_code: Mapped[str] = synonym("diagnosiscode")
-    diagnosis_code_std: Mapped[str] = synonym("diagnosiscodestd")
-    diagnosis_desc: Mapped[str] = synonym("diagnosisdesc")
-    identification_time: Mapped[datetime.datetime] = synonym("identificationtime")
+    diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    comments: Mapped[Optional[str]] = mapped_column(String)
+    identificationtime: Mapped[Optional[datetime]] = mapped_column(
+        "identificationtime", DateTime
+    )
+    onsettime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class DialysisSession(Base):
     __tablename__ = "dialysissession"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    proceduretypecode = Column(
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    proceduretypecode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Procedure Type Code",
             description="Code representing dialysis procedure type",
         ),
     )
-    proceduretypecodestd = Column(String(100))
-    proceduretypedesc = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    proceduretime = Column(
+    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Procedure Time",
             description="Date and time of dialysis session",
         ),
     )
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    qhd19 = Column(String(255))
-    qhd20 = Column(
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    qhd19: Mapped[Optional[str]] = mapped_column(String(255))
+    qhd20: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="QHD20",
             description="Vascular access used",
         ),
     )
-    qhd21 = Column(String(255))
-    qhd22 = Column(String(255))
-    qhd30 = Column(String(255))
-    qhd31 = Column(
+    qhd21: Mapped[Optional[str]] = mapped_column(String(255))
+    qhd22: Mapped[Optional[str]] = mapped_column(String(255))
+    qhd30: Mapped[Optional[str]] = mapped_column(String(255))
+    qhd31: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="QHD31",
             description="Time dialysed in minutes",
         ),
     )
-    qhd32 = Column(String(255))
-    qhd33 = Column(String(255))
+    qhd32: Mapped[Optional[str]] = mapped_column(String(255))
+    qhd33: Mapped[Optional[str]] = mapped_column(String(255))
 
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    procedure_type_code: Mapped[str] = synonym("proceduretypecode")
-    procedure_type_code_std: Mapped[str] = synonym("proceduretypecodestd")
-    procedure_type_desc: Mapped[str] = synonym("proceduretypedesc")
-    procedure_time: Mapped[datetime.datetime] = synonym("proceduretime")
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Transplant(Base):
     __tablename__ = "transplant"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
 
-    proceduretypecode = Column(
+    proceduretypecode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Procedure Type Code",
             description="Code representing transplant procedure type",
         ),
     )
-    proceduretypecodestd = Column(String(100))
-    proceduretypedesc = Column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    proceduretime = Column(
+    proceduretime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Procedure Time",
@@ -1127,25 +1051,25 @@ class Transplant(Base):
         ),
     )
 
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    enteredatcode = Column(
+    enteredatcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Code",
             description="Code for the location where the transplant information was entered",
         ),
     )
-    enteredatcodestd = Column(
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Code Standard",
             description="Coding standard used for the entered-at code",
         ),
     )
-    enteredatdesc = Column(
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Entered At Description",
@@ -1153,195 +1077,185 @@ class Transplant(Base):
         ),
     )
 
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
 
-    tra64 = Column(
+    tra64: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="TRA64",
             description="Date of kidney transplant failure",
         ),
     )
-    tra65 = Column(String(255))
-    tra66 = Column(String(255))
-    tra69 = Column(DateTime)
-    tra76 = Column(String(255))
-    tra77 = Column(
+    tra65: Mapped[Optional[str]] = mapped_column(String(255))
+    tra66: Mapped[Optional[str]] = mapped_column(String(255))
+    tra69: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    tra76: Mapped[Optional[str]] = mapped_column(String(255))
+    tra77: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="TRA77",
             description="Donor type, NHSBT type",
         ),
     )
-    tra78 = Column(String(255))
-    tra79 = Column(String(255))
-    tra80 = Column(String(255))
-    tra8a = Column(String(255))
-    tra81 = Column(String(255))
-    tra82 = Column(String(255))
-    tra83 = Column(String(255))
-    tra84 = Column(String(255))
-    tra85 = Column(String(255))
-    tra86 = Column(String(255))
-    tra87 = Column(String(255))
-    tra88 = Column(String(255))
-    tra89 = Column(String(255))
-    tra90 = Column(String(255))
-    tra91 = Column(String(255))
-    tra92 = Column(String(255))
-    tra93 = Column(String(255))
-    tra94 = Column(String(255))
-    tra95 = Column(String(255))
-    tra96 = Column(String(255))
-    tra97 = Column(String(255))
-    tra98 = Column(String(255))
+    tra78: Mapped[Optional[str]] = mapped_column(String(255))
+    tra79: Mapped[Optional[str]] = mapped_column(String(255))
+    tra80: Mapped[Optional[str]] = mapped_column(String(255))
+    tra8a: Mapped[Optional[str]] = mapped_column(String(255))
+    tra81: Mapped[Optional[str]] = mapped_column(String(255))
+    tra82: Mapped[Optional[str]] = mapped_column(String(255))
+    tra83: Mapped[Optional[str]] = mapped_column(String(255))
+    tra84: Mapped[Optional[str]] = mapped_column(String(255))
+    tra85: Mapped[Optional[str]] = mapped_column(String(255))
+    tra86: Mapped[Optional[str]] = mapped_column(String(255))
+    tra87: Mapped[Optional[str]] = mapped_column(String(255))
+    tra88: Mapped[Optional[str]] = mapped_column(String(255))
+    tra89: Mapped[Optional[str]] = mapped_column(String(255))
+    tra90: Mapped[Optional[str]] = mapped_column(String(255))
+    tra91: Mapped[Optional[str]] = mapped_column(String(255))
+    tra92: Mapped[Optional[str]] = mapped_column(String(255))
+    tra93: Mapped[Optional[str]] = mapped_column(String(255))
+    tra94: Mapped[Optional[str]] = mapped_column(String(255))
+    tra95: Mapped[Optional[str]] = mapped_column(String(255))
+    tra96: Mapped[Optional[str]] = mapped_column(String(255))
+    tra97: Mapped[Optional[str]] = mapped_column(String(255))
+    tra98: Mapped[Optional[str]] = mapped_column(String(255))
 
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    procedure_type_code: Mapped[str] = synonym("proceduretypecode")
-    procedure_type_code_std: Mapped[str] = synonym("proceduretypecodestd")
-    procedure_type_desc: Mapped[str] = synonym("proceduretypedesc")
-    procedure_time: Mapped[datetime.datetime] = synonym("proceduretime")
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class VascularAccess(Base):
     __tablename__ = "vascularaccess"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
-    idx = Column(Integer)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    proceduretypecode = Column(String(100))
-    proceduretypecodestd = Column(String(100))
-    proceduretypedesc = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    proceduretime = Column(DateTime)
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    proceduretypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
 
-    acc19 = Column(String(255))
-    acc20 = Column(String(255))
-    acc21 = Column(String(255))
-    acc22 = Column(String(255))
-    acc30 = Column(String(255))
-    acc40 = Column(String(255))
+    acc19: Mapped[Optional[str]] = mapped_column(String(255))
+    acc20: Mapped[Optional[str]] = mapped_column(String(255))
+    acc21: Mapped[Optional[str]] = mapped_column(String(255))
+    acc22: Mapped[Optional[str]] = mapped_column(String(255))
+    acc30: Mapped[Optional[str]] = mapped_column(String(255))
+    acc40: Mapped[Optional[str]] = mapped_column(String(255))
 
-    update_date = Column(DateTime)
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Procedure(Base):
     __tablename__ = "procedure"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    proceduretypecode = Column(String(100))
-    proceduretypecodestd = Column(String(100))
-    proceduretypedesc = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    proceduretime = Column(DateTime)
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    proceduretypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Encounter(Base):
     __tablename__ = "encounter"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    encounternumber = Column(String(100))
-    encountertype = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
-    admittingcliniciancode = Column(String(100))
-    admittingcliniciancodestd = Column(String(100))
-    admittingcliniciandesc = Column(String(100))
-    admitreasoncode = Column(String(100))
-    admitreasoncodestd = Column(String(100))
-    admitreasondesc = Column(String(100))
-    admissionsourcecode = Column(String(100))
-    admissionsourcecodestd = Column(String(100))
-    admissionsourcedesc = Column(String(100))
-    dischargereasoncode = Column(String(100))
-    dischargereasoncodestd = Column(String(100))
-    dischargereasondesc = Column(String(100))
-    dischargelocationcode = Column(String(100))
-    dischargelocationcodestd = Column(String(100))
-    dischargelocationdesc = Column(String(100))
-    healthcarefacilitycode = Column(String(100))
-    healthcarefacilitycodestd = Column(String(100))
-    healthcarefacilitydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    visitdescription = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    from_time: Mapped[datetime.datetime] = synonym("fromtime")
-    to_time: Mapped[datetime.datetime] = synonym("totime")
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
+    encountertype: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncode: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasondesc: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecode: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcode: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycode: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class ProgramMembership(Base):
     __tablename__ = "programmembership"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    programname = Column(String(100))
-    programdescription = Column(String(100))
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    fromtime = Column(Date)
-    totime = Column(Date)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    program_name: Mapped[str] = synonym("programname")
-    from_time: Mapped[datetime.date] = synonym("fromtime")
-    to_time: Mapped[datetime.date] = synonym("totime")
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    programname: Mapped[Optional[str]] = mapped_column(String(100))
+    programdescription: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[date]] = mapped_column(Date)
+    totime: Mapped[Optional[date]] = mapped_column(Date)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
         return (
@@ -1354,40 +1268,44 @@ class ProgramMembership(Base):
 class ClinicalRelationship(Base):
     __tablename__ = "clinicalrelationship"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    facilitycode = Column(String(100))
-    facilitycodestd = Column(String(100))
-    facilitydesc = Column(String(100))
-    fromtime = Column(Date)
-    totime = Column(Date)
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    facilitycode: Mapped[Optional[str]] = mapped_column(String(100))
+    facilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    facilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[date]] = mapped_column(Date)
+    totime: Mapped[Optional[date]] = mapped_column(Date)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Name(Base):
     __tablename__ = "name"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patient.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patient.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    nameuse = Column(String(10))
-    prefix = Column(String(10))
-    family = Column(String(60))
-    given = Column(String(60))
-    othergivennames = Column(String(60))
-    suffix = Column(String(10))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    nameuse: Mapped[Optional[str]] = mapped_column(String(10))
+    prefix: Mapped[Optional[str]] = mapped_column(String(10))
+    family: Mapped[Optional[str]] = mapped_column(String(60))
+    given: Mapped[Optional[str]] = mapped_column(String(60))
+    othergivennames: Mapped[Optional[str]] = mapped_column(String(60))
+    suffix: Mapped[Optional[str]] = mapped_column(String(10))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <{self.given} {self.family}>"
@@ -1396,18 +1314,20 @@ class Name(Base):
 class PatientNumber(Base):
     __tablename__ = "patientnumber"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patient.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patient.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    patientid = Column(String(50), index=True)
-    numbertype = Column(String(3))
-    organization = Column(String(50))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    patientid: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+    numbertype: Mapped[Optional[str]] = mapped_column(String(3))
+    organization: Mapped[Optional[str]] = mapped_column(String(50))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
         return (
@@ -1420,30 +1340,24 @@ class PatientNumber(Base):
 class Address(Base):
     __tablename__ = "address"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patient.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patient.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    addressuse = Column(String(10))
-    fromtime = Column(Date)
-    totime = Column(Date)
-    street = Column(String(100))
-    town = Column(String(100))
-    county = Column(String(100))
-    postcode: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    countrycode = Column(String(100))
-    countrycodestd = Column(String(100))
-    countrydesc = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    from_time: Mapped[datetime.date] = synonym("fromtime")
-    to_time: Mapped[datetime.date] = synonym("totime")
-    country_code: Mapped[str] = synonym("countrycode")
-    country_code_std: Mapped[str] = synonym("countrycodestd")
-    country_description: Mapped[str] = synonym("countrydesc")
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    addressuse: Mapped[Optional[str]] = mapped_column(String(10))
+    fromtime: Mapped[Optional[date]] = mapped_column(Date)
+    totime: Mapped[Optional[date]] = mapped_column(Date)
+    street: Mapped[Optional[str]] = mapped_column(String(100))
+    town: Mapped[Optional[str]] = mapped_column(String(100))
+    county: Mapped[Optional[str]] = mapped_column(String(100))
+    postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
+    countrycode: Mapped[Optional[str]] = mapped_column(String(100))
+    countrycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    countrydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
         return (
@@ -1456,23 +1370,20 @@ class Address(Base):
 class ContactDetail(Base):
     __tablename__ = "contactdetail"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patient.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patient.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    contactuse = Column(String(10))
-    contactvalue = Column(String(100))
-    commenttext = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    use: Mapped[str] = synonym("contactuse")
-    value: Mapped[str] = synonym("contactvalue")
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    contactuse: Mapped[Optional[str]] = mapped_column(String(10))
+    contactvalue: Mapped[Optional[str]] = mapped_column(String(100))
+    commenttext: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <{self.use}:{self.value}>"
@@ -1481,22 +1392,24 @@ class ContactDetail(Base):
 class Medication(Base):
     __tablename__ = "medication"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
 
-    idx = Column(Integer)
-    repositoryupdatedate = Column(DateTime, nullable=False)
-    prescriptionnumber = Column(String(100))
-    fromtime = Column(
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    repositoryupdatedate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    prescriptionnumber: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="From Time",
             description="Start time of the prescription",
         ),
     )
-    totime = Column(
+    totime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="To Time",
@@ -1504,39 +1417,39 @@ class Medication(Base):
         ),
     )
 
-    orderedbycode = Column(String(100))
-    orderedbycodestd = Column(String(100))
-    orderedbydesc = Column(String(100))
+    orderedbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbydesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    enteringorganizationcode = Column(String(100))
-    enteringorganizationcodestd = Column(String(100))
-    enteringorganizationdesc = Column(String(100))
+    enteringorganizationcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    routecode = Column(
+    routecode: Mapped[Optional[str]] = mapped_column(
         String(10),
         sqla_info=ColumnInfo(
             label="Route Code",
             description="Code representing medication route",
         ),
     )
-    routecodestd = Column(String(100))
-    routedesc = Column(String(100))
+    routecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    routedesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    drugproductidcode = Column(
+    drugproductidcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Drug Product ID Code",
             description="Code of the drug product",
         ),
     )
-    drugproductidcodestd = Column(
+    drugproductidcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Drug Product ID Code Standard",
             description="Coding standard used for the drug product",
         ),
     )
-    drugproductiddesc = Column(
+    drugproductiddesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Drug Product ID Description",
@@ -1544,14 +1457,14 @@ class Medication(Base):
         ),
     )
 
-    drugproductgeneric = Column(
+    drugproductgeneric: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label=" Drug Product Generic",
             description="Drug product generic",
         ),
     )
-    drugproductlabelname = Column(
+    drugproductlabelname: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="Drug Product Label Name",
@@ -1559,29 +1472,29 @@ class Medication(Base):
         ),
     )
 
-    drugproductformcode = Column(String(100))
-    drugproductformcodestd = Column(String(100))
-    drugproductformdesc = Column(String(100))
+    drugproductformcode: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductformcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductformdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    drugproductstrengthunitscode = Column(String(100))
-    drugproductstrengthunitscodestd = Column(String(100))
-    drugproductstrengthunitsdesc = Column(String(100))
+    drugproductstrengthunitscode: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductstrengthunitscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductstrengthunitsdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    frequency = Column(
+    frequency: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="Frequency",
             description="Medication frequency",
         ),
     )
-    commenttext = Column(
+    commenttext: Mapped[Optional[str]] = mapped_column(
         String(1000),
         sqla_info=ColumnInfo(
             label="Comment Text",
             description="Free-text comment associated with the medication",
         ),
     )
-    dosequantity = Column(
+    dosequantity: Mapped[Optional[Decimal]] = mapped_column(
         Numeric(19, 2),
         sqla_info=ColumnInfo(
             label="Dose Quantity",
@@ -1589,43 +1502,22 @@ class Medication(Base):
         ),
     )
 
-    doseuomcode = Column(
+    doseuomcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Dose UoM Code",
             description="Medication units code",
         ),
     )
-    doseuomcodestd = Column(String(100))
-    doseuomdesc = Column(String(100))
+    doseuomcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    doseuomdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
-    indication = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-    encounternumber = Column(String(100))
-
-    # Synonyms
-
-    repository_update_date: Mapped[datetime.datetime] = synonym("repositoryupdatedate")
-    from_time: Mapped[datetime.datetime] = synonym("fromtime")
-    to_time: Mapped[datetime.datetime] = synonym("totime")
-    entering_organization_code: Mapped[str] = synonym("enteringorganizationcode")
-    entering_organization_description: Mapped[str] = synonym("enteringorganizationdesc")
-    route_code: Mapped[str] = synonym("routecode")
-    route_code_std: Mapped[str] = synonym("routecodestd")
-    route_desc: Mapped[str] = synonym("routedesc")
-    drug_product_id_code: Mapped[str] = synonym("drugproductidcode")
-    drug_product_id_description: Mapped[str] = synonym("drugproductiddesc")
-    drug_product_generic: Mapped[str] = synonym("drugproductgeneric")
-    comment: Mapped[str] = synonym("commenttext")
-    dose_quantity: Mapped[str] = synonym("dosequantity")
-    dose_uom_code: Mapped[str] = synonym("doseuomcode")
-    dose_uom_code_std: Mapped[str] = synonym("doseuomcodestd")
-    dose_uom_description: Mapped[str] = synonym("doseuomdesc")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-    external_id: Mapped[str] = synonym("externalid")
+    indication: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid})"
@@ -1634,27 +1526,29 @@ class Medication(Base):
 class Survey(Base):
     __tablename__ = "survey"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    surveytime = Column(DateTime, nullable=False)
-    surveytypecode = Column(String(100))
-    surveytypecodestd = Column(String(100))
-    surveytypedesc = Column(String(100))
-    typeoftreatment = Column(String(100))
-    hdlocation = Column(String(100))
-    template = Column(String(100))
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    surveytime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    surveytypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    surveytypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    surveytypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    typeoftreatment: Mapped[Optional[str]] = mapped_column(String(100))
+    hdlocation: Mapped[Optional[str]] = mapped_column(String(100))
+    template: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Relationships
 
@@ -1673,179 +1567,150 @@ class Survey(Base):
 class Question(Base):
     __tablename__ = "question"
 
-    id = Column(String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
 
-    surveyid = Column(String, ForeignKey("survey.id"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    questiontypecode = Column(String(100))
-    questiontypecodestd = Column(String(100))
-    questiontypedesc = Column(String(100))
-    response = Column(String(100))
-    questiontext = Column(String(100))
-    update_date = Column(DateTime)
+    surveyid: Mapped[str] = mapped_column(String, ForeignKey("survey.id"))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    questiontypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    questiontypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    questiontypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    response: Mapped[Optional[str]] = mapped_column(String(100))
+    questiontext: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Score(Base):
     __tablename__ = "score"
 
-    id = Column(String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
 
-    surveyid = Column(String, ForeignKey("survey.id"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    scorevalue = Column(String(100))
-    scoretypecode = Column(String(100))
-    scoretypecodestd = Column(String(100))
-    scoretypedesc = Column(String(100))
-    update_date = Column(DateTime)
+    surveyid: Mapped[str] = mapped_column(String, ForeignKey("survey.id"))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    scorevalue: Mapped[Optional[str]] = mapped_column(String(100))
+    scoretypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    scoretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    scoretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Synonyms
 
-    value: Mapped[str] = synonym("scorevalue")
+    value: Mapped[Optional[str]] = synonym("scorevalue")
 
 
 class Level(Base):
     __tablename__ = "level"
 
-    id = Column(String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
 
-    surveyid = Column(String, ForeignKey("survey.id"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    levelvalue = Column(String(100))
-    leveltypecode = Column(String(100))
-    leveltypecodestd = Column(String(100))
-    leveltypedesc = Column(String(100))
-    update_date = Column(DateTime)
+    surveyid: Mapped[str] = mapped_column(String, ForeignKey("survey.id"))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    levelvalue: Mapped[Optional[str]] = mapped_column(String(100))
+    leveltypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    leveltypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    leveltypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Synonyms
 
-    value: Mapped[str] = synonym("levelvalue")
+    value: Mapped[Optional[str]] = synonym("levelvalue")
 
 
 class Document(Base):
     __tablename__ = "document"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    repositoryupdatedate = Column(DateTime, nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    documenttime = Column(DateTime)
-    notetext = Column(Text)
-    documenttypecode = Column(String(100))
-    documenttypecodestd = Column(String(100))
-    documenttypedesc = Column(String(100))
-    cliniciancode = Column(String(100))
-    cliniciancodestd = Column(String(100))
-    cliniciandesc = Column(String(100))
-    documentname = Column(String(100))
-    statuscode = Column(String(100))
-    statuscodestd = Column(String(100))
-    statusdesc = Column(String(100))
-    enteredbycode = Column(String(100))
-    enteredbycodestd = Column(String(100))
-    enteredbydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    filetype = Column(String(100))
-    filename = Column(String(100))
-    stream = Column(LargeBinary)
-    documenturl = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    repository_update_date = synonym("repositoryupdatedate")
+    repositoryupdatedate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    documenttime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    notetext: Mapped[Optional[str]] = mapped_column(Text)
+    documenttypecode: Mapped[Optional[str]] = mapped_column(String(100))
+    documenttypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    documenttypedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    documentname: Mapped[Optional[str]] = mapped_column(String(100))
+    statuscode: Mapped[Optional[str]] = mapped_column(String(100))
+    statuscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    statusdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    filetype: Mapped[Optional[str]] = mapped_column(String(100))
+    filename: Mapped[Optional[str]] = mapped_column(String(100))
+    stream: Mapped[Optional[bytes]] = mapped_column(LargeBinary)
+    documenturl: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class LabOrder(Base):
     __tablename__ = "laborder"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(
+    creation_date = mapped_column(
         DateTime, nullable=False, index=True, server_default=text("now()")
     )
-    placerid = Column(String(100))
-    fillerid = Column(String(100))
-    receivinglocationcode = Column(String(100))
-    receivinglocationcodestd = Column(String(100))
-    receivinglocationdesc = Column(String(100))
-    orderedbycode = Column(String(100))
-    orderedbycodestd = Column(String(100))
-    orderedbydesc = Column(String(100))
-    orderitemcode = Column(String(100))
-    orderitemcodestd = Column(String(100))
-    orderitemdesc = Column(String(100))
-    prioritycode = Column(String(100))
-    prioritycodestd = Column(String(100))
-    prioritydesc = Column(String(100))
-    status = Column(String(100))
-    ordercategorycode = Column(String(100))
-    ordercategorycodestd = Column(String(100))
-    ordercategorydesc = Column(String(100))
-    specimensource = Column(String(50))
-    specimenreceivedtime = Column(DateTime)
-    specimencollectedtime = Column(DateTime)
-    duration = Column(String(50))
-    patientclasscode = Column(String(100))
-    patientclasscodestd = Column(String(100))
-    patientclassdesc = Column(String(100))
-    enteredon = Column(DateTime)
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    enteringorganizationcode = Column(String(100))
-    enteringorganizationcodestd = Column(String(100))
-    enteringorganizationdesc = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime, index=True)
-    repository_update_date = Column(DateTime, index=True)
-
-    # Synonyms
-
-    receiving_location: Mapped[str] = synonym("receivinglocationcode")
-    receiving_location_description: Mapped[str] = synonym("receivinglocationdesc")
-    receiving_location_code_std: Mapped[str] = synonym("receivinglocationcodestd")
-    placer_id: Mapped[str] = synonym("placerid")
-    filler_id: Mapped[str] = synonym("fillerid")
-    ordered_by: Mapped[str] = synonym("orderedbycode")
-    ordered_by_description: Mapped[str] = synonym("orderedbydesc")
-    ordered_by_code_std: Mapped[str] = synonym("orderedbycodestd")
-    order_item: Mapped[str] = synonym("orderitemcode")
-    order_item_description: Mapped[str] = synonym("orderitemdesc")
-    order_item_code_std: Mapped[str] = synonym("orderitemcodestd")
-    order_category: Mapped[str] = synonym("ordercategorycode")
-    order_category_description: Mapped[str] = synonym("ordercategorydesc")
-    order_category_code_std: Mapped[str] = synonym("ordercategorycodestd")
-    specimen_collected_time: Mapped[datetime.datetime] = synonym(
-        "specimencollectedtime"
+    placerid: Mapped[Optional[str]] = mapped_column(String(100))
+    fillerid: Mapped[Optional[str]] = mapped_column(String(100))
+    receivinglocationcode: Mapped[Optional[str]] = mapped_column(String(100))
+    receivinglocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    receivinglocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbycode: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    orderitemcode: Mapped[Optional[str]] = mapped_column(String(100))
+    orderitemcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderitemdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    prioritycode: Mapped[Optional[str]] = mapped_column(String(100))
+    prioritycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    prioritydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    status: Mapped[Optional[str]] = mapped_column(String(100))
+    ordercategorycode: Mapped[Optional[str]] = mapped_column(String(100))
+    ordercategorycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    ordercategorydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    specimensource: Mapped[Optional[str]] = mapped_column(String(50))
+    specimenreceivedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    specimencollectedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    duration: Mapped[Optional[str]] = mapped_column(String(50))
+    patientclasscode: Mapped[Optional[str]] = mapped_column(String(100))
+    patientclasscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    patientclassdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime, index=True)
+    repository_update_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, index=True
     )
-    specimen_received_time: Mapped[datetime.datetime] = synonym("specimenreceivedtime")
-    priority: Mapped[str] = synonym("prioritycode")
-    priority_description: Mapped[str] = synonym("prioritydesc")
-    priority_code_std: Mapped[str] = synonym("prioritycodestd")
-    specimen_source: Mapped[str] = synonym("specimensource")
-    patient_class: Mapped[str] = synonym("patientclasscode")
-    patient_class_description: Mapped[str] = synonym("patientclassdesc")
-    patient_class_code_std: Mapped[str] = synonym("patientclasscodestd")
-    entered_on: Mapped[datetime.datetime] = synonym("enteredon")
-    entered_at: Mapped[str] = synonym("enteredatcode")
-    entered_at_description: Mapped[str] = synonym("enteredatdesc")
-    external_id: Mapped[str] = synonym("externalid")
-    entering_organization_code: Mapped[str] = synonym("enteringorganizationcode")
-    entering_organization_description: Mapped[str] = synonym("enteringorganizationdesc")
-    entering_organization_code_std: Mapped[str] = synonym("enteringorganizationcodestd")
 
     # Relationships
 
@@ -1860,7 +1725,7 @@ class LabOrder(Base):
 class ResultItem(Base):
     __tablename__ = "resultitem"
 
-    id = Column(
+    id: Mapped[str] = mapped_column(
         String,
         primary_key=True,
         sqla_info=ColumnInfo(
@@ -1868,7 +1733,7 @@ class ResultItem(Base):
             description="Unique identifier for the result item.",
         ),
     )
-    orderid = Column(
+    orderid: Mapped[str] = mapped_column(
         "orderid",
         String,
         ForeignKey("laborder.id"),
@@ -1877,7 +1742,7 @@ class ResultItem(Base):
             description="Identifier of the related laboratory order.",
         ),
     )
-    creation_date = Column(
+    creation_date: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         server_default=text("now()"),
@@ -1886,120 +1751,120 @@ class ResultItem(Base):
             description="Date and time when the result item was created.",
         ),
     )
-    resulttype = Column(
+    resulttype: Mapped[Optional[str]] = mapped_column(
         String(2),
         sqla_info=ColumnInfo(label="Result Type", description="Type of result."),
     )
-    serviceidcode = Column(
+    serviceidcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Service ID Code",
             description="Test code identifying the laboratory service or test performed.",
         ),
     )
-    serviceidcodestd = Column(
+    serviceidcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Service ID Code Standard",
             description="Coding standard used for the service ID (SNOMED, LOINC, UKRR, PV, LOCAL).",
         ),
     )
-    serviceiddesc = Column(
+    serviceiddesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Service ID Description",
             description="Text description of the laboratory service or test performed.",
         ),
     )
-    subid = Column(
+    subid: Mapped[Optional[str]] = mapped_column(
         String(50), sqla_info=ColumnInfo(label="Sub ID", description="Sub-Test Id.")
     )
-    resultvalue = Column(
+    resultvalue: Mapped[Optional[str]] = mapped_column(
         String(20),
         sqla_info=ColumnInfo(
             label="Result Value",
             description="The measured or observed value.",
         ),
     )
-    resultvalueunits = Column(
+    resultvalueunits: Mapped[Optional[str]] = mapped_column(
         String(30),
         sqla_info=ColumnInfo(
             label="Result Value Units",
             description="Units of measurement for the result value.",
         ),
     )
-    referencerange = Column(
+    referencerange: Mapped[Optional[str]] = mapped_column(
         String(30),
         sqla_info=ColumnInfo(
             label="Reference Range",
             description="Reference range for the test result.",
         ),
     )
-    interpretationcodes = Column(
+    interpretationcodes: Mapped[Optional[str]] = mapped_column(
         String(50),
         sqla_info=ColumnInfo(
             label="Interpretation Codes",
             description="Code(s) indicating interpretation of the result (POS, NEG, UNK).",
         ),
     )
-    status = Column(
+    status: Mapped[Optional[str]] = mapped_column(
         String(5),
         sqla_info=ColumnInfo(
             label="Result Status",
             description="Status of the result (F, P, D).",
         ),
     )
-    observationtime = Column(
+    observationtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Observation Time",
             description="Date and time when the observation or measurement was made.",
         ),
     )
-    commenttext = Column(
+    commenttext: Mapped[Optional[str]] = mapped_column(
         String(1000),
         sqla_info=ColumnInfo(
             label="Comment Text",
             description="Free-text comment associated with the result.",
         ),
     )
-    referencecomment = Column(
+    referencecomment: Mapped[Optional[str]] = mapped_column(
         String(1000),
         sqla_info=ColumnInfo(
             label="Reference Comment",
             description="Reference comment provided with the result.",
         ),
     )
-    prepost = Column(
+    prepost: Mapped[Optional[str]] = mapped_column(
         String(4),
         sqla_info=ColumnInfo(
             label="Pre/Post Indicator",
             description="Indicates whether the sample was taken PRE or POST dialysis (PRE, POST, UNK, NA).",
         ),
     )
-    enteredon = Column(
+    enteredon: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Entered On",
             description="Date and time when the result was entered into the system.",
         ),
     )
-    updatedon = Column(
+    updatedon: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(label="Updated On", description="Last Modified Date"),
     )
-    actioncode = Column(
+    actioncode: Mapped[Optional[str]] = mapped_column(
         String(3),
         sqla_info=ColumnInfo(
             label="Action Code",
             description="Code representing the action performed on the result record.",
         ),
     )
-    externalid = Column(
+    externalid: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(label="External ID", description="Unique Identifier"),
     )
-    update_date = Column(
+    update_date: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Update Date",
@@ -2011,40 +1876,28 @@ class ResultItem(Base):
 
     pid = association_proxy("order", "pid")
 
-    # Synonyms
-    order_id: Mapped[str] = synonym("orderid")
-    result_type: Mapped[str] = synonym("resulttype")
-    entered_on: Mapped[datetime.datetime] = synonym("enteredon")
-    pre_post: Mapped[str] = synonym("prepost")
-    service_id: Mapped[str] = synonym("serviceidcode")
-    service_id_std: Mapped[str] = synonym("serviceidcodestd")
-    service_id_description: Mapped[str] = synonym("serviceiddesc")
-    sub_id: Mapped[str] = synonym("subid")
-    value: Mapped[str] = synonym("resultvalue")
-    value_units: Mapped[str] = synonym("resultvalueunits")
-    reference_range: Mapped[str] = synonym("referencerange")
-    interpretation_codes: Mapped[str] = synonym("interpretationcodes")
-    observation_time: Mapped[datetime.datetime] = synonym("observationtime")
-    comments: Mapped[str] = synonym("commenttext")
-    reference_comment: Mapped[str] = synonym("referencecomment")
-
+    # Relationships
     order: Mapped["LabOrder"] = relationship("LabOrder", back_populates="result_items")
 
 
 class PVData(Base):
     __tablename__ = "pvdata"
 
-    id = Column(String, ForeignKey("patientrecord.pid"), primary_key=True)
+    id: Mapped[str] = mapped_column(
+        String, ForeignKey("patientrecord.pid"), primary_key=True
+    )
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
-    diagnosisdate = Column(Date)
+    diagnosisdate: Mapped[Optional[date]] = mapped_column(Date)
 
-    bloodgroup = Column(String(10))
+    bloodgroup: Mapped[Optional[str]] = mapped_column(String(10))
 
-    rrtstatus = Column(String(100))
-    tpstatus = Column(String(100))
+    rrtstatus: Mapped[Optional[str]] = mapped_column(String(100))
+    tpstatus: Mapped[Optional[str]] = mapped_column(String(100))
 
     # Proxies
 
@@ -2069,185 +1922,156 @@ class PVData(Base):
 class PVDelete(Base):
     __tablename__ = "pvdelete"
 
-    did = Column(Integer, primary_key=True)
+    did: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    pid = Column(String, ForeignKey("patientrecord.pid"))
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    observationtime = Column(DateTime)
-    serviceidcode = Column(String(100))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    observation_time: Mapped[datetime.datetime] = synonym("observationtime")
-    service_id: Mapped[str] = synonym("serviceidcode")
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    observationtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    serviceidcode: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Treatment(Base):
     __tablename__ = "treatment"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    idx = Column(Integer)
-    encounternumber = Column(String(100))
-    encountertype = Column(String(100))
-    fromtime = Column(
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    idx: Mapped[Optional[int]] = mapped_column(Integer)
+    encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
+    encountertype: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="From Time",
             description="Start of treatment date",
         ),
     )
-    totime = Column(
+    totime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="To Time",
             description="End of treatment date",
         ),
     )
-    admittingcliniciancode = Column(String(100))
-    admittingcliniciancodestd = Column(String(100))
-    admittingcliniciandesc = Column(String(100))
-    admitreasoncode = Column(
+    admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Reason Code",
             description="Treatment modality code",
         ),
     )
-    admitreasoncodestd = Column(
+    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Reason Code Standard",
             description="Treatment modality code standard",
         ),
     )
-    admitreasondesc = Column(
+    admitreasondesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Reason Description",
             description="Text description of treatment modality",
         ),
     )
-    admissionsourcecode = Column(
+    admissionsourcecode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Source Code",
             description="Code representing prior main renal unit",
         ),
     )
-    admissionsourcecodestd = Column(
+    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Source Code Standard",
             description="Coding standard used for the admission source",
         ),
     )
-    admissionsourcedesc = Column(
+    admissionsourcedesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Admission Source Description",
             description="Text description of admission source",
         ),
     )
-    dischargereasoncode = Column(String(100))
-    dischargereasoncodestd = Column(String(100))
-    dischargereasondesc = Column(String(100))
-    dischargelocationcode = Column(
+    dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Discharge Location Code",
             description="Code representing destination main renal unit",
         ),
     )
-    dischargelocationcodestd = Column(
+    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Discharge location Code Standard",
             description="Coding standard used for the discharge location code",
         ),
     )
-    dischargelocationdesc = Column(
+    dischargelocationdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Discharge Location Description",
             description="Text description of discharge location",
         ),
     )
-    healthcarefacilitycode = Column(
+    healthcarefacilitycode: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Healthcare Facility Code",
             description="Code representing the treatment centre",
         ),
     )
-    healthcarefacilitycodestd = Column(
+    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Healthcare Facility Code Standard",
             description="Coding standard used for the treatment centre",
         ),
     )
-    healthcarefacilitydesc = Column(
+    healthcarefacilitydesc: Mapped[Optional[str]] = mapped_column(
         String(100),
         sqla_info=ColumnInfo(
             label="Healthcare Facility Description",
             description="Text description of the treatment centre",
         ),
     )
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    visitdescription = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    hdp01 = Column(String(255))
-    hdp02 = Column(String(255))
-    hdp03 = Column(String(255))
-    hdp04 = Column(String(255))
-    qbl05 = Column(
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    hdp01: Mapped[Optional[str]] = mapped_column(String(255))
+    hdp02: Mapped[Optional[str]] = mapped_column(String(255))
+    hdp03: Mapped[Optional[str]] = mapped_column(String(255))
+    hdp04: Mapped[Optional[str]] = mapped_column(String(255))
+    qbl05: Mapped[Optional[str]] = mapped_column(
         String(255),
         sqla_info=ColumnInfo(
             label="QBL05",
             description="HD treatment location",
         ),
     )
-    qbl06 = Column(String(255))
-    qbl07 = Column(String(255))
-    erf61 = Column(String(255))
-    pat35 = Column(String(255))
-    update_date = Column(DateTime)
-
-    # Synonyms
-
-    encounter_number: Mapped[str] = synonym("encounternumber")
-    encounter_type: Mapped[str] = synonym("encountertype")
-    from_time: Mapped[datetime.datetime] = synonym("fromtime")
-    to_time: Mapped[datetime.datetime] = synonym("totime")
-    admitting_clinician_code: Mapped[str] = synonym("admittingcliniciancode")
-    admitting_clinician_code_std: Mapped[str] = synonym("admittingcliniciancodestd")
-    admitting_clinician_desc: Mapped[str] = synonym("admittingcliniciandesc")
-    admission_source_code: Mapped[str] = synonym("admissionsourcecode")
-    admission_source_code_std: Mapped[str] = synonym("admissionsourcecodestd")
-    admission_source_desc: Mapped[str] = synonym("admissionsourcedesc")
-    admit_reason_code: Mapped[str] = synonym("admitreasoncode")
-    admit_reason_code_std: Mapped[str] = synonym("admitreasoncodestd")
-    discharge_reason_code: Mapped[str] = synonym("dischargereasoncode")
-    discharge_reason_code_std: Mapped[str] = synonym("dischargereasoncodestd")
-    discharge_location_code: Mapped[str] = synonym("dischargelocationcode")
-    discharge_location_code_std: Mapped[str] = synonym("dischargelocationcodestd")
-    discharge_location_desc: Mapped[str] = synonym("dischargelocationdesc")
-    health_care_facility_code: Mapped[str] = synonym("healthcarefacilitycode")
-    health_care_facility_code_std: Mapped[str] = synonym("healthcarefacilitycodestd")
-    health_care_facility_desc: Mapped[str] = synonym("healthcarefacilitydesc")
-    entered_at_code: Mapped[str] = synonym("enteredatcode")
-    visit_description: Mapped[str] = synonym("visitdescription")
-    updated_on: Mapped[datetime.datetime] = synonym("updatedon")
-    action_code: Mapped[str] = synonym("actioncode")
-    external_id: Mapped[str] = synonym("externalid")
+    qbl06: Mapped[Optional[str]] = mapped_column(String(255))
+    qbl07: Mapped[Optional[str]] = mapped_column(String(255))
+    erf61: Mapped[Optional[str]] = mapped_column(String(255))
+    pat35: Mapped[Optional[str]] = mapped_column(String(255))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Proxies
 
@@ -2272,100 +2096,126 @@ class Treatment(Base):
 class TransplantList(Base):
     __tablename__ = "transplantlist"
 
-    id = Column(String, primary_key=True)
-    pid = Column(String, ForeignKey("patientrecord.pid"))
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pid: Mapped[str] = mapped_column(String, ForeignKey("patientrecord.pid"))
 
-    idx = Column(Integer)
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    encounternumber = Column(String(100))
-    encountertype = Column(String(100))
-    fromtime = Column(DateTime)
-    totime = Column(DateTime)
-    admittingcliniciancode = Column(String(100))
-    admittingcliniciancodestd = Column(String(100))
-    admittingcliniciandesc = Column(String(100))
-    admitreasoncode = Column(String(100))
-    admitreasoncodestd = Column(String(100))
-    admitreasondesc = Column(String(100))
-    admissionsourcecode = Column(String(100))
-    admissionsourcecodestd = Column(String(100))
-    admissionsourcedesc = Column(String(100))
-    dischargereasoncode = Column(String(100))
-    dischargereasoncodestd = Column(String(100))
-    dischargereasondesc = Column(String(100))
-    dischargelocationcode = Column(String(100))
-    dischargelocationcodestd = Column(String(100))
-    dischargelocationdesc = Column(String(100))
-    healthcarefacilitycode = Column(String(100))
-    healthcarefacilitycodestd = Column(String(100))
-    healthcarefacilitydesc = Column(String(100))
-    enteredatcode = Column(String(100))
-    enteredatcodestd = Column(String(100))
-    enteredatdesc = Column(String(100))
-    visitdescription = Column(String(100))
-    updatedon = Column(DateTime)
-    actioncode = Column(String(3))
-    externalid = Column(String(100))
-    update_date = Column(DateTime)
+    idx: Mapped[int] = mapped_column(Integer)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
+    encountertype: Mapped[Optional[str]] = mapped_column(String(100))
+    fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncode: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasondesc: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecode: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcedesc: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcode: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycode: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
+    visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    actioncode: Mapped[Optional[str]] = mapped_column(String(3))
+    externalid: Mapped[Optional[str]] = mapped_column(String(100))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Code(Base):
     __tablename__ = "code_list"
 
-    coding_standard = Column(String(256), primary_key=True)
-    code = Column(String(256), primary_key=True)
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    description = Column(String(256))
-    object_type = Column(String(256))
-    update_date = Column(DateTime)
-    units = Column(String(256))
-    pkb_reference_range = Column(String(10))
-    pkb_comment = Column(String(365))
+    coding_standard: Mapped[str] = mapped_column(String(256), primary_key=True)
+    code: Mapped[str] = mapped_column(String(256), primary_key=True)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    description: Mapped[Optional[str]] = mapped_column(String(256))
+    object_type: Mapped[Optional[str]] = mapped_column(String(256))
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    units: Mapped[Optional[str]] = mapped_column(String(256))
+    pkb_reference_range: Mapped[Optional[str]] = mapped_column(String(10))
+    pkb_comment: Mapped[Optional[str]] = mapped_column(String(365))
 
 
 class CodeExclusion(Base):
     __tablename__ = "code_exclusion"
 
-    coding_standard = Column(String, primary_key=True)
-    code = Column(String, primary_key=True)
-    system = Column(String, primary_key=True)
+    coding_standard: Mapped[str] = mapped_column(String, primary_key=True)
+    code: Mapped[str] = mapped_column(String, primary_key=True)
+    system: Mapped[str] = mapped_column(String, primary_key=True)
 
 
 class CodeMap(Base):
     __tablename__ = "code_map"
 
-    source_coding_standard = Column(String(256), primary_key=True)
-    source_code = Column(String(256), primary_key=True)
-    destination_coding_standard = Column(String(256), primary_key=True)
-    destination_code = Column(String(256), primary_key=True)
+    source_coding_standard: Mapped[str] = mapped_column(String(256), primary_key=True)
+    source_code: Mapped[str] = mapped_column(String(256), primary_key=True)
+    destination_coding_standard: Mapped[str] = mapped_column(
+        String(256), primary_key=True
+    )
+    destination_code: Mapped[str] = mapped_column(String(256), primary_key=True)
 
-    creation_date = Column(DateTime, nullable=False, server_default=text("now()"))
-    update_date = Column(DateTime)
+    creation_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=text("now()")
+    )
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class Facility(Base):
     __tablename__ = "facility_new"
 
     # New columns matching SQL schema
-    facilitycode = Column("facilitycode", String(100), primary_key=True)
-    facilitycodestd = Column("facilitycodestd", String(100), primary_key=True)
-    facilitytype = Column("facilitytype", String(100), nullable=False)
-    pkbout = Column("pkbout", Boolean, nullable=False, server_default=text("false"))
-    pkbmsgexclusions = Column("pkbmsgexclusions", ARRAY(Text))
-    pkb_pv_msg_exclusions = Column("pkb_pv_msg_exclusions", ARRAY(Text))
-    pkb_ukrdc_msg_exclusions = Column("pkb_ukrdc_msg_exclusions", ARRAY(Text))
-    ukrdcoutpkb = Column(
+    facilitycode: Mapped[str] = mapped_column(
+        "facilitycode", String(100), primary_key=True
+    )
+    facilitycodestd: Mapped[str] = mapped_column(
+        "facilitycodestd", String(100), primary_key=True
+    )
+    facilitytype: Mapped[str] = mapped_column(
+        "facilitytype", String(100), nullable=False
+    )
+    pkbout: Mapped[bool] = mapped_column(
+        "pkbout", Boolean, nullable=False, server_default=text("false")
+    )
+    pkbmsgexclusions: Mapped[Optional[str]] = mapped_column(
+        "pkbmsgexclusions", ARRAY(Text)
+    )
+    pkb_pv_msg_exclusions: Mapped[Optional[str]] = mapped_column(
+        "pkb_pv_msg_exclusions", ARRAY(Text)
+    )
+    pkb_ukrdc_msg_exclusions: Mapped[Optional[str]] = mapped_column(
+        "pkb_ukrdc_msg_exclusions", ARRAY(Text)
+    )
+    ukrdcoutpkb: Mapped[bool] = mapped_column(
         "ukrdcoutpkb", Boolean, nullable=False, server_default=text("false")
     )
-    pvoutpkb = Column("pvoutpkb", Boolean, nullable=False, server_default=text("false"))
-    startdate = Column("startdate", DateTime)
-    enddate = Column("enddate", DateTime)
-    firstdataquarter = Column("firstdataquarter", Integer)
-    pkboutstartdate = Column("pkboutstartdate", DateTime)
-    creation_date = Column(
+    pvoutpkb: Mapped[bool] = mapped_column(
+        "pvoutpkb", Boolean, nullable=False, server_default=text("false")
+    )
+    startdate: Mapped[Optional[datetime]] = mapped_column("startdate", DateTime)
+    enddate: Mapped[Optional[datetime]] = mapped_column("enddate", DateTime)
+    firstdataquarter: Mapped[Optional[int]] = mapped_column("firstdataquarter", Integer)
+    pkboutstartdate: Mapped[Optional[datetime]] = mapped_column(
+        "pkboutstartdate", DateTime
+    )
+    creation_date: Mapped[datetime] = mapped_column(
         "creation_date", DateTime, nullable=False, server_default=text("now()")
     )
-    update_date = Column(
+    update_date: Mapped[datetime] = mapped_column(
         "update_date", DateTime, nullable=False, server_default=text("now()")
     )
 
@@ -2380,13 +2230,13 @@ class Facility(Base):
     )
 
     # Synonyms for old column names (backward compatibility)
-    code = synonym("facilitycode")
-    coding_standard = synonym("facilitycodestd")
-    pkb_out = synonym("pkbout")
-    pkb_msg_exclusions = synonym("pkbmsgexclusions")
-    rdastartdate = synonym("startdate")
-    rdaenddate = synonym("enddate")
-    rdafirstdataquarter = synonym("firstdataquarter")
+    code: Mapped[str] = synonym("facilitycode")
+    coding_standard: Mapped[str] = synonym("facilitycodestd")
+    pkb_out: Mapped[bool] = synonym("pkbout")
+    pkb_msg_exclusions: Mapped[Optional[str]] = synonym("pkbmsgexclusions")
+    rdastartdate: Mapped[Optional[datetime]] = synonym("startdate")
+    rdaenddate: Mapped[Optional[datetime]] = synonym("enddate")
+    rdafirstdataquarter: Mapped[Optional[int]] = synonym("firstdataquarter")
 
     description = association_proxy("code_info", "description")
 
@@ -2406,96 +2256,98 @@ class Facility(Base):
 class RRCodes(Base):
     __tablename__ = "rr_codes"
 
-    id = Column(String, primary_key=True)
-    rr_code = Column("rr_code", String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    rr_code = mapped_column("rr_code", String, primary_key=True)
 
-    description_1 = Column(String(255))
-    description_2 = Column(String(70))
-    description_3 = Column(String(60))
+    description_1: Mapped[Optional[str]] = mapped_column(String(255))
+    description_2: Mapped[Optional[str]] = mapped_column(String(70))
+    description_3: Mapped[Optional[str]] = mapped_column(String(60))
 
-    old_value = Column(String(10))
-    old_value_2 = Column(String(10))
-    new_value = Column(String(10))
+    old_value: Mapped[Optional[str]] = mapped_column(String(10))
+    old_value_2: Mapped[Optional[str]] = mapped_column(String(10))
+    new_value: Mapped[Optional[str]] = mapped_column(String(10))
 
 
 class Locations(Base):
     __tablename__ = "locations"
 
-    centre_code = Column(String(10), primary_key=True)
-    centre_name = Column(String(255))
-    country_code = Column(String(6))
-    region_code = Column(String(10))
-    paed_unit = Column(Integer)
+    centre_code: Mapped[str] = mapped_column(String(10), primary_key=True)
+    centre_name: Mapped[Optional[str]] = mapped_column(String(255))
+    country_code: Mapped[Optional[str]] = mapped_column(String(6))
+    region_code: Mapped[Optional[str]] = mapped_column(String(10))
+    paed_unit: Mapped[Optional[int]] = mapped_column(Integer)
 
 
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key = Column(String(5), primary_key=True)
+    upload_key: Mapped[str] = mapped_column(String(5), primary_key=True)
 
-    table_name = Column("TABLE_NAME", String(30), nullable=False)
-    field_name = Column(String(30), nullable=False)
-    code_id = Column(String(10))
-    mandatory = Column(Numeric(1, 0))
+    table_name = mapped_column("TABLE_NAME", String(30), nullable=False)
+    field_name: Mapped[str] = mapped_column(String(30), nullable=False)
+    code_id: Mapped[Optional[str]] = mapped_column(String(10))
+    mandatory: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
 
-    code_type = Column("TYPE", String(1))
+    code_type: Mapped[Optional[str]] = mapped_column("TYPE", String(1))
 
-    alt_constraint = Column(String(30))
-    alt_desc = Column(String(30))
-    extra_val = Column(String(1))
-    error_type = Column(Integer)
-    paed_mand = Column(Numeric(1, 0))
-    ckd5_mand_numeric = Column("ckd5_mand", Numeric(1, 0))
-    dependant_field = Column(String(30))
-    alt_validation = Column(String(30))
+    alt_constraint: Mapped[Optional[str]] = mapped_column(String(30))
+    alt_desc: Mapped[Optional[str]] = mapped_column(String(30))
+    extra_val: Mapped[Optional[str]] = mapped_column(String(1))
+    error_type: Mapped[Optional[int]] = mapped_column(Integer)
+    paed_mand: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    ckd5_mand_numeric: Mapped[Optional[Decimal]] = mapped_column(
+        "ckd5_mand", Numeric(1, 0)
+    )
+    dependant_field: Mapped[Optional[str]] = mapped_column(String(30))
+    alt_validation: Mapped[Optional[str]] = mapped_column(String(30))
 
-    file_prefix = Column(String(20))
+    file_prefix: Mapped[Optional[str]] = mapped_column(String(20))
 
-    load_min = Column(Numeric(38, 4))
-    load_max = Column(Numeric(38, 4))
-    remove_min = Column(Numeric(38, 4))
-    remove_max = Column(Numeric(38, 4))
-    in_month = Column(Numeric(1, 0))
-    aki_mand = Column(Numeric(1, 0))
-    rrt_mand = Column(Numeric(1, 0))
-    cons_mand = Column(Numeric(1, 0))
-    ckd4_mand = Column(Numeric(1, 0))
-    valid_before_dob = Column(Numeric(1, 0))
-    valid_after_dod = Column(Numeric(1, 0))
-    in_quarter = Column(Numeric(1, 0))
+    load_min: Mapped[Optional[Decimal]] = mapped_column(Numeric(38, 4))
+    load_max: Mapped[Optional[Decimal]] = mapped_column(Numeric(38, 4))
+    remove_min: Mapped[Optional[Decimal]] = mapped_column(Numeric(38, 4))
+    remove_max: Mapped[Optional[Decimal]] = mapped_column(Numeric(38, 4))
+    in_month: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    aki_mand: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    rrt_mand: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    cons_mand: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    ckd4_mand: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    valid_before_dob: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    valid_after_dod: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
+    in_quarter: Mapped[Optional[Decimal]] = mapped_column(Numeric(1, 0))
 
     # Synonyms
 
-    TYPE: Mapped[str] = synonym("code_type")
-    ckd5_mand: Mapped[str] = synonym("ckd5_mand_numeric")
+    TYPE: Mapped[Optional[str]] = synonym("code_type")
+    ckd5_mand: Mapped[Optional[str]] = synonym("ckd5_mand_numeric")
     # historical typo for compatibility tests
-    feild_name: Mapped[str] = synonym("field_name")
+    feild_name: Mapped[Optional[str]] = synonym("field_name")
 
 
 class ModalityCodes(Base):
     __tablename__ = "modality_codes"
 
-    registry_code = Column(String(8), primary_key=True)
+    registry_code: Mapped[str] = mapped_column(String(8), primary_key=True)
 
-    registry_code_desc = Column(String(100))
-    registry_code_type = Column(String(3), nullable=False)
-    acute = Column(BIT(1), nullable=False)
-    transfer_in = Column(BIT(1), nullable=False)
-    ckd = Column(BIT(1), nullable=False)
-    cons = Column(BIT(1), nullable=False)
-    rrt = Column(BIT(1), nullable=False)
-    equiv_modality = Column(String(8))
-    end_of_care = Column(BIT(1), nullable=False)
-    is_imprecise = Column(BIT(1), nullable=False)
-    nhsbt_transplant_type = Column(String(4))
-    transfer_out = Column(BIT(1))
+    registry_code_desc: Mapped[Optional[str]] = mapped_column(String(100))
+    registry_code_type: Mapped[str] = mapped_column(String(3), nullable=False)
+    acute: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    transfer_in: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    ckd: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    cons: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    rrt: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    equiv_modality: Mapped[Optional[str]] = mapped_column(String(8))
+    end_of_care: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    is_imprecise: Mapped[int] = mapped_column(BIT(1), nullable=False)
+    nhsbt_transplant_type: Mapped[Optional[str]] = mapped_column(String(4))
+    transfer_out: Mapped[Optional[int]] = mapped_column(BIT(1))
 
 
 class SatelliteMap(Base):
     __tablename__ = "vwe_satellite_map"
 
-    satellite_code = Column(String(10), primary_key=True)
-    main_unit_code = Column(String(10), primary_key=True)
+    satellite_code: Mapped[str] = mapped_column(String(10), primary_key=True)
+    main_unit_code: Mapped[str] = mapped_column(String(10), primary_key=True)
 
     # attributes for backwards compatability
     @property
@@ -2510,35 +2362,35 @@ class SatelliteMap(Base):
 class FacilityRelationship(Base):
     __tablename__ = "vwe_facility_relationship"
 
-    parentfacilitycode = Column(String(100), primary_key=True)
-    parentfacilitycodestd = Column(String(100), primary_key=True)
-    childfacilitycode = Column(String(100), primary_key=True)
-    childfacilitycodestd = Column(String(100), primary_key=True)
-    relationshiptype = Column(String(50))
+    parentfacilitycode: Mapped[str] = mapped_column(String(100), primary_key=True)
+    parentfacilitycodestd: Mapped[str] = mapped_column(String(100), primary_key=True)
+    childfacilitycode: Mapped[str] = mapped_column(String(100), primary_key=True)
+    childfacilitycodestd: Mapped[str] = mapped_column(String(100), primary_key=True)
+    relationshiptype: Mapped[Optional[str]] = mapped_column(String(50))
 
 
 class ValueExclusion(Base):
     __tablename__ = "value_exclusion"
 
-    system = Column(String(20), primary_key=True)
-    norm_value = Column(String(100), primary_key=True)
+    system: Mapped[str] = mapped_column(String(20), primary_key=True)
+    norm_value: Mapped[str] = mapped_column(String(100), primary_key=True)
 
 
 class File(Base):
     __tablename__ = "file"
 
-    sendingfacility = Column(String(7), primary_key=True)
-    sendingextract = Column(String(6), primary_key=True)
-    ni = Column(String(50), primary_key=True)
+    sendingfacility: Mapped[str] = mapped_column(String(7), primary_key=True)
+    sendingextract: Mapped[str] = mapped_column(String(6), primary_key=True)
+    ni: Mapped[str] = mapped_column(String(50), primary_key=True)
 
-    filename = Column(String(255), nullable=False)
-    checksum = Column(String(64), nullable=False)
-    status = Column(String(20), nullable=False)
-    received_on = Column(DateTime, nullable=False)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    checksum: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    received_on: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
-    creation_date = Column(
+    creation_date: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         server_default=text("now()"),
     )
-    update_date = Column(DateTime)
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
