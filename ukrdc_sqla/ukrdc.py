@@ -192,10 +192,8 @@ class PatientRecord(Base):
     # Synonyms
     id: Mapped[str] = synonym("pid")
     extract_time: Mapped[Optional[str]] = synonym("extracttime")
-    repository_creation_date: Mapped[Optional[datetime]] = synonym(
-        "repositorycreationdate"
-    )
-    repository_update_date: Mapped[Optional[datetime]] = synonym("repositoryupdatedate")
+    repository_creation_date: Mapped[datetime] = synonym("repositorycreationdate")
+    repository_update_date: Mapped[datetime] = synonym("repositoryupdatedate")
 
     def __str__(self):
         return (
@@ -410,7 +408,7 @@ class Patient(Base):
         "persontocontact_relationship"
     )
     person_to_contact_number_comments: Mapped[Optional[str]] = synonym(
-        "persontocontact_numbercomments"
+        "persontocontact_contactnumbercomments"
     )
     person_to_contact_number_type: Mapped[Optional[str]] = synonym(
         "persontocontact_contactnumbertype"
@@ -2619,9 +2617,9 @@ class RRDataDefinition(Base):
     # Synonyms
 
     TYPE: Mapped[Optional[str]] = synonym("code_type")
-    ckd5_mand: Mapped[Optional[str]] = synonym("ckd5_mand_numeric")
+    ckd5_mand: Mapped[Optional[Decimal]] = synonym("ckd5_mand_numeric")
     # historical typo for compatibility tests
-    feild_name: Mapped[Optional[str]] = synonym("field_name")
+    feild_name: Mapped[str] = synonym("field_name")
 
 
 class ModalityCodes(Base):
