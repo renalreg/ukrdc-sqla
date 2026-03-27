@@ -186,6 +186,14 @@ class PatientRecord(Base):
         "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
+    # Synonyms
+    id: Mapped[str] = synonym("pid")
+    extract_time: Mapped[Optional[str]] = synonym("extracttime")
+    repository_creation_date: Mapped[Optional[datetime]] = synonym(
+        "repositorycreationdate"
+    )
+    repository_update_date: Mapped[Optional[datetime]] = synonym("repositoryupdatedate")
+
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
@@ -221,7 +229,7 @@ class Patient(Base):
             label="Date of Birth", description="Patient’s date of birth."
         ),
     )
-    deathtime: Mapped[datetime] = mapped_column(
+    deathtime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
             label="Date of Death",
@@ -383,6 +391,36 @@ class Patient(Base):
         ),
     )
 
+    # Synonyms
+    id: Mapped[str] = synonym("pid")
+    birth_time: Mapped[Optional[datetime]] = synonym("birthtime")
+    death_time: Mapped[Optional[datetime]] = synonym("deathtime")
+    country_of_birth: Mapped[Optional[str]] = synonym("countryofbirth")
+    ethnic_group_code: Mapped[Optional[str]] = synonym("ethnicgroupcode")
+    ethnic_group_code_std: Mapped[Optional[str]] = synonym("ethnicgroupcodestd")
+    ethnic_group_description: Mapped[Optional[str]] = synonym("ethnicgroupdesc")
+    person_to_contact_name: Mapped[Optional[str]] = synonym("persontocontactname")
+    person_to_contact_number: Mapped[Optional[str]] = synonym(
+        "persontocontact_contactnumber"
+    )
+    person_to_contact_relationship: Mapped[Optional[str]] = synonym(
+        "persontocontact_relationship"
+    )
+    person_to_contact_number_comments: Mapped[Optional[str]] = synonym(
+        "persontocontact_numbercomments"
+    )
+    person_to_contact_number_type: Mapped[Optional[str]] = synonym(
+        "persontocontact_contactnumbertype"
+    )
+    occupation_code: Mapped[Optional[str]] = synonym("occupationcode")
+    occupation_codestd: Mapped[Optional[str]] = synonym("occupationcodestd")
+    occupation_description: Mapped[Optional[str]] = synonym("occupationdesc")
+    primary_language: Mapped[Optional[str]] = synonym("primarylanguagecode")
+    primary_language_codestd: Mapped[Optional[str]] = synonym("primarylanguagecodestd")
+    primary_language_description: Mapped[Optional[str]] = synonym("primarylanguagedesc")
+    dead: Mapped[Optional[bool]] = synonym("death")
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+
     # Relationships
     numbers: Mapped[List["PatientNumber"]] = relationship(
         "PatientNumber",
@@ -485,6 +523,27 @@ class CauseOfDeath(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    # Synonyms
+    id: Mapped[str] = synonym(
+        "pid"
+    )  # this will not be correct if the primary key changes
+    diagnosis_type: Mapped[Optional[str]] = synonym("diagnosistype")
+    diagnosing_clinician_code: Mapped[Optional[str]] = synonym(
+        "diagnosingcliniciancode"
+    )
+    diagnosing_clinician_code_std: Mapped[Optional[str]] = synonym(
+        "diagnosingcliniciancodestd"
+    )
+    diagnosing_clinician_desc: Mapped[Optional[str]] = synonym(
+        "diagnosingcliniciandesc"
+    )
+    diagnosis_code: Mapped[Optional[str]] = synonym("diagnosiscode")
+    diagnosis_code_std: Mapped[Optional[str]] = synonym("diagnosiscodestd")
+    diagnosis_desc: Mapped[Optional[str]] = synonym("diagnosisdesc")
+    entered_on: Mapped[Optional[datetime]] = synonym("enteredon")
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    action_code: Mapped[Optional[str]] = synonym("actioncode")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
 
 
 class FamilyDoctor(Base):
@@ -776,6 +835,31 @@ class Observation(Base):
         ),
     )
 
+    # Synonyms
+
+    observation_time: Mapped[Optional[datetime]] = synonym("observationtime")
+    observation_code: Mapped[Optional[str]] = synonym("observationcode")
+    observation_code_std: Mapped[Optional[str]] = synonym("observationcodestd")
+    observation_desc: Mapped[Optional[str]] = synonym("observationdesc")
+    observation_value: Mapped[Optional[str]] = synonym("observationvalue")
+    observation_units: Mapped[Optional[str]] = synonym("observationunits")
+    comment_text: Mapped[Optional[str]] = synonym("commenttext")
+    clinician_code: Mapped[Optional[str]] = synonym("cliniciancode")
+    clinician_code_std: Mapped[Optional[str]] = synonym("cliniciancodestd")
+    clinician_desc: Mapped[Optional[str]] = synonym("cliniciandesc")
+    entered_at: Mapped[Optional[str]] = synonym("enteredatcode")
+    entered_at_description: Mapped[Optional[str]] = synonym("enteredatdesc")
+    entering_organization_code: Mapped[Optional[str]] = synonym(
+        "enteringorganizationcode"
+    )
+    entering_organization_description: Mapped[Optional[str]] = synonym(
+        "enteringorganizationdesc"
+    )
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    action_code: Mapped[Optional[str]] = synonym("actioncode")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
+    pre_post: Mapped[Optional[str]] = synonym("prepost")
+
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
@@ -808,6 +892,22 @@ class OptOut(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+
+    program_name: Mapped[Optional[str]] = synonym("programname")
+    program_description: Mapped[Optional[str]] = synonym("programdescription")
+    entered_by_code: Mapped[Optional[str]] = synonym("enteredbycode")
+    entered_by_code_std: Mapped[Optional[str]] = synonym("enteredbycodestd")
+    entered_by_desc: Mapped[Optional[str]] = synonym("enteredbydesc")
+    entered_at_code: Mapped[Optional[str]] = synonym("enteredatcode")
+    entered_at_code_std: Mapped[Optional[str]] = synonym("enteredatcodestd")
+    entered_at_desc: Mapped[Optional[str]] = synonym("enteredatdesc")
+    from_time: Mapped[Optional[date]] = synonym("fromtime")
+    to_time: Mapped[Optional[date]] = synonym("totime")
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    action_code: Mapped[Optional[str]] = synonym("actioncode")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
 
 
 class Allergy(Base):
@@ -899,6 +999,14 @@ class Diagnosis(Base):
     encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
     verificationstatus: Mapped[Optional[str]] = mapped_column(String(100))
 
+    # Synonyms
+
+    diagnosis_code: Mapped[Optional[str]] = synonym("diagnosiscode")
+    diagnosis_code_std: Mapped[Optional[str]] = synonym("diagnosiscodestd")
+    diagnosis_desc: Mapped[Optional[str]] = synonym("diagnosisdesc")
+    identification_time: Mapped[Optional[datetime]] = synonym("identificationtime")
+    onset_time: Mapped[Optional[datetime]] = synonym("onsettime")
+
 
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
@@ -954,6 +1062,13 @@ class RenalDiagnosis(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+    id: Mapped[str] = synonym("pid")  # see comment on cause of death
+    diagnosis_code: Mapped[Optional[str]] = synonym("diagnosiscode")
+    diagnosis_code_std: Mapped[Optional[str]] = synonym("diagnosiscodestd")
+    diagnosis_desc: Mapped[Optional[str]] = synonym("diagnosisdesc")
+    identification_time: Mapped[Optional[datetime]] = synonym("identificationtime")
 
 
 class DialysisSession(Base):
@@ -1016,6 +1131,13 @@ class DialysisSession(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+
+    procedure_type_code: Mapped[Optional[str]] = synonym("proceduretypecode")
+    procedure_type_code_std: Mapped[Optional[str]] = synonym("proceduretypecodestd")
+    procedure_type_desc: Mapped[Optional[str]] = synonym("proceduretypedesc")
+    procedure_time: Mapped[Optional[datetime]] = synonym("proceduretime")
 
 
 class Transplant(Base):
@@ -1123,6 +1245,13 @@ class Transplant(Base):
     tra98: Mapped[Optional[str]] = mapped_column(String(255))
 
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+
+    procedure_type_code: Mapped[Optional[str]] = synonym("proceduretypecode")
+    procedure_type_code_std: Mapped[Optional[str]] = synonym("proceduretypecodestd")
+    procedure_type_desc: Mapped[Optional[str]] = synonym("proceduretypedesc")
+    procedure_time: Mapped[Optional[datetime]] = synonym("proceduretime")
 
 
 class VascularAccess(Base):
@@ -1232,6 +1361,11 @@ class Encounter(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
+    # Synonyms
+
+    from_time: Mapped[Optional[datetime]] = synonym("fromtime")
+    to_time: Mapped[Optional[datetime]] = synonym("totime")
+
 
 class ProgramMembership(Base):
     __tablename__ = "programmembership"
@@ -1256,6 +1390,10 @@ class ProgramMembership(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    # Synonyms
+    program_name: Mapped[Optional[str]] = synonym("programname")
+    from_time: Mapped[Optional[date]] = synonym("fromtime")
+    to_time: Mapped[Optional[date]] = synonym("totime")
 
     def __str__(self):
         return (
@@ -1359,6 +1497,14 @@ class Address(Base):
     countrydesc: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
+    # Synonyms
+
+    from_time: Mapped[Optional[date]] = synonym("fromtime")
+    to_time: Mapped[Optional[date]] = synonym("totime")
+    country_code: Mapped[Optional[str]] = synonym("countrycode")
+    country_code_std: Mapped[Optional[str]] = synonym("countrycodestd")
+    country_description: Mapped[Optional[str]] = synonym("countrydesc")
+
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
@@ -1384,6 +1530,10 @@ class ContactDetail(Base):
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+    use: Mapped[Optional[str]] = synonym("contactuse")
+    value: Mapped[Optional[str]] = synonym("contactvalue")
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid}) <{self.contactuse}:{self.contactvalue}>"
@@ -1518,6 +1668,31 @@ class Medication(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
+
+    # Synonyms
+
+    repository_update_date: Mapped[datetime] = synonym("repositoryupdatedate")
+    from_time: Mapped[Optional[datetime]] = synonym("fromtime")
+    to_time: Mapped[Optional[datetime]] = synonym("totime")
+    entering_organization_code: Mapped[Optional[str]] = synonym(
+        "enteringorganizationcode"
+    )
+    entering_organization_description: Mapped[Optional[str]] = synonym(
+        "enteringorganizationdesc"
+    )
+    route_code: Mapped[Optional[str]] = synonym("routecode")
+    route_code_std: Mapped[Optional[str]] = synonym("routecodestd")
+    route_desc: Mapped[Optional[str]] = synonym("routedesc")
+    drug_product_id_code: Mapped[Optional[str]] = synonym("drugproductidcode")
+    drug_product_id_description: Mapped[Optional[str]] = synonym("drugproductiddesc")
+    drug_product_generic: Mapped[Optional[str]] = synonym("drugproductgeneric")
+    comment: Mapped[Optional[str]] = synonym("commenttext")
+    dose_quantity: Mapped[Optional[Decimal]] = synonym("dosequantity")
+    dose_uom_code: Mapped[Optional[str]] = synonym("doseuomcode")
+    dose_uom_code_std: Mapped[Optional[str]] = synonym("doseuomcodestd")
+    dose_uom_description: Mapped[Optional[str]] = synonym("doseuomdesc")
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.pid})"
@@ -1662,6 +1837,10 @@ class Document(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
+    # Synonyms
+
+    repository_update_date: Mapped[datetime] = synonym("repositoryupdatedate")
+
 
 class LabOrder(Base):
     __tablename__ = "laborder"
@@ -1719,6 +1898,51 @@ class LabOrder(Base):
         lazy=GLOBAL_LAZY,
         back_populates="order",
         cascade="all, delete-orphan",
+    )
+
+    # Synonyms
+
+    receiving_location: Mapped[Optional[str]] = synonym("receivinglocationcode")
+    receiving_location_description: Mapped[Optional[str]] = synonym(
+        "receivinglocationdesc"
+    )
+    receiving_location_code_std: Mapped[Optional[str]] = synonym(
+        "receivinglocationcodestd"
+    )
+    placer_id: Mapped[Optional[str]] = synonym("placerid")
+    filler_id: Mapped[Optional[str]] = synonym("fillerid")
+    ordered_by: Mapped[Optional[str]] = synonym("orderedbycode")
+    ordered_by_description: Mapped[Optional[str]] = synonym("orderedbydesc")
+    ordered_by_code_std: Mapped[Optional[str]] = synonym("orderedbycodestd")
+    order_item: Mapped[Optional[str]] = synonym("orderitemcode")
+    order_item_description: Mapped[Optional[str]] = synonym("orderitemdesc")
+    order_item_code_std: Mapped[Optional[str]] = synonym("orderitemcodestd")
+    order_category: Mapped[Optional[str]] = synonym("ordercategorycode")
+    order_category_description: Mapped[Optional[str]] = synonym("ordercategorydesc")
+    order_category_code_std: Mapped[Optional[str]] = synonym("ordercategorycodestd")
+    specimen_collected_time: Mapped[Optional[datetime]] = synonym(
+        "specimencollectedtime"
+    )
+    specimen_received_time: Mapped[Optional[datetime]] = synonym("specimenreceivedtime")
+    priority: Mapped[Optional[str]] = synonym("prioritycode")
+    priority_description: Mapped[Optional[str]] = synonym("prioritydesc")
+    priority_code_std: Mapped[Optional[str]] = synonym("prioritycodestd")
+    specimen_source: Mapped[Optional[str]] = synonym("specimensource")
+    patient_class: Mapped[Optional[str]] = synonym("patientclasscode")
+    patient_class_description: Mapped[Optional[str]] = synonym("patientclassdesc")
+    patient_class_code_std: Mapped[Optional[str]] = synonym("patientclasscodestd")
+    entered_on: Mapped[Optional[datetime]] = synonym("enteredon")
+    entered_at: Mapped[Optional[str]] = synonym("enteredatcode")
+    entered_at_description: Mapped[Optional[str]] = synonym("enteredatdesc")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
+    entering_organization_code: Mapped[Optional[str]] = synonym(
+        "enteringorganizationcode"
+    )
+    entering_organization_description: Mapped[Optional[str]] = synonym(
+        "enteringorganizationdesc"
+    )
+    entering_organization_code_std: Mapped[Optional[str]] = synonym(
+        "enteringorganizationcodestd"
     )
 
 
@@ -1879,6 +2103,23 @@ class ResultItem(Base):
     # Relationships
     order: Mapped["LabOrder"] = relationship("LabOrder", back_populates="result_items")
 
+    # Synonyms
+    order_id: Mapped[str] = synonym("orderid")
+    result_type: Mapped[Optional[str]] = synonym("resulttype")
+    entered_on: Mapped[Optional[datetime]] = synonym("enteredon")
+    pre_post: Mapped[Optional[str]] = synonym("prepost")
+    service_id: Mapped[Optional[str]] = synonym("serviceidcode")
+    service_id_std: Mapped[Optional[str]] = synonym("serviceidcodestd")
+    service_id_description: Mapped[Optional[str]] = synonym("serviceiddesc")
+    sub_id: Mapped[Optional[str]] = synonym("subid")
+    value: Mapped[Optional[str]] = synonym("resultvalue")
+    value_units: Mapped[Optional[str]] = synonym("resultvalueunits")
+    reference_range: Mapped[Optional[str]] = synonym("referencerange")
+    interpretation_codes: Mapped[Optional[str]] = synonym("interpretationcodes")
+    observation_time: Mapped[Optional[datetime]] = synonym("observationtime")
+    comments: Mapped[Optional[str]] = synonym("commenttext")
+    reference_comment: Mapped[Optional[str]] = synonym("referencecomment")
+
 
 class PVData(Base):
     __tablename__ = "pvdata"
@@ -1931,6 +2172,11 @@ class PVDelete(Base):
     observationtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     serviceidcode: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    # Synonyms
+
+    observation_time: Mapped[Optional[datetime]] = synonym("observationtime")
+    service_id: Mapped[Optional[str]] = synonym("serviceidcode")
 
 
 class Treatment(Base):
@@ -2091,6 +2337,40 @@ class Treatment(Base):
         "Code",
         primaryjoin="and_(foreign(Treatment.discharge_reason_code_std)==remote(Code.coding_standard), foreign(Treatment.discharge_reason_code)==remote(Code.code))",
     )
+
+    # Synonyms
+
+    encounter_number: Mapped[Optional[str]] = synonym("encounternumber")
+    encounter_type: Mapped[Optional[str]] = synonym("encountertype")
+    from_time: Mapped[Optional[datetime]] = synonym("fromtime")
+    to_time: Mapped[Optional[datetime]] = synonym("totime")
+    admitting_clinician_code: Mapped[Optional[str]] = synonym("admittingcliniciancode")
+    admitting_clinician_code_std: Mapped[Optional[str]] = synonym(
+        "admittingcliniciancodestd"
+    )
+    admitting_clinician_desc: Mapped[Optional[str]] = synonym("admittingcliniciandesc")
+    admission_source_code: Mapped[Optional[str]] = synonym("admissionsourcecode")
+    admission_source_code_std: Mapped[Optional[str]] = synonym("admissionsourcecodestd")
+    admission_source_desc: Mapped[Optional[str]] = synonym("admissionsourcedesc")
+    admit_reason_code: Mapped[Optional[str]] = synonym("admitreasoncode")
+    admit_reason_code_std: Mapped[Optional[str]] = synonym("admitreasoncodestd")
+    discharge_reason_code: Mapped[Optional[str]] = synonym("dischargereasoncode")
+    discharge_reason_code_std: Mapped[Optional[str]] = synonym("dischargereasoncodestd")
+    discharge_location_code: Mapped[Optional[str]] = synonym("dischargelocationcode")
+    discharge_location_code_std: Mapped[Optional[str]] = synonym(
+        "dischargelocationcodestd"
+    )
+    discharge_location_desc: Mapped[Optional[str]] = synonym("dischargelocationdesc")
+    health_care_facility_code: Mapped[Optional[str]] = synonym("healthcarefacilitycode")
+    health_care_facility_code_std: Mapped[Optional[str]] = synonym(
+        "healthcarefacilitycodestd"
+    )
+    health_care_facility_desc: Mapped[Optional[str]] = synonym("healthcarefacilitydesc")
+    entered_at_code: Mapped[Optional[str]] = synonym("enteredatcode")
+    visit_description: Mapped[Optional[str]] = synonym("visitdescription")
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    action_code: Mapped[Optional[str]] = synonym("actioncode")
+    external_id: Mapped[Optional[str]] = synonym("externalid")
 
 
 class TransplantList(Base):
