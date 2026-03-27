@@ -108,7 +108,10 @@ class PatientRecord(Base):
         "Patient", back_populates="record", uselist=False, cascade="all, delete-orphan"
     )
     lab_orders: Mapped[List["LabOrder"]] = relationship(
-        "LabOrder", back_populates="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+        "LabOrder",
+        back_populates="record",
+        lazy=GLOBAL_LAZY,
+        cascade="all, delete-orphan",
     )
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
@@ -444,7 +447,7 @@ class Patient(Base):
         "PatientRecord",
         back_populates="patient",
         uselist=False,
-        primaryjoin="Patient.pid == PatientRecord.pid"
+        primaryjoin="Patient.pid == PatientRecord.pid",
     )
 
     def __str__(self):
@@ -844,9 +847,7 @@ class Observation(Base):
     # Relationships
 
     record: Mapped["PatientRecord"] = relationship(
-        "PatientRecord",
-        back_populates="observations",
-        uselist=False
+        "PatientRecord", back_populates="observations", uselist=False
     )
 
     # Synonyms
@@ -1481,10 +1482,7 @@ class PatientNumber(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
-    patient: Mapped["Patient"] = relationship(
-        "Patient",
-        back_populates="numbers"
-    )
+    patient: Mapped["Patient"] = relationship("Patient", back_populates="numbers")
 
     def __str__(self):
         return (
@@ -1919,9 +1917,7 @@ class LabOrder(Base):
         cascade="all, delete-orphan",
     )
     record: Mapped["PatientRecord"] = relationship(
-        "PatientRecord",
-        back_populates="lab_orders",
-        uselist=False
+        "PatientRecord", back_populates="lab_orders", uselist=False
     )
 
     # Synonyms
