@@ -108,7 +108,7 @@ class PatientRecord(Base):
         "Patient", back_populates="record", uselist=False, cascade="all, delete-orphan"
     )
     lab_orders: Mapped[List["LabOrder"]] = relationship(
-        "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+        "LabOrder", back_populates="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     result_items: Mapped[List["ResultItem"]] = relationship(
         "ResultItem",
@@ -182,7 +182,7 @@ class PatientRecord(Base):
     pvdata: Mapped["PVData"] = relationship(
         "PVData", uselist=False, cascade="all, delete-orphan"
     )
-    pvdelete: Mapped["PVDelete"] = relationship(
+    pvdelete: Mapped[List["PVDelete"]] = relationship(
         "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
@@ -439,6 +439,12 @@ class Patient(Base):
     )
     familydoctor: Mapped["FamilyDoctor"] = relationship(
         "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
+    )
+    record: Mapped["PatientRecord"] = relationship(
+        "PatientRecord",
+        back_populates="patient",
+        uselist=False,
+        primaryjoin="Patient.pid == PatientRecord.pid"
     )
 
     def __str__(self):
@@ -833,6 +839,14 @@ class Observation(Base):
             label="Update Date",
             description="Date and time when the record was last updated.",
         ),
+    )
+
+    # Relationships
+
+    record: Mapped["PatientRecord"] = relationship(
+        "PatientRecord",
+        back_populates="observations",
+        uselist=False
     )
 
     # Synonyms
@@ -1467,6 +1481,11 @@ class PatientNumber(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
+    patient: Mapped["Patient"] = relationship(
+        "Patient",
+        back_populates="numbers"
+    )
+
     def __str__(self):
         return (
             f"{self.__class__.__name__}({self.pid}) <"
@@ -1898,6 +1917,11 @@ class LabOrder(Base):
         lazy=GLOBAL_LAZY,
         back_populates="order",
         cascade="all, delete-orphan",
+    )
+    record: Mapped["PatientRecord"] = relationship(
+        "PatientRecord",
+        back_populates="lab_orders",
+        uselist=False
     )
 
     # Synonyms
