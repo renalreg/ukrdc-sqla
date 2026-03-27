@@ -1,7 +1,6 @@
 import typing
-import pytest
-from sqlalchemy.orm import SynonymProperty, ColumnProperty, Synonym
-from sqlalchemy.orm.relationships import _RelationshipDeclared
+
+from sqlalchemy.orm import Synonym
 
 from ukrdc_sqla import ukrdc
 
