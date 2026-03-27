@@ -1,8 +1,12 @@
 """Modules which relate to the Repository System Tables"""
 
-from sqlalchemy import Column, String, DateTime, Integer
+from datetime import datetime
+from typing import Optional
 
-from ukrdc_sqla.ukrdc import Base
+from sqlalchemy import String, DateTime, Integer
+from sqlalchemy.orm import Mapped, synonym
+
+from ukrdc_sqla.ukrdc import Base, mapped_column
 
 
 class EventControl(Base):
@@ -10,9 +14,11 @@ class EventControl(Base):
 
     __tablename__ = "eventcontrol"
 
-    event_type = Column("eventtype", String, primary_key=True)
-    event_date = Column("eventdate", DateTime)
-    pending_event_date = Column("pendingeventdate", DateTime)
+    event_type: Mapped[str] = mapped_column("eventtype", String, primary_key=True)
+    event_date: Mapped[Optional[datetime]] = mapped_column("eventdate", DateTime)
+    pending_event_date: Mapped[Optional[datetime]] = mapped_column(
+        "pendingeventdate", DateTime
+    )
 
     def __init__(self, et, ed, ped):
         self.event_type = et
@@ -23,8 +29,11 @@ class EventControl(Base):
 class ValidationError(Base):
     __tablename__ = "validationerror"
 
-    vid = Column(Integer, primary_key=True)
-    pid = Column(String)
-    updated_on = Column("updatedon", DateTime)
-    error_type = Column("errortype", String)
-    message = Column(String)
+    vid: Mapped[int] = mapped_column(Integer, primary_key=True)
+    pid: Mapped[Optional[str]] = mapped_column(String)
+    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    errortype: Mapped[Optional[str]] = mapped_column(String)
+    message: Mapped[Optional[str]] = mapped_column(String)
+
+    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
+    error_type: Mapped[Optional[str]] = synonym("errortype")

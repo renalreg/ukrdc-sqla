@@ -2,7 +2,7 @@ import typing
 
 from sqlalchemy.orm import Synonym
 
-from ukrdc_sqla import ukrdc,empi
+from ukrdc_sqla import ukrdc, empi, errorsdb, repository, pkb, stats
 
 
 def _get_models(module):
@@ -22,8 +22,12 @@ def _get_type_hints(cls):
 
 def test_synonym_type_hints_match():
     errors = []
-    models=_get_models(ukrdc)
+    models = _get_models(ukrdc)
     models.extend(_get_models(empi))
+    models.extend(_get_models(errorsdb))
+    models.extend(_get_models(repository))
+    models.extend(_get_models(pkb))
+    models.extend(_get_models(stats))
     for model in models:
         type_hints = _get_type_hints(model)
 
