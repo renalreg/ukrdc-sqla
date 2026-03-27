@@ -2,7 +2,7 @@ import typing
 
 from sqlalchemy.orm import Synonym
 
-from ukrdc_sqla import ukrdc
+from ukrdc_sqla import ukrdc,empi
 
 
 def _get_models(module):
@@ -22,7 +22,9 @@ def _get_type_hints(cls):
 
 def test_synonym_type_hints_match():
     errors = []
-    for model in _get_models(ukrdc):
+    models=_get_models(ukrdc)
+    models.extend(_get_models(empi))
+    for model in models:
         type_hints = _get_type_hints(model)
 
         for attr_name, descriptor in model.__mapper__.all_orm_descriptors.items():
