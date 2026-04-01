@@ -1,6 +1,9 @@
 """Modules which relate to the Repository System Tables"""
 
-from sqlalchemy import Column, Integer, String
+from typing import Optional
+
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import mapped_column, Mapped
 
 from .ukrdc import Base
 
@@ -8,8 +11,8 @@ from .ukrdc import Base
 class PKBLink(Base):
     __tablename__ = "pkb_links"
 
-    id = Column(Integer, primary_key=True)
-    link = Column(String)
-    link_name = Column(String)
-    coding_standard = Column(String)
-    code = Column(String)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    link: Mapped[Optional[str]] = mapped_column(String)
+    link_name: Mapped[Optional[str]] = mapped_column(String)
+    coding_standard: Mapped[Optional[str]] = mapped_column(String)
+    code: Mapped[Optional[str]] = mapped_column(String)
