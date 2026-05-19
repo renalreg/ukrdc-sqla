@@ -19,6 +19,9 @@ from sqlalchemy import (
     Text,
     text,
     Enum,
+    select,
+    and_,
+    tuple_,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -29,6 +32,7 @@ from sqlalchemy.orm import (
     mapped_column as _mapped_column,
     DeclarativeBase,
     MappedColumn,
+    object_session,
 )
 
 
@@ -2137,6 +2141,47 @@ class ResultItem(Base):
     observation_time: Mapped[Optional[datetime]] = synonym("observationtime")
     comments: Mapped[Optional[str]] = synonym("commenttext")
     reference_comment: Mapped[Optional[str]] = synonym("referencecomment")
+
+    @property
+    def hdpt(self):
+        ## replace this with something that avoids the db calls
+        session = object_session(self)
+        assert session
+
+        stmt = (
+            select(ResultItem.value)
+            .join(
+                CodeMap,
+                and_(
+                    ResultItem.serviceidcode == CodeMap.destination_code,
+                    ResultItem.serviceidcodestd == CodeMap.destination_coding_standard,
+                    ),
+            )
+            .where(
+                ResultItem.orderid == self.orderid,
+                CodeMap.source_code == "QBLA3",
+                CodeMap.source_coding_standard == "UKRR",
+                )
+        )
+
+        result_items = session.execute(stmt).all()
+        if len(result_items) < 2:
+            return "NA"
+
+        all_values = set(result_item[1] for result_item in result_items)
+        max_values = max(all_values)
+        min_values = min(all_values)
+
+        # do we need some logic if they are equal
+        to_return = None
+        if self.resultvalue == max_values:
+            to_return="PRE"
+
+        if self.resultvalue == min_values:
+            to_return="POST"
+
+        return to_return if to_return else "UNK"
+
 
 
 class PVData(Base):
