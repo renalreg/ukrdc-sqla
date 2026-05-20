@@ -1,6 +1,5 @@
 """Models which relate to the main UKRDC database"""
 
-from dataclasses import dataclass
 from datetime import date
 from datetime import datetime
 from decimal import Decimal
@@ -26,43 +25,31 @@ from sqlalchemy.orm import (
     Mapped,
     relationship,
     synonym,
-    mapped_column as _mapped_column,
     DeclarativeBase,
     MappedColumn,
 )
 
+from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column, get_column_info
 
-@dataclass
-class ColumnInfo:
-    label: str
-    description: str
+get_column_info = get_column_info
 
-
-def mapped_column(
-    *args: Any,
-    sqla_info: Optional[ColumnInfo] = None,
-    **kwargs: Any,
-) -> MappedColumn:
-    """A mapped_column wrapper that supports typed metadata via a ColumnInfo dataclass."""
-    info = dict(kwargs.pop("info", {}) or {})
-    if sqla_info:
-        info["sqla_info"] = sqla_info
-        if "comment" not in kwargs and sqla_info.description:
-            kwargs["comment"] = sqla_info.description
-    return _mapped_column(*args, info=info, **kwargs)
-
-
-def get_column_info(model, column_name: str) -> Optional[ColumnInfo]:
-    """Retrieve ColumnInfo for a given column by name."""
-    col = model.__table__.c[column_name]
-    return col.info.get("sqla_info")
+GLOBAL_LAZY = "dynamic"
 
 
 class Base(DeclarativeBase):
     pass
 
 
-GLOBAL_LAZY = "dynamic"
+### reuasable columns
+def coding_standard_column(
+    primary_key=False, sqla_info: Optional[ColumnInfo] = None
+) -> MappedColumn:
+    return mapped_column(
+        String(256),
+        ForeignKey("coding_standards.coding_standard"),
+        primary_key=primary_key,
+        sqla_info=sqla_info,
+    )
 
 
 class SendingExtractMetadata(Base):
@@ -258,12 +245,12 @@ class Patient(Base):
             description="Code representing the patient’s ethnic group from NHS Data Dictionary: https://www.datadictionary.nhs.uk/data_elements/ethnic_category.html",
         ),
     )
-    ethnicgroupcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+
+    ethnicgroupcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Ethnic Group Code Standard",
             description="Coding standard used for the ethnic group code (NHS_DATA_DICTIONARY).",
-        ),
+        )
     )
     ethnicgroupdesc: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -279,8 +266,7 @@ class Patient(Base):
             description="Code representing the patient’s occupation from NHS Data Dictionary.",
         ),
     )
-    occupationcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    occupationcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Occupation Code Standard",
             description="Coding standard used for the occupation code (NHS_DATA_DICTIONARY_EMPLOYMENT_STATUS).",
@@ -300,8 +286,7 @@ class Patient(Base):
             description="Code representing the patient’s primary language from NHS Data Dictionary.",
         ),
     )
-    primarylanguagecodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    primarylanguagecodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Primary Language Code Standard",
             description="Coding standard used for the primary language code (NHS_DATA_DICTIONARY_LANGUAGE_CODE).",
@@ -501,7 +486,7 @@ class CauseOfDeath(Base):
         ),
     )
     diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     diagnosiscode: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -510,8 +495,7 @@ class CauseOfDeath(Base):
             description="Code representing the cause of death diagnosis)",
         ),
     )
-    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    diagnosiscodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Diagnosis Code Standard",
             description="Coding standard used for the cause of death diagnosis)",
@@ -578,7 +562,7 @@ class FamilyDoctor(Base):
     county: Mapped[Optional[str]] = mapped_column(String(100))
     postcode: Mapped[Optional[str]] = mapped_column(String(10))
     countrycode: Mapped[Optional[str]] = mapped_column(String(100))
-    countrycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    countrycodestd: Mapped[Optional[str]] = coding_standard_column()
     countrydesc: Mapped[Optional[str]] = mapped_column(String(100))
     contactuse: Mapped[Optional[str]] = mapped_column(String(10))
     contactvalue: Mapped[Optional[str]] = mapped_column(String(100))
@@ -632,7 +616,7 @@ class SocialHistory(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     socialhabitcode: Mapped[Optional[str]] = mapped_column(String(100))
-    socialhabitcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    socialhabitcodestd: Mapped[Optional[str]] = coding_standard_column()
     socialhabitdesc: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
@@ -651,14 +635,14 @@ class FamilyHistory(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     familymembercode: Mapped[Optional[str]] = mapped_column(String(100))
-    familymembercodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    familymembercodestd: Mapped[Optional[str]] = coding_standard_column()
     familymemberdesc: Mapped[Optional[str]] = mapped_column(String(100))
     diagnosiscode: Mapped[Optional[str]] = mapped_column(String(100))
-    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosiscodestd: Mapped[Optional[str]] = coding_standard_column()
     diagnosisdesc: Mapped[Optional[str]] = mapped_column(String(100))
     notetext: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -714,8 +698,7 @@ class Observation(Base):
             description="Code for the observation - UKRR, PV or SNOMED Coding Standards.",
         ),
     )
-    observationcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    observationcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Observation Code Standard",
             description="Coding standard used for the observation code (UKRR, PV, SNOMED).",
@@ -763,8 +746,7 @@ class Observation(Base):
             description="Code identifying the clinician associated with this observation.",
         ),
     )
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Clinician Code Standard",
             description="Coding standard used for the clinician code.",
@@ -784,8 +766,7 @@ class Observation(Base):
             description="Code for the location where the observation was entered.",
         ),
     )
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Entered At Code Standard",
             description="Coding standard used for the entered-at code.",
@@ -805,8 +786,7 @@ class Observation(Base):
             description="Code identifying the organization entering the observation.",
         ),
     )
-    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    enteringorganizationcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Entering Organization Code Standard",
             description="Coding standard used for the entering organization code.",
@@ -894,10 +874,10 @@ class OptOut(Base):
     programname: Mapped[Optional[str]] = mapped_column(String(100))
     programdescription: Mapped[Optional[str]] = mapped_column(String(100))
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     fromtime: Mapped[Optional[date]] = mapped_column(Date)
     totime: Mapped[Optional[date]] = mapped_column(Date)
@@ -934,16 +914,16 @@ class Allergy(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     allergycode: Mapped[Optional[str]] = mapped_column(String(100))
-    allergycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycodestd: Mapped[Optional[str]] = coding_standard_column()
     allergydesc: Mapped[Optional[str]] = mapped_column(String(100))
     allergycategorycode: Mapped[Optional[str]] = mapped_column(String(100))
-    allergycategorycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    allergycategorycodestd: Mapped[Optional[str]] = coding_standard_column()
     allergycategorydesc: Mapped[Optional[str]] = mapped_column(String(100))
     severitycode: Mapped[Optional[str]] = mapped_column(String(100))
-    severitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    severitycodestd: Mapped[Optional[str]] = coding_standard_column()
     severitydesc: Mapped[Optional[str]] = mapped_column(String(100))
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     discoverytime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     confirmedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -975,7 +955,7 @@ class Diagnosis(Base):
         ),
     )
     diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     diagnosiscode: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -984,8 +964,7 @@ class Diagnosis(Base):
             description="Code representing the diagnosis. This should also include any diagnosis that has been submitted elsewhere as a Primary Renal Diagnosis.",
         ),
     )
-    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    diagnosiscodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Diagnosis Code Standard",
             description="Coding standard used for the diagnosis",
@@ -1007,7 +986,7 @@ class Diagnosis(Base):
     externalid: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     encounternumber: Mapped[Optional[str]] = mapped_column(String(100))
     verificationstatus: Mapped[Optional[str]] = mapped_column(String(100))
@@ -1046,9 +1025,7 @@ class RenalDiagnosis(Base):
             description="Code representing the renal diagnosis",
         ),
     )
-    diagnosiscodestd: Mapped[Optional[str]] = mapped_column(
-        "diagnosiscodestd",
-        String,
+    diagnosiscodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Diagnosis Code Standard",
             description="Coding standard used for the renal diagnosis",
@@ -1063,7 +1040,7 @@ class RenalDiagnosis(Base):
         ),
     )
     diagnosingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    diagnosingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    diagnosingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     diagnosingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     comments: Mapped[Optional[str]] = mapped_column(String)
     identificationtime: Mapped[Optional[datetime]] = mapped_column(
@@ -1101,10 +1078,10 @@ class DialysisSession(Base):
             description="Code representing dialysis procedure type",
         ),
     )
-    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = coding_standard_column()
     proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     proceduretime: Mapped[Optional[datetime]] = mapped_column(
         DateTime,
@@ -1114,10 +1091,10 @@ class DialysisSession(Base):
         ),
     )
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     qhd19: Mapped[Optional[str]] = mapped_column(String(255))
     qhd20: Mapped[Optional[str]] = mapped_column(
@@ -1171,11 +1148,11 @@ class Transplant(Base):
             description="Code representing transplant procedure type",
         ),
     )
-    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = coding_standard_column()
     proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     proceduretime: Mapped[Optional[datetime]] = mapped_column(
@@ -1187,7 +1164,7 @@ class Transplant(Base):
     )
 
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     enteredatcode: Mapped[Optional[str]] = mapped_column(
@@ -1197,8 +1174,7 @@ class Transplant(Base):
             description="Code for the location where the transplant information was entered",
         ),
     )
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Entered At Code Standard",
             description="Coding standard used for the entered-at code",
@@ -1278,17 +1254,17 @@ class VascularAccess(Base):
         DateTime, nullable=False, server_default=text("now()")
     )
     proceduretypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = coding_standard_column()
     proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     proceduretime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
@@ -1315,17 +1291,17 @@ class Procedure(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     proceduretypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    proceduretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    proceduretypecodestd: Mapped[Optional[str]] = coding_standard_column()
     proceduretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     proceduretime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
@@ -1348,25 +1324,25 @@ class Encounter(Base):
     fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     admitreasoncode: Mapped[Optional[str]] = mapped_column(String(100))
-    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncodestd: Mapped[Optional[str]] = coding_standard_column()
     admitreasondesc: Mapped[Optional[str]] = mapped_column(String(100))
     admissionsourcecode: Mapped[Optional[str]] = mapped_column(String(100))
-    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecodestd: Mapped[Optional[str]] = coding_standard_column()
     admissionsourcedesc: Mapped[Optional[str]] = mapped_column(String(100))
     dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
-    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = coding_standard_column()
     dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
     dischargelocationcode: Mapped[Optional[str]] = mapped_column(String(100))
-    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcodestd: Mapped[Optional[str]] = coding_standard_column()
     dischargelocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
     healthcarefacilitycode: Mapped[Optional[str]] = mapped_column(String(100))
-    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycodestd: Mapped[Optional[str]] = coding_standard_column()
     healthcarefacilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -1392,10 +1368,10 @@ class ProgramMembership(Base):
     programname: Mapped[Optional[str]] = mapped_column(String(100))
     programdescription: Mapped[Optional[str]] = mapped_column(String(100))
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     fromtime: Mapped[Optional[date]] = mapped_column(Date)
     totime: Mapped[Optional[date]] = mapped_column(Date)
@@ -1427,10 +1403,10 @@ class ClinicalRelationship(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     facilitycode: Mapped[Optional[str]] = mapped_column(String(100))
-    facilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    facilitycodestd: Mapped[Optional[str]] = coding_standard_column()
     facilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
     fromtime: Mapped[Optional[date]] = mapped_column(Date)
     totime: Mapped[Optional[date]] = mapped_column(Date)
@@ -1508,7 +1484,7 @@ class Address(Base):
     county: Mapped[Optional[str]] = mapped_column(String(100))
     postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
     countrycode: Mapped[Optional[str]] = mapped_column(String(100))
-    countrycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    countrycodestd: Mapped[Optional[str]] = coding_standard_column()
     countrydesc: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
@@ -1583,11 +1559,11 @@ class Medication(Base):
     )
 
     orderedbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    orderedbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbycodestd: Mapped[Optional[str]] = coding_standard_column()
     orderedbydesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     enteringorganizationcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteringorganizationdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     routecode: Mapped[Optional[str]] = mapped_column(
@@ -1597,7 +1573,7 @@ class Medication(Base):
             description="Code representing medication route",
         ),
     )
-    routecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    routecodestd: Mapped[Optional[str]] = coding_standard_column()
     routedesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     drugproductidcode: Mapped[Optional[str]] = mapped_column(
@@ -1607,8 +1583,7 @@ class Medication(Base):
             description="Code of the drug product",
         ),
     )
-    drugproductidcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    drugproductidcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Drug Product ID Code Standard",
             description="Coding standard used for the drug product",
@@ -1638,11 +1613,11 @@ class Medication(Base):
     )
 
     drugproductformcode: Mapped[Optional[str]] = mapped_column(String(100))
-    drugproductformcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductformcodestd: Mapped[Optional[str]] = coding_standard_column()
     drugproductformdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     drugproductstrengthunitscode: Mapped[Optional[str]] = mapped_column(String(100))
-    drugproductstrengthunitscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    drugproductstrengthunitscodestd: Mapped[Optional[str]] = coding_standard_column()
     drugproductstrengthunitsdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     frequency: Mapped[Optional[str]] = mapped_column(
@@ -1674,7 +1649,7 @@ class Medication(Base):
             description="Medication units code",
         ),
     )
-    doseuomcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    doseuomcodestd: Mapped[Optional[str]] = coding_standard_column()
     doseuomdesc: Mapped[Optional[str]] = mapped_column(String(100))
 
     indication: Mapped[Optional[str]] = mapped_column(String(100))
@@ -1724,16 +1699,16 @@ class Survey(Base):
     )
     surveytime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     surveytypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    surveytypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    surveytypecodestd: Mapped[Optional[str]] = coding_standard_column()
     surveytypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     typeoftreatment: Mapped[Optional[str]] = mapped_column(String(100))
     hdlocation: Mapped[Optional[str]] = mapped_column(String(100))
     template: Mapped[Optional[str]] = mapped_column(String(100))
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
@@ -1765,7 +1740,7 @@ class Question(Base):
     )
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     questiontypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    questiontypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    questiontypecodestd: Mapped[Optional[str]] = coding_standard_column()
     questiontypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     response: Mapped[Optional[str]] = mapped_column(String(100))
     questiontext: Mapped[Optional[str]] = mapped_column(String(100))
@@ -1784,7 +1759,7 @@ class Score(Base):
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     scorevalue: Mapped[Optional[str]] = mapped_column(String(100))
     scoretypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    scoretypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    scoretypecodestd: Mapped[Optional[str]] = coding_standard_column()
     scoretypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
@@ -1805,7 +1780,7 @@ class Level(Base):
     idx: Mapped[Optional[int]] = mapped_column(Integer)
     levelvalue: Mapped[Optional[str]] = mapped_column(String(100))
     leveltypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    leveltypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    leveltypecodestd: Mapped[Optional[str]] = coding_standard_column()
     leveltypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
@@ -1828,20 +1803,20 @@ class Document(Base):
     documenttime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     notetext: Mapped[Optional[str]] = mapped_column(Text)
     documenttypecode: Mapped[Optional[str]] = mapped_column(String(100))
-    documenttypecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    documenttypecodestd: Mapped[Optional[str]] = coding_standard_column()
     documenttypedesc: Mapped[Optional[str]] = mapped_column(String(100))
     cliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    cliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    cliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     cliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     documentname: Mapped[Optional[str]] = mapped_column(String(100))
     statuscode: Mapped[Optional[str]] = mapped_column(String(100))
-    statuscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    statuscodestd: Mapped[Optional[str]] = coding_standard_column()
     statusdesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredbycodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     filetype: Mapped[Optional[str]] = mapped_column(String(100))
     filename: Mapped[Optional[str]] = mapped_column(String(100))
@@ -1869,34 +1844,34 @@ class LabOrder(Base):
     placerid: Mapped[Optional[str]] = mapped_column(String(100))
     fillerid: Mapped[Optional[str]] = mapped_column(String(100))
     receivinglocationcode: Mapped[Optional[str]] = mapped_column(String(100))
-    receivinglocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    receivinglocationcodestd: Mapped[Optional[str]] = coding_standard_column()
     receivinglocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
     orderedbycode: Mapped[Optional[str]] = mapped_column(String(100))
-    orderedbycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderedbycodestd: Mapped[Optional[str]] = coding_standard_column()
     orderedbydesc: Mapped[Optional[str]] = mapped_column(String(100))
     orderitemcode: Mapped[Optional[str]] = mapped_column(String(100))
-    orderitemcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    orderitemcodestd: Mapped[Optional[str]] = coding_standard_column()
     orderitemdesc: Mapped[Optional[str]] = mapped_column(String(100))
     prioritycode: Mapped[Optional[str]] = mapped_column(String(100))
-    prioritycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    prioritycodestd: Mapped[Optional[str]] = coding_standard_column()
     prioritydesc: Mapped[Optional[str]] = mapped_column(String(100))
     status: Mapped[Optional[str]] = mapped_column(String(100))
     ordercategorycode: Mapped[Optional[str]] = mapped_column(String(100))
-    ordercategorycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    ordercategorycodestd: Mapped[Optional[str]] = coding_standard_column()
     ordercategorydesc: Mapped[Optional[str]] = mapped_column(String(100))
     specimensource: Mapped[Optional[str]] = mapped_column(String(50))
     specimenreceivedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     specimencollectedtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     duration: Mapped[Optional[str]] = mapped_column(String(50))
     patientclasscode: Mapped[Optional[str]] = mapped_column(String(100))
-    patientclasscodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    patientclasscodestd: Mapped[Optional[str]] = coding_standard_column()
     patientclassdesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteringorganizationcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteringorganizationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteringorganizationcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteringorganizationdesc: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
     actioncode: Mapped[Optional[str]] = mapped_column(String(3))
@@ -2004,8 +1979,7 @@ class ResultItem(Base):
             description="Test code identifying the laboratory service or test performed.",
         ),
     )
-    serviceidcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    serviceidcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Service ID Code Standard",
             description="Coding standard used for the service ID (SNOMED, LOINC, UKRR, PV, LOCAL).",
@@ -2224,7 +2198,7 @@ class Treatment(Base):
         ),
     )
     admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     admitreasoncode: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -2233,8 +2207,7 @@ class Treatment(Base):
             description="Treatment modality code",
         ),
     )
-    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    admitreasoncodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Admission Reason Code Standard",
             description="Treatment modality code standard",
@@ -2254,8 +2227,7 @@ class Treatment(Base):
             description="Code representing prior main renal unit",
         ),
     )
-    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    admissionsourcecodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Admission Source Code Standard",
             description="Coding standard used for the admission source",
@@ -2269,7 +2241,7 @@ class Treatment(Base):
         ),
     )
     dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
-    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = coding_standard_column()
     dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
     dischargelocationcode: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -2278,8 +2250,7 @@ class Treatment(Base):
             description="Code representing destination main renal unit",
         ),
     )
-    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    dischargelocationcodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Discharge location Code Standard",
             description="Coding standard used for the discharge location code",
@@ -2299,8 +2270,7 @@ class Treatment(Base):
             description="Code representing the treatment centre",
         ),
     )
-    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    healthcarefacilitycodestd: Mapped[Optional[str]] = coding_standard_column(
         sqla_info=ColumnInfo(
             label="Healthcare Facility Code Standard",
             description="Coding standard used for the treatment centre",
@@ -2314,7 +2284,7 @@ class Treatment(Base):
         ),
     )
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -2406,25 +2376,25 @@ class TransplantList(Base):
     fromtime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     totime: Mapped[Optional[datetime]] = mapped_column(DateTime)
     admittingcliniciancode: Mapped[Optional[str]] = mapped_column(String(100))
-    admittingcliniciancodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admittingcliniciancodestd: Mapped[Optional[str]] = coding_standard_column()
     admittingcliniciandesc: Mapped[Optional[str]] = mapped_column(String(100))
     admitreasoncode: Mapped[Optional[str]] = mapped_column(String(100))
-    admitreasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admitreasoncodestd: Mapped[Optional[str]] = coding_standard_column()
     admitreasondesc: Mapped[Optional[str]] = mapped_column(String(100))
     admissionsourcecode: Mapped[Optional[str]] = mapped_column(String(100))
-    admissionsourcecodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    admissionsourcecodestd: Mapped[Optional[str]] = coding_standard_column()
     admissionsourcedesc: Mapped[Optional[str]] = mapped_column(String(100))
     dischargereasoncode: Mapped[Optional[str]] = mapped_column(String(100))
-    dischargereasoncodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargereasoncodestd: Mapped[Optional[str]] = coding_standard_column()
     dischargereasondesc: Mapped[Optional[str]] = mapped_column(String(100))
     dischargelocationcode: Mapped[Optional[str]] = mapped_column(String(100))
-    dischargelocationcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    dischargelocationcodestd: Mapped[Optional[str]] = coding_standard_column()
     dischargelocationdesc: Mapped[Optional[str]] = mapped_column(String(100))
     healthcarefacilitycode: Mapped[Optional[str]] = mapped_column(String(100))
-    healthcarefacilitycodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    healthcarefacilitycodestd: Mapped[Optional[str]] = coding_standard_column()
     healthcarefacilitydesc: Mapped[Optional[str]] = mapped_column(String(100))
     enteredatcode: Mapped[Optional[str]] = mapped_column(String(100))
-    enteredatcodestd: Mapped[Optional[str]] = mapped_column(String(100))
+    enteredatcodestd: Mapped[Optional[str]] = coding_standard_column()
     enteredatdesc: Mapped[Optional[str]] = mapped_column(String(100))
     visitdescription: Mapped[Optional[str]] = mapped_column(String(100))
     updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -2436,7 +2406,7 @@ class TransplantList(Base):
 class Code(Base):
     __tablename__ = "code_list"
 
-    coding_standard: Mapped[str] = mapped_column(String(256), primary_key=True)
+    coding_standard: Mapped[str] = coding_standard_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(256), primary_key=True)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -2448,11 +2418,23 @@ class Code(Base):
     pkb_reference_range: Mapped[Optional[str]] = mapped_column(String(10))
     pkb_comment: Mapped[Optional[str]] = mapped_column(String(365))
 
+    coding_standards_entry: Mapped["CodingStandards"] = relationship(
+        back_populates="codes"
+    )
+
+
+class CodingStandards(Base):
+    __tablename__ = "coding_standards"
+    coding_standard: Mapped[str] = mapped_column(String(256), primary_key=True)
+    description: Mapped[Optional[str]] = mapped_column(String(256))
+
+    codes: Mapped[list["Code"]] = relationship(back_populates="coding_standards_entry")
+
 
 class CodeExclusion(Base):
     __tablename__ = "code_exclusion"
 
-    coding_standard: Mapped[str] = mapped_column(String, primary_key=True)
+    coding_standard: Mapped[str] = coding_standard_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, primary_key=True)
     system: Mapped[str] = mapped_column(String, primary_key=True)
 
@@ -2460,11 +2442,9 @@ class CodeExclusion(Base):
 class CodeMap(Base):
     __tablename__ = "code_map"
 
-    source_coding_standard: Mapped[str] = mapped_column(String(256), primary_key=True)
+    source_coding_standard: Mapped[str] = coding_standard_column(primary_key=True)
     source_code: Mapped[str] = mapped_column(String(256), primary_key=True)
-    destination_coding_standard: Mapped[str] = mapped_column(
-        String(256), primary_key=True
-    )
+    destination_coding_standard: Mapped[str] = coding_standard_column(primary_key=True)
     destination_code: Mapped[str] = mapped_column(String(256), primary_key=True)
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -2480,9 +2460,7 @@ class Facility(Base):
     facilitycode: Mapped[str] = mapped_column(
         "facilitycode", String(100), primary_key=True
     )
-    facilitycodestd: Mapped[str] = mapped_column(
-        "facilitycodestd", String(100), primary_key=True
-    )
+    facilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
     facilitytype: Mapped[str] = mapped_column(
         "facilitytype", String(100), nullable=False
     )
@@ -2661,9 +2639,9 @@ class FacilityRelationship(Base):
     __tablename__ = "vwe_facility_relationship"
 
     parentfacilitycode: Mapped[str] = mapped_column(String(100), primary_key=True)
-    parentfacilitycodestd: Mapped[str] = mapped_column(String(100), primary_key=True)
+    parentfacilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
     childfacilitycode: Mapped[str] = mapped_column(String(100), primary_key=True)
-    childfacilitycodestd: Mapped[str] = mapped_column(String(100), primary_key=True)
+    childfacilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
     relationshiptype: Mapped[Optional[str]] = mapped_column(String(50))
 
 
