@@ -40,7 +40,7 @@ class Base(DeclarativeBase):
     pass
 
 
-### reuasable columns
+### reusable columns
 def coding_standard_column(
     primary_key=False, sqla_info: Optional[ColumnInfo] = None
 ) -> MappedColumn:
