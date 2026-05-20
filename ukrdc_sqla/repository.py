@@ -6,7 +6,8 @@ from typing import Optional
 from sqlalchemy import String, DateTime, Integer
 from sqlalchemy.orm import Mapped, synonym
 
-from ukrdc_sqla.ukrdc import Base, mapped_column
+from ukrdc_sqla.ukrdc import Base
+from ukrdc_sqla.utils.structure import mapped_column
 
 
 class EventControl(Base):
