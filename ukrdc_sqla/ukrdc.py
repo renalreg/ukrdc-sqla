@@ -29,7 +29,13 @@ from sqlalchemy.orm import (
     MappedColumn,
 )
 
-from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column, get_column_info
+from ukrdc_sqla.utils.post_calculations import example_prepost
+from ukrdc_sqla.utils.structure import (
+    ColumnInfo,
+    mapped_column,
+    get_column_info,
+    computed_field,
+)
 
 get_column_info = get_column_info
 
@@ -2111,6 +2117,9 @@ class ResultItem(Base):
     observation_time: Mapped[Optional[datetime]] = synonym("observationtime")
     comments: Mapped[Optional[str]] = synonym("commenttext")
     reference_comment: Mapped[Optional[str]] = synonym("referencecomment")
+
+    # prepost calcs
+    prepost_example: str = computed_field(example_prepost)
 
 
 class PVData(Base):
