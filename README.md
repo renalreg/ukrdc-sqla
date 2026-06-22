@@ -56,9 +56,91 @@ def commit_extra_resultitem(session):
     session.commit()
 ```
 
-## Developer notes
+## Developer Notes
 
-### Publish updates
+### Computed Fields
+
+Three field types for deriving values on SQLAlchemy models. All are defined inline on the model and delegate their logic to functions in `post_calculations.py`.
+
+#### `computed_field`
+Pure Python. No session required. Cached permanently on the instance — survives `expire()` and `commit()`.
+
+Use when the value is derivable from already-loaded columns only (arithmetic, date calculations, string formatting).
+
+#### `session_computed_field`
+Session-aware. Cache is cleared on `expire()` and `commit()` so DB-derived values are never stale.
+
+Use when the calculation requires a DB query — joins, lookups against reference tables, aggregates over related rows.
+
+#### `computed_hybrid`
+Wraps `hybrid_property`. Not cached — recalculates on every access. The only type usable in queries (`WHERE`, `ORDER BY`, `filter()`).
+
+Use when you need the value available at the query level, not just on loaded instances.
+
+#### Quick Reference
+
+| | `computed_field` | `session_computed_field` | `computed_hybrid` |
+|---|---|---|---|
+| Requires session | No | Yes | No |
+| Cached | Yes — permanent | Yes — cleared on expiry | No |
+| Usable in queries | No | No | Yes |
+| Use for | Arithmetic, dates | Joins, DB lookups | Query-level filtering |
+
+#### Example
+
+```python
+# post_calculations.py
+
+def _calc_age(self) -> Optional[int]:
+    if self.birthtime is None:
+        return None
+    today = date.today()
+    born = self.birthtime.date()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+def _calc_prepost(self, session: Session) -> str:
+    # looks up sibling results on the same date to determine PRE/POST dialysis
+    ...
+
+def _numeric_value_py(self) -> Optional[float]:
+    return float(self.resultvalue) if self.resultvalue else None
+
+def _numeric_value_expr(cls):
+    return cast(cls.resultvalue, Numeric)
+```
+
+```python
+# ukrdc.py
+
+class ResultItem(Base):
+    ...
+
+    # No DB query needed — birthtime is already loaded
+    age: int = computed_field(_calc_age)
+
+    # Queries sibling rows — cache cleared on expire/commit
+    prepost: str = session_computed_field(_calc_prepost)
+
+    # Usable in WHERE/ORDER BY across a patient cohort
+    numeric_value: float = computed_hybrid(_numeric_value_py, _numeric_value_expr)
+```
+
+```python
+# usage
+
+record = session.get(ResultItem, "R1")
+print(record.age)      # 47  — from loaded columns, no query
+print(record.prepost)  # "PRE" — queried DB, cached until next commit
+
+# computed_hybrid can be used in queries — the other two cannot
+high_results = session.scalars(
+    select(ResultItem)
+    .where(ResultItem.numeric_value > 10.0)
+    .order_by(ResultItem.numeric_value.desc())
+).all()
+```
+
+### Publish Updates
 
 - Iterate the version number (`poetry version major/minor/patch`)
 - Push to GitHub repo
