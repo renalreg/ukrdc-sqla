@@ -9,7 +9,7 @@ class RelationshipType:
 
 
 @dataclass
-class CodeMapFacility:
+class CodeMapFacilityType:
     """Links to the code_map table, source_coding_standard and destination_coding_standard columns"""
     satellite: str = "RR1+_SATELLITE"
     main: str = "RR1+_MAIN"
