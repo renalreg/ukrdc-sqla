@@ -2467,13 +2467,13 @@ class Facility(Base):
     pkbout: Mapped[bool] = mapped_column(
         "pkbout", Boolean, nullable=False, server_default=text("false")
     )
-    pkbmsgexclusions: Mapped[Optional[str]] = mapped_column(
+    pkbmsgexclusions: Mapped[Optional[List[str]]] = mapped_column(
         "pkbmsgexclusions", ARRAY(Text)
     )
-    pkb_pv_msg_exclusions: Mapped[Optional[str]] = mapped_column(
+    pkb_pv_msg_exclusions: Mapped[Optional[List[str]]] = mapped_column(
         "pkb_pv_msg_exclusions", ARRAY(Text)
     )
-    pkb_ukrdc_msg_exclusions: Mapped[Optional[str]] = mapped_column(
+    pkb_ukrdc_msg_exclusions: Mapped[Optional[List[str]]] = mapped_column(
         "pkb_ukrdc_msg_exclusions", ARRAY(Text)
     )
     ukrdcoutpkb: Mapped[bool] = mapped_column(
@@ -2509,7 +2509,7 @@ class Facility(Base):
     code: Mapped[str] = synonym("facilitycode")
     coding_standard: Mapped[str] = synonym("facilitycodestd")
     pkb_out: Mapped[bool] = synonym("pkbout")
-    pkb_msg_exclusions: Mapped[Optional[str]] = synonym("pkbmsgexclusions")
+    pkb_msg_exclusions: Mapped[Optional[List[str]]] = synonym("pkbmsgexclusions")
     rdastartdate: Mapped[Optional[datetime]] = synonym("startdate")
     rdaenddate: Mapped[Optional[datetime]] = synonym("enddate")
     rdafirstdataquarter: Mapped[Optional[int]] = synonym("firstdataquarter")
