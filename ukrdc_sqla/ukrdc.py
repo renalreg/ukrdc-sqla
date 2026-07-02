@@ -2509,7 +2509,7 @@ class Facility(Base):
     code: Mapped[str] = synonym("facilitycode")
     coding_standard: Mapped[str] = synonym("facilitycodestd")
     pkb_out: Mapped[bool] = synonym("pkbout")
-    pkb_msg_exclusions: Mapped[Optional[str]] = synonym("pkbmsgexclusions")
+    pkb_msg_exclusions: Mapped[Optional[List[str]]] = synonym("pkbmsgexclusions")
     rdastartdate: Mapped[Optional[datetime]] = synonym("startdate")
     rdaenddate: Mapped[Optional[datetime]] = synonym("enddate")
     rdafirstdataquarter: Mapped[Optional[int]] = synonym("firstdataquarter")
