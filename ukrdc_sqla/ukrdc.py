@@ -29,7 +29,11 @@ from sqlalchemy.orm import (
     MappedColumn,
 )
 
-from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column, get_column_info
+from ukrdc_sqla.utils.structure import (
+    ColumnInfo,
+    mapped_column,
+    get_column_info,
+)
 
 get_column_info = get_column_info
 
