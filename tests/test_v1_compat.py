@@ -3,6 +3,7 @@ from sqlalchemy.ext.associationproxy import (
     ColumnAssociationProxyInstance,
 )
 from sqlalchemy.orm import InspectionAttr
+
 from ukrdc_sqla import ukrdc as v2
 
 from . import ukrdc_v1 as v1

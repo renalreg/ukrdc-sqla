@@ -1,6 +1,7 @@
 import typing
 
 from sqlalchemy.orm import Synonym
+
 from ukrdc_sqla import empi, errorsdb, pkb, repository, stats, ukrdc
 
 

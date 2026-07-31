@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 from sqlalchemy import Column as Col
 from sqlalchemy.orm import InstrumentedAttribute
