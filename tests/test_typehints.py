@@ -15,7 +15,7 @@ def _get_models(module):
 def _get_type_hints(cls):
     try:
         return typing.get_type_hints(cls, include_extras=True)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return getattr(cls, "__annotations__", {})
 
 
