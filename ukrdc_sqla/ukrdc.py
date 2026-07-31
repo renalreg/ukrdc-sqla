@@ -3,7 +3,7 @@
 from datetime import date
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Union, Tuple, Any
+from typing import Optional, Union, Any
 
 from sqlalchemy import (
     Boolean,

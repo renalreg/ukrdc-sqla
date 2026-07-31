@@ -5,7 +5,6 @@ to the v5 database models (by design because they are a stopgap until we have
 the capacity to store it)
 """
 
-from typing import List
 
 from sqlalchemy import (
     Column,

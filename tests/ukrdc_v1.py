@@ -1,6 +1,6 @@
 """Models which relate to the main UKRDC database"""
 
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import (
     Boolean,

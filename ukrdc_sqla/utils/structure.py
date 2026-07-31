@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.orm import MappedColumn
 from sqlalchemy.orm import mapped_column as _mapped_column

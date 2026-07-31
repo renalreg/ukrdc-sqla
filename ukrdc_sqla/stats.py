@@ -2,7 +2,6 @@
 
 from datetime import date as datetime_date
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import Boolean, Date, DateTime, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
