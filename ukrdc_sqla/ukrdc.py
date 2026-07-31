@@ -94,13 +94,13 @@ class PatientRecord(Base):
     patient: Mapped["Patient"] = relationship(
         "Patient", back_populates="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders: Mapped[List["LabOrder"]] = relationship(
+    lab_orders: Mapped[list["LabOrder"]] = relationship(
         "LabOrder",
         back_populates="record",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: Mapped[list["ResultItem"]] = relationship(
         "ResultItem",
         secondary="laborder",
         primaryjoin="LabOrder.pid == PatientRecord.pid",
@@ -108,71 +108,71 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship(
+    observations: Mapped[list["Observation"]] = relationship(
         "Observation",
         back_populates="record",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    social_histories: Mapped[List["SocialHistory"]] = relationship(
+    social_histories: Mapped[list["SocialHistory"]] = relationship(
         "SocialHistory", cascade="all, delete-orphan"
     )
-    family_histories: Mapped[List["FamilyHistory"]] = relationship(
+    family_histories: Mapped[list["FamilyHistory"]] = relationship(
         "FamilyHistory", cascade="all, delete-orphan"
     )
-    allergies: Mapped[List["Allergy"]] = relationship(
+    allergies: Mapped[list["Allergy"]] = relationship(
         "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+    diagnoses: Mapped[list["Diagnosis"]] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+    cause_of_death: Mapped[list["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+    renaldiagnoses: Mapped[list["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: Mapped[List["Medication"]] = relationship(
+    medications: Mapped[list["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
+    dialysis_sessions: Mapped[list["DialysisSession"]] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    vascular_accesses: Mapped[List["VascularAccess"]] = relationship(
+    vascular_accesses: Mapped[list["VascularAccess"]] = relationship(
         "VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures: Mapped[List["Procedure"]] = relationship(
+    procedures: Mapped[list["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: Mapped[list["Document"]] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    encounters: Mapped[List["Encounter"]] = relationship(
+    encounters: Mapped[list["Encounter"]] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    transplantlists: Mapped[List["TransplantList"]] = relationship(
+    transplantlists: Mapped[list["TransplantList"]] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: Mapped[List["Treatment"]] = relationship(
+    treatments: Mapped[list["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
+    program_memberships: Mapped[list["ProgramMembership"]] = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
-    transplants: Mapped[List["Transplant"]] = relationship(
+    transplants: Mapped[list["Transplant"]] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     clinical_relationships = relationship(
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
-    surveys: Mapped[List["Survey"]] = relationship(
+    surveys: Mapped[list["Survey"]] = relationship(
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     pvdata: Mapped["PVData"] = relationship(
         "PVData", uselist=False, cascade="all, delete-orphan"
     )
-    pvdelete: Mapped[List["PVDelete"]] = relationship(
+    pvdelete: Mapped[list["PVDelete"]] = relationship(
         "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
@@ -408,19 +408,19 @@ class Patient(Base):
     updated_on: Mapped[datetime | None] = synonym("updatedon")
 
     # Relationships
-    numbers: Mapped[List["PatientNumber"]] = relationship(
+    numbers: Mapped[list["PatientNumber"]] = relationship(
         "PatientNumber",
         back_populates="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names: Mapped[List["Name"]] = relationship(
+    names: Mapped[list["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: Mapped[List["ContactDetail"]] = relationship(
+    contact_details: Mapped[list["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses: Mapped[List["Address"]] = relationship(
+    addresses: Mapped[list["Address"]] = relationship(
         "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     familydoctor: Mapped["FamilyDoctor"] = relationship(
@@ -447,7 +447,7 @@ class Patient(Base):
     @property
     def first_ni_number(
         self, org: bool = False
-    ) -> Union[str, Tuple[str, str]] | None:
+    ) -> Union[str, tuple[str, str]] | None:
         """Find the first NHS, CHI, or HSC number for a patient.
         Returns a string by default, or a tuple if org=True."""
         types = {"NHS", "CHI", "HSC"}
@@ -1883,7 +1883,7 @@ class LabOrder(Base):
 
     # Relationships
 
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: Mapped[list["ResultItem"]] = relationship(
         "ResultItem",
         lazy=GLOBAL_LAZY,
         back_populates="order",
@@ -2467,13 +2467,13 @@ class Facility(Base):
     pkbout: Mapped[bool] = mapped_column(
         "pkbout", Boolean, nullable=False, server_default=text("false")
     )
-    pkbmsgexclusions: Mapped[List[str] | None] = mapped_column(
+    pkbmsgexclusions: Mapped[list[str] | None] = mapped_column(
         "pkbmsgexclusions", ARRAY(Text)
     )
-    pkb_pv_msg_exclusions: Mapped[List[str] | None] = mapped_column(
+    pkb_pv_msg_exclusions: Mapped[list[str] | None] = mapped_column(
         "pkb_pv_msg_exclusions", ARRAY(Text)
     )
-    pkb_ukrdc_msg_exclusions: Mapped[List[str] | None] = mapped_column(
+    pkb_ukrdc_msg_exclusions: Mapped[list[str] | None] = mapped_column(
         "pkb_ukrdc_msg_exclusions", ARRAY(Text)
     )
     ukrdcoutpkb: Mapped[bool] = mapped_column(
@@ -2509,7 +2509,7 @@ class Facility(Base):
     code: Mapped[str] = synonym("facilitycode")
     coding_standard: Mapped[str] = synonym("facilitycodestd")
     pkb_out: Mapped[bool] = synonym("pkbout")
-    pkb_msg_exclusions: Mapped[List[str] | None] = synonym("pkbmsgexclusions")
+    pkb_msg_exclusions: Mapped[list[str] | None] = synonym("pkbmsgexclusions")
     rdastartdate: Mapped[datetime | None] = synonym("startdate")
     rdaenddate: Mapped[datetime | None] = synonym("enddate")
     rdafirstdataquarter: Mapped[int | None] = synonym("firstdataquarter")

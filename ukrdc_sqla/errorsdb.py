@@ -28,7 +28,7 @@ class Channel(Base):
     )
 
     # --- Relationships ---
-    messages: Mapped[List["Message"]] = relationship("Message", backref="channel")
+    messages: Mapped[list["Message"]] = relationship("Message", backref="channel")
 
 
 class Message(Base):
@@ -53,7 +53,7 @@ class Message(Base):
     error: Mapped[str | None] = mapped_column("error", String)
     status: Mapped[str | None] = mapped_column("status", String)
 
-    latests: Mapped[List["Latest"]] = relationship("Latest", back_populates="message")
+    latests: Mapped[list["Latest"]] = relationship("Latest", back_populates="message")
 
 
 class Facility(Base):

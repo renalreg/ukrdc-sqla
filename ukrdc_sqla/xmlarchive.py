@@ -46,22 +46,22 @@ class Patient(Base):
         UniqueConstraint("sendingfacility", "nationalid", "numbertype", "organization"),
     )
 
-    treatments: Mapped[List["Treatment"]] = relationship(
+    treatments: Mapped[list["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    assessments: Mapped[List["Assessment"]] = relationship(
+    assessments: Mapped[list["Assessment"]] = relationship(
         "Assessment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    dialysisprescriptions: Mapped[List["DialysisPrescription"]] = relationship(
+    dialysisprescriptions: Mapped[list["DialysisPrescription"]] = relationship(
         "DialysisPrescription", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+    diagnoses: Mapped[list["Diagnosis"]] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+    cause_of_death: Mapped[list["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+    renaldiagnoses: Mapped[list["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 

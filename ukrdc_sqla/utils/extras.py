@@ -18,7 +18,7 @@ def column_names(
     *items: Union[
         Union[Col, InstrumentedAttribute], Iterable[Union[Col, InstrumentedAttribute]]
     ],
-) -> List[str]:
+) -> list[str]:
     """
     Return a list of column names for one or more SQLAlchemy InstrumentedAttributes.
 
@@ -27,7 +27,7 @@ def column_names(
         column_names(User.id, User.age)-> ["id", "age"]
         column_names([User.id, User.age])-> ["id", "age"]
     """
-    names: List[str] = []
+    names: list[str] = []
 
     for item in items:
         if isinstance(item, Iterable):

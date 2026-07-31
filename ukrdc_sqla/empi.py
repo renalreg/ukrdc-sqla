@@ -40,10 +40,10 @@ class MasterRecord(Base):
     creationdate: Mapped[datetime.datetime | None] = mapped_column(DateTime)
 
     # --- Relationships ---
-    link_records: Mapped[List["LinkRecord"]] = relationship(
+    link_records: Mapped[list["LinkRecord"]] = relationship(
         "LinkRecord", back_populates="master_record", cascade="all, delete-orphan"
     )
-    work_items: Mapped[List["WorkItem"]] = relationship(
+    work_items: Mapped[list["WorkItem"]] = relationship(
         "WorkItem", back_populates="master_record", cascade="all, delete-orphan"
     )
 
@@ -137,13 +137,13 @@ class Person(Base):
     )
 
     # --- Relationships ---
-    link_records: Mapped[List["LinkRecord"]] = relationship(
+    link_records: Mapped[list["LinkRecord"]] = relationship(
         "LinkRecord", back_populates="person", cascade="all, delete-orphan"
     )
-    work_items: Mapped[List["WorkItem"]] = relationship(
+    work_items: Mapped[list["WorkItem"]] = relationship(
         "WorkItem", back_populates="person", cascade="all, delete-orphan"
     )
-    xref_entries: Mapped[List["PidXRef"]] = relationship(
+    xref_entries: Mapped[list["PidXRef"]] = relationship(
         "PidXRef", back_populates="person", cascade="all, delete-orphan"
     )
     # --- Synonyms ---
