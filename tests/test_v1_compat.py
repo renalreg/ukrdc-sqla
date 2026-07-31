@@ -1,10 +1,11 @@
-from sqlalchemy.orm import InspectionAttr
 from sqlalchemy.ext.associationproxy import (
     AssociationProxy,
     ColumnAssociationProxyInstance,
 )
-from . import ukrdc_v1 as v1
+from sqlalchemy.orm import InspectionAttr
 from ukrdc_sqla import ukrdc as v2
+
+from . import ukrdc_v1 as v1
 
 COMP = {
     "PatientRecord": v1.PatientRecord,

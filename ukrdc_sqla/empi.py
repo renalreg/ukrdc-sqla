@@ -12,13 +12,12 @@ from sqlalchemy import (
     Integer,
     String,
 )
-
 from sqlalchemy.orm import (
-    mapped_column,
+    DeclarativeBase,
     Mapped,
+    mapped_column,
     relationship,
     synonym,
-    DeclarativeBase,
 )
 
 

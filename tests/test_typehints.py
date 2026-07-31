@@ -1,8 +1,7 @@
 import typing
 
 from sqlalchemy.orm import Synonym
-
-from ukrdc_sqla import ukrdc, empi, errorsdb, repository, pkb, stats
+from ukrdc_sqla import empi, errorsdb, pkb, repository, stats, ukrdc
 
 
 def _get_models(module):

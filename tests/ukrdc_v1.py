@@ -7,16 +7,16 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     LargeBinary,
     MetaData,
     String,
-    Float,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import Mapped, relationship, declarative_base
+from sqlalchemy.orm import Mapped, declarative_base, relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()

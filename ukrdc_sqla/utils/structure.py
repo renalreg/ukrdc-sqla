@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from sqlalchemy.orm import MappedColumn, mapped_column as _mapped_column
+from sqlalchemy.orm import MappedColumn
+from sqlalchemy.orm import mapped_column as _mapped_column
 
 
 @dataclass

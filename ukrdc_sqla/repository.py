@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import String, DateTime, Integer
+from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, synonym
 
 from ukrdc_sqla.ukrdc import Base

@@ -1,4 +1,5 @@
-from typing import Union, Iterable, List
+from typing import Iterable, List, Union
+
 from sqlalchemy import Column as Col
 from sqlalchemy.orm import InstrumentedAttribute
 
