@@ -151,8 +151,6 @@ class Patient(Base):
     bloodgroup = Column(String)
     bloodrhesus = Column(String)
 
-    dead = Column("death", Boolean)
-    updated_on = Column("updatedon", DateTime)
 
     numbers: Mapped[list["PatientNumber"]] = relationship(
         "PatientNumber",
