@@ -16,8 +16,8 @@ class EventControl(Base):
     __tablename__ = "eventcontrol"
 
     event_type: Mapped[str] = mapped_column("eventtype", String, primary_key=True)
-    event_date: Mapped[Optional[datetime]] = mapped_column("eventdate", DateTime)
-    pending_event_date: Mapped[Optional[datetime]] = mapped_column(
+    event_date: Mapped[datetime | None] = mapped_column("eventdate", DateTime)
+    pending_event_date: Mapped[datetime | None] = mapped_column(
         "pendingeventdate", DateTime
     )
 
@@ -31,10 +31,10 @@ class ValidationError(Base):
     __tablename__ = "validationerror"
 
     vid: Mapped[int] = mapped_column(Integer, primary_key=True)
-    pid: Mapped[Optional[str]] = mapped_column(String)
-    updatedon: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    errortype: Mapped[Optional[str]] = mapped_column(String)
-    message: Mapped[Optional[str]] = mapped_column(String)
+    pid: Mapped[str | None] = mapped_column(String)
+    updatedon: Mapped[datetime | None] = mapped_column(DateTime)
+    errortype: Mapped[str | None] = mapped_column(String)
+    message: Mapped[str | None] = mapped_column(String)
 
-    updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
-    error_type: Mapped[Optional[str]] = synonym("errortype")
+    updated_on: Mapped[datetime | None] = synonym("updatedon")
+    error_type: Mapped[str | None] = synonym("errortype")

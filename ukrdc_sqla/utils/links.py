@@ -51,7 +51,7 @@ def find_related_ids(
 
 
 def find_related_link_records(
-    session: Session, master_id: Optional[int] = None, person_id: Optional[int] = None
+    session: Session, master_id: int | None = None, person_id: int | None = None
 ) -> Set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs

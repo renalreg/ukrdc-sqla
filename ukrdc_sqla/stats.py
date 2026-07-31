@@ -17,7 +17,7 @@ class ErrorHistory(Base):
 
     facility: Mapped[str] = mapped_column(String, primary_key=True)
     date: Mapped[datetime_date] = mapped_column(Date, primary_key=True)
-    count: Mapped[Optional[int]] = mapped_column(Integer)
+    count: Mapped[int | None] = mapped_column(Integer)
 
 
 class MultipleUKRDCID(Base):
@@ -26,11 +26,11 @@ class MultipleUKRDCID(Base):
     group_id: Mapped[int] = mapped_column(Integer, nullable=False)
     master_id: Mapped[int] = mapped_column(Integer, nullable=False)
     resolved: Mapped[bool] = mapped_column(Boolean, default=False)
-    last_updated: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    last_updated: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class LastRunTimes(Base):
     __tablename__ = "last_run_times"
     table: Mapped[str] = mapped_column(String, primary_key=True)
     facility: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
-    last_run_time: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    last_run_time: Mapped[datetime | None] = mapped_column(DateTime)

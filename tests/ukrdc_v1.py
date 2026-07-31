@@ -185,7 +185,7 @@ class Patient(Base):
         return None
 
     @property
-    def first_ni_number(self) -> Optional[str]:
+    def first_ni_number(self) -> str | None:
         """Find the first nhs,chi or hsc number for a patient."""
         types = "NHS", "CHI", "HSC"
         for number in self.numbers:
@@ -194,7 +194,7 @@ class Patient(Base):
         return None
 
     @property
-    def first_hospital_number(self) -> Optional[str]:
+    def first_hospital_number(self) -> str | None:
         """Find the first local hospital number for a patient."""
         hospital = "LOCALHOSP"
         for number in self.numbers:

@@ -13,7 +13,7 @@ class ColumnInfo:
 
 def mapped_column(
     *args: Any,
-    sqla_info: Optional[ColumnInfo] = None,
+    sqla_info: ColumnInfo | None = None,
     **kwargs: Any,
 ) -> MappedColumn:
     """A mapped_column wrapper that supports typed metadata via a ColumnInfo dataclass."""
@@ -25,7 +25,7 @@ def mapped_column(
     return _mapped_column(*args, info=info, **kwargs)
 
 
-def get_column_info(model, column_name: str) -> Optional[ColumnInfo]:
+def get_column_info(model, column_name: str) -> ColumnInfo | None:
     """Retrieve ColumnInfo for a given column by name."""
     col = model.__table__.c[column_name]
     return col.info.get("sqla_info")
