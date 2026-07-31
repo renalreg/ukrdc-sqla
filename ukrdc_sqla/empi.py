@@ -216,9 +216,7 @@ class Audit(Base):
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
     description: Mapped[str] = mapped_column("description", String, nullable=False)
     mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String)
-    mainnationalidtype: Mapped[str | None] = mapped_column(
-        "mainnationalidtype", String
-    )
+    mainnationalidtype: Mapped[str | None] = mapped_column("mainnationalidtype", String)
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )

@@ -516,15 +516,11 @@ class CauseOfDeath(Base):
         "pid"
     )  # this will not be correct if the primary key changes
     diagnosis_type: Mapped[str | None] = synonym("diagnosistype")
-    diagnosing_clinician_code: Mapped[str | None] = synonym(
-        "diagnosingcliniciancode"
-    )
+    diagnosing_clinician_code: Mapped[str | None] = synonym("diagnosingcliniciancode")
     diagnosing_clinician_code_std: Mapped[str | None] = synonym(
         "diagnosingcliniciancodestd"
     )
-    diagnosing_clinician_desc: Mapped[str | None] = synonym(
-        "diagnosingcliniciandesc"
-    )
+    diagnosing_clinician_desc: Mapped[str | None] = synonym("diagnosingcliniciandesc")
     diagnosis_code: Mapped[str | None] = synonym("diagnosiscode")
     diagnosis_code_std: Mapped[str | None] = synonym("diagnosiscodestd")
     diagnosis_desc: Mapped[str | None] = synonym("diagnosisdesc")
@@ -839,9 +835,7 @@ class Observation(Base):
     clinician_desc: Mapped[str | None] = synonym("cliniciandesc")
     entered_at: Mapped[str | None] = synonym("enteredatcode")
     entered_at_description: Mapped[str | None] = synonym("enteredatdesc")
-    entering_organization_code: Mapped[str | None] = synonym(
-        "enteringorganizationcode"
-    )
+    entering_organization_code: Mapped[str | None] = synonym("enteringorganizationcode")
     entering_organization_description: Mapped[str | None] = synonym(
         "enteringorganizationdesc"
     )
@@ -1661,9 +1655,7 @@ class Medication(Base):
     repository_update_date: Mapped[datetime] = synonym("repositoryupdatedate")
     from_time: Mapped[datetime | None] = synonym("fromtime")
     to_time: Mapped[datetime | None] = synonym("totime")
-    entering_organization_code: Mapped[str | None] = synonym(
-        "enteringorganizationcode"
-    )
+    entering_organization_code: Mapped[str | None] = synonym("enteringorganizationcode")
     entering_organization_description: Mapped[str | None] = synonym(
         "enteringorganizationdesc"
     )
@@ -1910,9 +1902,7 @@ class LabOrder(Base):
     order_category: Mapped[str | None] = synonym("ordercategorycode")
     order_category_description: Mapped[str | None] = synonym("ordercategorydesc")
     order_category_code_std: Mapped[str | None] = synonym("ordercategorycodestd")
-    specimen_collected_time: Mapped[datetime | None] = synonym(
-        "specimencollectedtime"
-    )
+    specimen_collected_time: Mapped[datetime | None] = synonym("specimencollectedtime")
     specimen_received_time: Mapped[datetime | None] = synonym("specimenreceivedtime")
     priority: Mapped[str | None] = synonym("prioritycode")
     priority_description: Mapped[str | None] = synonym("prioritydesc")
@@ -1925,9 +1915,7 @@ class LabOrder(Base):
     entered_at: Mapped[str | None] = synonym("enteredatcode")
     entered_at_description: Mapped[str | None] = synonym("enteredatdesc")
     external_id: Mapped[str | None] = synonym("externalid")
-    entering_organization_code: Mapped[str | None] = synonym(
-        "enteringorganizationcode"
-    )
+    entering_organization_code: Mapped[str | None] = synonym("enteringorganizationcode")
     entering_organization_description: Mapped[str | None] = synonym(
         "enteringorganizationdesc"
     )

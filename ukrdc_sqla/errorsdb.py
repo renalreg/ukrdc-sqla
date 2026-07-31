@@ -34,9 +34,7 @@ class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    message_id: Mapped[int | None] = mapped_column(
-        "message_id", Integer, unique=True
-    )
+    message_id: Mapped[int | None] = mapped_column("message_id", Integer, unique=True)
     channel_id: Mapped[str | None] = mapped_column(
         "channel_id", String, ForeignKey("channels.id")
     )

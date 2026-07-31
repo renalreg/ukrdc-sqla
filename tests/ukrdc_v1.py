@@ -151,7 +151,6 @@ class Patient(Base):
     bloodgroup = Column(String)
     bloodrhesus = Column(String)
 
-
     numbers: Mapped[list["PatientNumber"]] = relationship(
         "PatientNumber",
         backref="patient",
