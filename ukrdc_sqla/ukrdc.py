@@ -1,35 +1,34 @@
 """Models which relate to the main UKRDC database"""
 
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 from sqlalchemy import (
     Boolean,
-    ForeignKeyConstraint,
     Date,
     DateTime,
+    Enum,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     LargeBinary,
     Numeric,
     String,
     Text,
     text,
-    Enum,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
+    DeclarativeBase,
     Mapped,
+    MappedColumn,
     relationship,
     synonym,
-    DeclarativeBase,
-    MappedColumn,
 )
 
-from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column, get_column_info
+from ukrdc_sqla.utils.structure import ColumnInfo, get_column_info, mapped_column
 
 get_column_info = get_column_info
 
