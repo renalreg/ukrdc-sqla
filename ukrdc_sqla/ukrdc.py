@@ -442,7 +442,7 @@ class Patient(Base):
         return None
 
     @property
-    def first_ni_number(
+    def first_ni_number(  # noqa: PLR0206
         self, org: bool = False
     ) -> str | tuple[str, str] | None:
         """Find the first NHS, CHI, or HSC number for a patient.
