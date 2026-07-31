@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -28,9 +28,7 @@ from sqlalchemy.orm import (
     synonym,
 )
 
-from ukrdc_sqla.utils.structure import ColumnInfo, get_column_info, mapped_column
-
-get_column_info = get_column_info
+from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column
 
 GLOBAL_LAZY = "dynamic"
 
@@ -446,7 +444,7 @@ class Patient(Base):
     @property
     def first_ni_number(
         self, org: bool = False
-    ) -> Union[str, tuple[str, str]] | None:
+    ) -> str | tuple[str, str] | None:
         """Find the first NHS, CHI, or HSC number for a patient.
         Returns a string by default, or a tuple if org=True."""
         types = {"NHS", "CHI", "HSC"}
