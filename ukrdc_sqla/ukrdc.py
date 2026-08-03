@@ -2462,7 +2462,11 @@ class Facility(Base):
     )
     facilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
     facilitytype: Mapped[Enum] = mapped_column(
-        "facilitytype", Enum("Multiple Centre", "Adult Renal Centre", "Paediatric Renal Centre", "Other"), nullable=False
+        "facilitytype",
+        Enum(
+            "Multiple Centre", "Adult Renal Centre", "Paediatric Renal Centre", "Other"
+        ),
+        nullable=False,
     )
     pkbout: Mapped[bool] = mapped_column(
         "pkbout", Boolean, nullable=False, server_default=text("false")
