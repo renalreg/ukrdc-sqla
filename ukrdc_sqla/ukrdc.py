@@ -3,7 +3,7 @@
 from datetime import date
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Union, Tuple, Any
+from typing import List, Literal, Optional, Union, Tuple, Any
 
 from sqlalchemy import (
     Boolean,
@@ -23,6 +23,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
     Mapped,
+    DynamicMapped,
     relationship,
     synonym,
     DeclarativeBase,
@@ -33,7 +34,7 @@ from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column, get_column_inf
 
 get_column_info = get_column_info
 
-GLOBAL_LAZY = "dynamic"
+GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
 
 
 class Base(DeclarativeBase):
@@ -94,13 +95,13 @@ class PatientRecord(Base):
     patient: Mapped["Patient"] = relationship(
         "Patient", back_populates="record", uselist=False, cascade="all, delete-orphan"
     )
-    lab_orders: Mapped[List["LabOrder"]] = relationship(
+    lab_orders: DynamicMapped["LabOrder"] = relationship(
         "LabOrder",
         back_populates="record",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: DynamicMapped["ResultItem"] = relationship(
         "ResultItem",
         secondary="laborder",
         primaryjoin="LabOrder.pid == PatientRecord.pid",
@@ -108,7 +109,7 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship(
+    observations: DynamicMapped["Observation"] = relationship(
         "Observation",
         back_populates="record",
         lazy=GLOBAL_LAZY,
@@ -120,59 +121,61 @@ class PatientRecord(Base):
     family_histories: Mapped[List["FamilyHistory"]] = relationship(
         "FamilyHistory", cascade="all, delete-orphan"
     )
-    allergies: Mapped[List["Allergy"]] = relationship(
+    allergies: DynamicMapped["Allergy"] = relationship(
         "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+    diagnoses: DynamicMapped["Diagnosis"] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+    cause_of_death: DynamicMapped["CauseOfDeath"] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+    renaldiagnoses: DynamicMapped["RenalDiagnosis"] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: Mapped[List["Medication"]] = relationship(
+    medications: DynamicMapped["Medication"] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
+    dialysis_sessions: DynamicMapped["DialysisSession"] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    vascular_accesses: Mapped[List["VascularAccess"]] = relationship(
+    vascular_accesses: DynamicMapped["VascularAccess"] = relationship(
         "VascularAccess", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures: Mapped[List["Procedure"]] = relationship(
+    procedures: DynamicMapped["Procedure"] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: DynamicMapped["Document"] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    encounters: Mapped[List["Encounter"]] = relationship(
+    encounters: DynamicMapped["Encounter"] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    transplantlists: Mapped[List["TransplantList"]] = relationship(
+    transplantlists: DynamicMapped["TransplantList"] = relationship(
         "TransplantList", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: Mapped[List["Treatment"]] = relationship(
+    treatments: DynamicMapped["Treatment"] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     program_memberships: Mapped[List["ProgramMembership"]] = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
-    transplants: Mapped[List["Transplant"]] = relationship(
+    transplants: DynamicMapped["Transplant"] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    opt_outs: DynamicMapped["OptOut"] = relationship(
+        "OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     clinical_relationships = relationship(
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
-    surveys: Mapped[List["Survey"]] = relationship(
+    surveys: DynamicMapped["Survey"] = relationship(
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     pvdata: Mapped["PVData"] = relationship(
         "PVData", uselist=False, cascade="all, delete-orphan"
     )
-    pvdelete: Mapped[List["PVDelete"]] = relationship(
+    pvdelete: DynamicMapped["PVDelete"] = relationship(
         "PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
@@ -408,19 +411,19 @@ class Patient(Base):
     updated_on: Mapped[Optional[datetime]] = synonym("updatedon")
 
     # Relationships
-    numbers: Mapped[List["PatientNumber"]] = relationship(
+    numbers: DynamicMapped["PatientNumber"] = relationship(
         "PatientNumber",
         back_populates="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names: Mapped[List["Name"]] = relationship(
+    names: DynamicMapped["Name"] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: Mapped[List["ContactDetail"]] = relationship(
+    contact_details: DynamicMapped["ContactDetail"] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses: Mapped[List["Address"]] = relationship(
+    addresses: DynamicMapped["Address"] = relationship(
         "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     familydoctor: Mapped["FamilyDoctor"] = relationship(
@@ -452,7 +455,11 @@ class Patient(Base):
         Returns a string by default, or a tuple if org=True."""
         types = {"NHS", "CHI", "HSC"}
         for number in self.numbers or []:
-            if number.numbertype == "NI" and number.organization in types:
+            if (
+                number.numbertype == "NI"
+                and number.organization in types
+                and number.patientid is not None
+            ):
                 return (
                     (number.patientid, number.organization) if org else number.patientid
                 )
@@ -1883,7 +1890,7 @@ class LabOrder(Base):
 
     # Relationships
 
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: DynamicMapped["ResultItem"] = relationship(
         "ResultItem",
         lazy=GLOBAL_LAZY,
         back_populates="order",
