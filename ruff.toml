@@ -1,0 +1,8 @@
+# Always generate Python 3.9-compatible code.
+target-version = "py39"
+# Exclude this specific file from all ruff checks
+extend-exclude = ["tests/mypy_checks/invalid_mypy.py"]
+
+
+[lint]
+select = ["E4", "E7", "E9", "F" , "I"]

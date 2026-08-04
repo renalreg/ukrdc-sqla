@@ -5,18 +5,19 @@ to the v5 database models (by design because they are a stopgap until we have
 the capacity to store it)
 """
 
-from sqlalchemy.orm import relationship, Mapped, synonym, declarative_base
+from typing import List
+
 from sqlalchemy import (
-    MetaData,
     Column,
-    Integer,
-    String,
     DateTime,
     ForeignKey,
+    Integer,
+    MetaData,
+    String,
     UniqueConstraint,
 )
+from sqlalchemy.orm import Mapped, declarative_base, relationship, synonym
 from sqlalchemy.sql import func
-from typing import List
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
