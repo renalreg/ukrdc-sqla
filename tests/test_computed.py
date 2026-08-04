@@ -4,11 +4,35 @@ from datetime import datetime
 from typing import Optional
 
 import pytest
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Numeric, String, cast, create_engine, select, update
-from sqlalchemy.orm import DeclarativeBase, Mapped, QueryableAttribute, Session, mapped_column, relationship
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Numeric,
+    String,
+    cast,
+    create_engine,
+    select,
+    update,
+)
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    QueryableAttribute,
+    Session,
+    mapped_column,
+    relationship,
+)
 
 from ukrdc_sqla.utils.post_calculations import example_prepost
-from ukrdc_sqla.utils.structure import ComputedField, SessionComputedField, computed_field, computed_hybrid, session_computed_field
+from ukrdc_sqla.utils.structure import (
+    ComputedField,
+    SessionComputedField,
+    computed_field,
+    computed_hybrid,
+    session_computed_field,
+)
 
 
 class Base(DeclarativeBase):
