@@ -64,7 +64,7 @@ def dynamic_relationship_supports_query_api(record: PatientRecord) -> None:
 def dynamic_relationship_supports_collection_mutation(
     record: PatientRecord, order: LabOrder
 ) -> None:
-    """"dynamic" relationships are still mutable collections, not read-only queries."""
+    """ "dynamic" relationships are still mutable collections, not read-only queries."""
     record.lab_orders.append(order)
     record.lab_orders.remove(order)
 
