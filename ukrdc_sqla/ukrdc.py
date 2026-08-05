@@ -29,6 +29,7 @@ from sqlalchemy.orm import (
     synonym,
 )
 
+from ukrdc_sqla.utils.constants import FacilityType, GpType
 from ukrdc_sqla.utils.structure import ColumnInfo, get_column_info, mapped_column
 
 get_column_info = get_column_info
@@ -609,7 +610,9 @@ class GPInfo(Base):
     address1: Mapped[Optional[str]] = mapped_column(String(35))
     postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
     phone: Mapped[Optional[str]] = mapped_column(String(12))
-    type: Mapped[Optional[str]] = mapped_column(Enum("GP", "PRACTICE", name="gp_type"))
+    type: Mapped[Optional[str]] = mapped_column(
+        Enum(GpType.gp, GpType.practice, name="gp_type")
+    )
     update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Synonyms
@@ -2475,8 +2478,16 @@ class Facility(Base):
         "facilitycode", String(100), primary_key=True
     )
     facilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
-    facilitytype: Mapped[str] = mapped_column(
-        "facilitytype", String(100), nullable=False
+    facilitytype: Mapped[Enum] = mapped_column(
+        "facilitytype",
+        Enum(
+            FacilityType.multiple_centre,
+            FacilityType.adult_renal_centre,
+            FacilityType.paediatric_renal_centre,
+            FacilityType.other,
+            name="facility_type",
+        ),
+        nullable=False,
     )
     pkbout: Mapped[bool] = mapped_column(
         "pkbout", Boolean, nullable=False, server_default=text("false")
