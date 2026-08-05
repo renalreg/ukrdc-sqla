@@ -1,5 +1,6 @@
 from collections import namedtuple
 from typing import List, Optional, Set, Tuple
+
 from sqlalchemy.orm import Query, Session
 
 from ..empi import LinkRecord

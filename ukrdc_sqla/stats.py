@@ -1,11 +1,11 @@
 """Models which relate to the generated facility error stats and data health database"""
 
-from datetime import datetime
 from datetime import date as datetime_date
+from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Date, DateTime, Integer, String, Boolean
-from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase
+from sqlalchemy import Boolean, Date, DateTime, Integer, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
