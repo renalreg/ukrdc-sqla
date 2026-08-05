@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.3.1](https://github.com/renalreg/ukrdc-sqla/compare/v4.3.0...v4.3.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* fixed defaults and remove nullable ([533d1f8](https://github.com/renalreg/ukrdc-sqla/commit/533d1f8c2cf8803de8b04080205d6d2f4d199335))
+
+## [4.3.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.2.2...v4.3.0) (2026-08-05)
+
+
+### Features
+
+* **UK-29:** RADAR Extract - Restrict RADAR Exports ([#171](https://github.com/renalreg/ukrdc-sqla/issues/171)) ([3a672d0](https://github.com/renalreg/ukrdc-sqla/commit/3a672d01217d885f69deb25e2ebd1c1b059cfa63))
+
 ## [4.2.2](https://github.com/renalreg/ukrdc-sqla/compare/v4.2.1...v4.2.2) (2026-08-05)
 
 

@@ -29,7 +29,10 @@ from sqlalchemy.orm import (
     synonym,
 )
 
-from ukrdc_sqla.utils.structure import ColumnInfo, mapped_column
+from ukrdc_sqla.utils.constants import FacilityType, GpType
+from ukrdc_sqla.utils.structure import ColumnInfo, get_column_info, mapped_column
+
+get_column_info = get_column_info
 
 GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
 
@@ -63,10 +66,11 @@ class SendingExtractMetadata(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     enable_radar_export: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=True,
+        nullable=False,
+        server_default=text("false"),
         sqla_info=ColumnInfo(
             label="enable radar exports",
-            description="A flag to enable weather the radar exporter will export for this sending extract",
+            description="A flag to enable whether the radar exporter will export for this sending extract",
         ),
     )
 
@@ -599,12 +603,14 @@ class GPInfo(Base):
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
-    name: Mapped[str | None] = mapped_column(String(50))
-    address1: Mapped[str | None] = mapped_column(String(35))
-    postcode: Mapped[str | None] = mapped_column(String)
-    phone: Mapped[str | None] = mapped_column(String(12))
-    type: Mapped[str | None] = mapped_column(Enum("GP", "PRACTICE", name="gp_type"))
-    update_date: Mapped[datetime | None] = mapped_column(DateTime)
+    name: Mapped[Optional[str]] = mapped_column(String(50))
+    address1: Mapped[Optional[str]] = mapped_column(String(35))
+    postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
+    phone: Mapped[Optional[str]] = mapped_column(String(12))
+    type: Mapped[Optional[str]] = mapped_column(
+        Enum(GpType.gp, GpType.practice, name="gp_type")
+    )
+    update_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Synonyms
 
@@ -2461,8 +2467,16 @@ class Facility(Base):
         "facilitycode", String(100), primary_key=True
     )
     facilitycodestd: Mapped[str] = coding_standard_column(primary_key=True)
-    facilitytype: Mapped[str] = mapped_column(
-        "facilitytype", String(100), nullable=False
+    facilitytype: Mapped[Enum] = mapped_column(
+        "facilitytype",
+        Enum(
+            FacilityType.multiple_centre,
+            FacilityType.adult_renal_centre,
+            FacilityType.paediatric_renal_centre,
+            FacilityType.other,
+            name="facility_type",
+        ),
+        nullable=False,
     )
     pkbout: Mapped[bool] = mapped_column(
         "pkbout", Boolean, nullable=False, server_default=text("false")
