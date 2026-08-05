@@ -1,5 +1,8 @@
-# Ruff configuration for ukrdc-fastapi
-# https://docs.astral.sh/ruff/configuration/
+# Always generate Python 3.9-compatible code.
+target-version = "py39"
+# Exclude this specific file from all ruff checks
+extend-exclude = ["tests/mypy_checks/invalid_mypy.py"]
+
+
 [lint]
-# TODO: Fix ruff linting in seperate pr
-select = ["E4", "E7", "E9", "F"]
+select = ["E4", "E7", "E9", "F" , "I"]
