@@ -66,10 +66,11 @@ class SendingExtractMetadata(Base):
     comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     enable_radar_export: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=True,
+        nullable=False,
+        server_default=text("false"),
         sqla_info=ColumnInfo(
             label="enable radar exports",
-            description="A flag to enable weather the radar exporter will export for this sending extract",
+            description="A flag to enable whether the radar exporter will export for this sending extract",
         ),
     )
 
