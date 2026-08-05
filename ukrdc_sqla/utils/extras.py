@@ -1,10 +1,10 @@
-from typing import Iterable, List, Union
+from collections.abc import Iterable
 
 from sqlalchemy import Column as Col
 from sqlalchemy.orm import InstrumentedAttribute
 
 
-def column_name(col: Union[Col, InstrumentedAttribute]) -> str:
+def column_name(col: Col | InstrumentedAttribute) -> str:
     """
     Return the column name for a single SQLAlchemy InstrumentedAttribute.
 
@@ -15,10 +15,8 @@ def column_name(col: Union[Col, InstrumentedAttribute]) -> str:
 
 
 def column_names(
-    *items: Union[
-        Union[Col, InstrumentedAttribute], Iterable[Union[Col, InstrumentedAttribute]]
-    ],
-) -> List[str]:
+    *items: Col | InstrumentedAttribute | Iterable[Col | InstrumentedAttribute],
+) -> list[str]:
     """
     Return a list of column names for one or more SQLAlchemy InstrumentedAttributes.
 
@@ -27,7 +25,7 @@ def column_names(
         column_names(User.id, User.age)-> ["id", "age"]
         column_names([User.id, User.age])-> ["id", "age"]
     """
-    names: List[str] = []
+    names: list[str] = []
 
     for item in items:
         if isinstance(item, Iterable):

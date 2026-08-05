@@ -1,5 +1,4 @@
 from collections import namedtuple
-from typing import List, Optional, Set, Tuple
 
 from sqlalchemy.orm import Query, Session
 
@@ -9,7 +8,7 @@ PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id
 
 
 def find_related_ids(
-    jtrace: Session, seen_master_ids: Set[int], seen_person_ids: Set[int]
+    jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]
 ):
     """
     Construct sets of related master records and person records.
@@ -30,7 +29,7 @@ def find_related_ids(
     """
     found_new: bool = True
     while found_new:
-        links: List[LinkRecord] = (
+        links: list[LinkRecord] = (
             jtrace.query(LinkRecord)
             .filter(
                 (LinkRecord.master_id.in_(seen_master_ids))
@@ -39,8 +38,8 @@ def find_related_ids(
             .all()
         )
 
-        master_ids: Set[int] = {item.master_id for item in links}
-        person_ids: Set[int] = {item.person_id for item in links}
+        master_ids: set[int] = {item.master_id for item in links}
+        person_ids: set[int] = {item.person_id for item in links}
         if seen_master_ids.issuperset(master_ids) and seen_person_ids.issuperset(
             person_ids
         ):
@@ -51,8 +50,8 @@ def find_related_ids(
 
 
 def find_related_link_records(
-    session: Session, master_id: Optional[int] = None, person_id: Optional[int] = None
-) -> Set[PersonMasterLink]:
+    session: Session, master_id: int | None = None, person_id: int | None = None
+) -> set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
     This function is non-trivial since linked records can
@@ -63,8 +62,8 @@ def find_related_link_records(
     This function basically follows the complete chain.
     """
 
-    linkrecord_ids: Set[PersonMasterLink] = set()
-    new_entries: Set[Tuple[int, int]] = set()
+    linkrecord_ids: set[PersonMasterLink] = set()
+    new_entries: set[tuple[int, int]] = set()
     entries: Query
 
     # If no explicit person_id is give, we'll derive one

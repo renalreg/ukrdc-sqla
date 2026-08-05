@@ -54,7 +54,7 @@ COMP = {
 
 
 def _field_keys(obj):
-    return {k for k in obj.__dict__.keys() if not k.startswith("_")}
+    return {k for k in obj.__dict__ if not k.startswith("_")}
 
 
 def test_v1_compat_patientrecord():
