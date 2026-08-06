@@ -92,6 +92,7 @@ Use when you need the value available at the query level, not just on loaded ins
 ```python
 # post_calculations.py
 
+
 def _calc_age(self) -> Optional[int]:
     if self.birthtime is None:
         return None
@@ -99,12 +100,15 @@ def _calc_age(self) -> Optional[int]:
     born = self.birthtime.date()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
+
 def _calc_prepost(self, session: Session) -> str:
     # looks up sibling results on the same date to determine PRE/POST dialysis
     ...
 
+
 def _numeric_value_py(self) -> Optional[float]:
     return float(self.resultvalue) if self.resultvalue else None
+
 
 def _numeric_value_expr(cls):
     return cast(cls.resultvalue, Numeric)
@@ -112,6 +116,7 @@ def _numeric_value_expr(cls):
 
 ```python
 # ukrdc.py
+
 
 class ResultItem(Base):
     ...
@@ -130,7 +135,7 @@ class ResultItem(Base):
 # usage
 
 record = session.get(ResultItem, "R1")
-print(record.age)      # 47  — from loaded columns, no query
+print(record.age)  # 47  — from loaded columns, no query
 print(record.prepost)  # "PRE" — queried DB, cached until next commit
 
 # computed_hybrid can be used in queries — the other two cannot

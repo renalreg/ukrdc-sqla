@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from typing import Any
-from typing import Callable, TypeVar
+from typing import Any, Callable, TypeVar
 
 from sqlalchemy import event
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import MappedColumn
-from sqlalchemy.orm import Session, object_session
+from sqlalchemy.orm import MappedColumn, Session, object_session
 from sqlalchemy.orm import mapped_column as _mapped_column
 
 
