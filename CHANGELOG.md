@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.4.0...v4.5.0) (2026-08-06)
+
+
+### Features
+
+* **UK-29:** added flag to disable for specific sending facilities ([#182](https://github.com/renalreg/ukrdc-sqla/issues/182)) ([edcc791](https://github.com/renalreg/ukrdc-sqla/commit/edcc79195ad43c6424abf449446a29a03a9f3d37))
+
 ## [4.4.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.3.1...v4.4.0) (2026-08-06)
 
 
