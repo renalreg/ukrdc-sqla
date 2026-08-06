@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.4.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.3.1...v4.4.0) (2026-08-06)
+
+
+### Features
+
+* **UK-208:** SQLA - Develop method to add properties to a model with delayed calculations ([5593956](https://github.com/renalreg/ukrdc-sqla/commit/559395608c1b05caeaeaf3b8b81d632448e0f8db))
+
+
+### Bug Fixes
+
+* add deptry and missing dependencies, fix ruff linting, move envs to 3.12 ([#174](https://github.com/renalreg/ukrdc-sqla/issues/174)) ([7cc01b0](https://github.com/renalreg/ukrdc-sqla/commit/7cc01b0d34f22d51828c17112b8de9f52ad88e96))
+
 ## [4.3.1](https://github.com/renalreg/ukrdc-sqla/compare/v4.3.0...v4.3.1) (2026-08-05)
 
 
