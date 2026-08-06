@@ -2496,8 +2496,8 @@ class Facility(Base):
     pvoutpkb: Mapped[bool] = mapped_column(
         "pvoutpkb", Boolean, nullable=False, server_default=text("false")
     )
-    disable_radar_export: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("false")
+    enable_radar_export: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("true")
     )
     startdate: Mapped[datetime | None] = mapped_column("startdate", DateTime)
     enddate: Mapped[datetime | None] = mapped_column("enddate", DateTime)
