@@ -13,6 +13,7 @@ from datetime import datetime
 
 from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
+
 def commit_extra_resultitem(session):
     patient_record = PatientRecord(
         pid="PYTEST01:LABORDERS:00000000L",

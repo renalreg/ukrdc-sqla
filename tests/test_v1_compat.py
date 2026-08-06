@@ -1,10 +1,12 @@
-from sqlalchemy.orm import InspectionAttr
 from sqlalchemy.ext.associationproxy import (
     AssociationProxy,
     ColumnAssociationProxyInstance,
 )
-from . import ukrdc_v1 as v1
+from sqlalchemy.orm import InspectionAttr
+
 from ukrdc_sqla import ukrdc as v2
+
+from . import ukrdc_v1 as v1
 
 COMP = {
     "PatientRecord": v1.PatientRecord,
@@ -52,7 +54,7 @@ COMP = {
 
 
 def _field_keys(obj):
-    return {k for k in obj.__dict__.keys() if not k.startswith("_")}
+    return {k for k in obj.__dict__ if not k.startswith("_")}
 
 
 def test_v1_compat_patientrecord():

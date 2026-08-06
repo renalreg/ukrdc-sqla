@@ -2,7 +2,7 @@ import typing
 
 from sqlalchemy.orm import Synonym
 
-from ukrdc_sqla import ukrdc, empi, errorsdb, repository, pkb, stats
+from ukrdc_sqla import empi, errorsdb, pkb, repository, stats, ukrdc
 
 
 def _get_models(module):
@@ -16,7 +16,7 @@ def _get_models(module):
 def _get_type_hints(cls):
     try:
         return typing.get_type_hints(cls, include_extras=True)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return getattr(cls, "__annotations__", {})
 
 

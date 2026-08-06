@@ -1,22 +1,22 @@
 """Models which relate to the main UKRDC database"""
 
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import (
     Boolean,
     Column,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     LargeBinary,
     MetaData,
     String,
-    Float,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import Mapped, relationship, declarative_base
+from sqlalchemy.orm import Mapped, declarative_base, relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 metadata = MetaData()
@@ -44,11 +44,11 @@ class PatientRecord(Base):
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
 
-    lab_orders: Mapped[List["LabOrder"]] = relationship(
+    lab_orders: Mapped[list["LabOrder"]] = relationship(
         "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: Mapped[list["ResultItem"]] = relationship(
         "ResultItem",
         secondary="laborder",
         primaryjoin="LabOrder.pid == PatientRecord.pid",
@@ -56,51 +56,51 @@ class PatientRecord(Base):
         lazy=GLOBAL_LAZY,
         viewonly=True,
     )
-    observations: Mapped[List["Observation"]] = relationship(
+    observations: Mapped[list["Observation"]] = relationship(
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
 
-    social_histories: Mapped[List["SocialHistory"]] = relationship(
+    social_histories: Mapped[list["SocialHistory"]] = relationship(
         "SocialHistory", cascade="all, delete-orphan"
     )
-    family_histories: Mapped[List["FamilyHistory"]] = relationship(
+    family_histories: Mapped[list["FamilyHistory"]] = relationship(
         "FamilyHistory", cascade="all, delete-orphan"
     )
 
-    allergies: Mapped[List["Allergy"]] = relationship(
+    allergies: Mapped[list["Allergy"]] = relationship(
         "Allergy", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    diagnoses: Mapped[List["Diagnosis"]] = relationship(
+    diagnoses: Mapped[list["Diagnosis"]] = relationship(
         "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    cause_of_death: Mapped[List["CauseOfDeath"]] = relationship(
+    cause_of_death: Mapped[list["CauseOfDeath"]] = relationship(
         "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    renaldiagnoses: Mapped[List["RenalDiagnosis"]] = relationship(
+    renaldiagnoses: Mapped[list["RenalDiagnosis"]] = relationship(
         "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    medications: Mapped[List["Medication"]] = relationship(
+    medications: Mapped[list["Medication"]] = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    dialysis_sessions: Mapped[List["DialysisSession"]] = relationship(
+    dialysis_sessions: Mapped[list["DialysisSession"]] = relationship(
         "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    procedures: Mapped[List["Procedure"]] = relationship(
+    procedures: Mapped[list["Procedure"]] = relationship(
         "Procedure", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: Mapped[list["Document"]] = relationship(
         "Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    encounters: Mapped[List["Encounter"]] = relationship(
+    encounters: Mapped[list["Encounter"]] = relationship(
         "Encounter", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    treatments: Mapped[List["Treatment"]] = relationship(
+    treatments: Mapped[list["Treatment"]] = relationship(
         "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    program_memberships: Mapped[List["ProgramMembership"]] = relationship(
+    program_memberships: Mapped[list["ProgramMembership"]] = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
-    transplants: Mapped[List["Transplant"]] = relationship(
+    transplants: Mapped[list["Transplant"]] = relationship(
         "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
@@ -108,7 +108,7 @@ class PatientRecord(Base):
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
 
-    surveys: Mapped[List["Survey"]] = relationship(
+    surveys: Mapped[list["Survey"]] = relationship(
         "Survey", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
@@ -151,22 +151,19 @@ class Patient(Base):
     bloodgroup = Column(String)
     bloodrhesus = Column(String)
 
-    dead = Column("death", Boolean)
-    updated_on = Column("updatedon", DateTime)
-
-    numbers: Mapped[List["PatientNumber"]] = relationship(
+    numbers: Mapped[list["PatientNumber"]] = relationship(
         "PatientNumber",
         backref="patient",
         lazy=GLOBAL_LAZY,
         cascade="all, delete-orphan",
     )
-    names: Mapped[List["Name"]] = relationship(
+    names: Mapped[list["Name"]] = relationship(
         "Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    contact_details: Mapped[List["ContactDetail"]] = relationship(
+    contact_details: Mapped[list["ContactDetail"]] = relationship(
         "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses: Mapped[List["Address"]] = relationship(
+    addresses: Mapped[list["Address"]] = relationship(
         "Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     familydoctor = relationship(
@@ -185,7 +182,7 @@ class Patient(Base):
         return None
 
     @property
-    def first_ni_number(self) -> Optional[str]:
+    def first_ni_number(self) -> str | None:
         """Find the first nhs,chi or hsc number for a patient."""
         types = "NHS", "CHI", "HSC"
         for number in self.numbers:
@@ -194,7 +191,7 @@ class Patient(Base):
         return None
 
     @property
-    def first_hospital_number(self) -> Optional[str]:
+    def first_hospital_number(self) -> str | None:
         """Find the first local hospital number for a patient."""
         hospital = "LOCALHOSP"
         for number in self.numbers:
@@ -704,7 +701,7 @@ class LabOrder(Base):
     entering_organization_code = Column("enteringorganizationcode", String)
     entering_organization_description = Column("enteringorganizationdesc", String)
 
-    result_items: Mapped[List["ResultItem"]] = relationship(
+    result_items: Mapped[list["ResultItem"]] = relationship(
         "ResultItem",
         lazy=GLOBAL_LAZY,
         back_populates="order",
@@ -734,7 +731,7 @@ class ResultItem(Base):
     comments = Column("commenttext", String)
     reference_comment = Column("referencecomment", String)
 
-    order: Mapped[List[LabOrder]] = relationship(
+    order: Mapped[list[LabOrder]] = relationship(
         "LabOrder", back_populates="result_items"
     )
 

@@ -1,13 +1,12 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 from typing import Callable, TypeVar
 
 from sqlalchemy import event
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import MappedColumn, mapped_column as _mapped_column
+from sqlalchemy.orm import MappedColumn
 from sqlalchemy.orm import Session, object_session
+from sqlalchemy.orm import mapped_column as _mapped_column
 
 
 @dataclass
@@ -18,7 +17,7 @@ class ColumnInfo:
 
 def mapped_column(
     *args: Any,
-    sqla_info: Optional[ColumnInfo] = None,
+    sqla_info: ColumnInfo | None = None,
     **kwargs: Any,
 ) -> MappedColumn:
     """A mapped_column wrapper that supports typed metadata via a ColumnInfo dataclass."""
@@ -30,7 +29,7 @@ def mapped_column(
     return _mapped_column(*args, info=info, **kwargs)
 
 
-def get_column_info(model, column_name: str) -> Optional[ColumnInfo]:
+def get_column_info(model, column_name: str) -> ColumnInfo | None:
     """Retrieve ColumnInfo for a given column by name."""
     col = model.__table__.c[column_name]
     return col.info.get("sqla_info")

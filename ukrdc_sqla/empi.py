@@ -1,7 +1,6 @@
 """Models which relate to the EMPI (JTRACE) database"""
 
 import datetime
-from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -12,13 +11,12 @@ from sqlalchemy import (
     Integer,
     String,
 )
-
 from sqlalchemy.orm import (
-    mapped_column,
+    DeclarativeBase,
     Mapped,
+    mapped_column,
     relationship,
     synonym,
-    DeclarativeBase,
 )
 
 
@@ -31,20 +29,20 @@ class MasterRecord(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     lastupdated: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
     dateofbirth: Mapped[datetime.date] = mapped_column(Date, nullable=False)
-    gender: Mapped[Optional[str]] = mapped_column(String)
-    givenname: Mapped[Optional[str]] = mapped_column(String)
-    surname: Mapped[Optional[str]] = mapped_column(String)
+    gender: Mapped[str | None] = mapped_column(String)
+    givenname: Mapped[str | None] = mapped_column(String)
+    surname: Mapped[str | None] = mapped_column(String)
     nationalid: Mapped[str] = mapped_column(String, nullable=False)
     nationalidtype: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False)
     effectivedate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    creationdate: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    creationdate: Mapped[datetime.datetime | None] = mapped_column(DateTime)
 
     # --- Relationships ---
-    link_records: Mapped[List["LinkRecord"]] = relationship(
+    link_records: Mapped[list["LinkRecord"]] = relationship(
         "LinkRecord", back_populates="master_record", cascade="all, delete-orphan"
     )
-    work_items: Mapped[List["WorkItem"]] = relationship(
+    work_items: Mapped[list["WorkItem"]] = relationship(
         "WorkItem", back_populates="master_record", cascade="all, delete-orphan"
     )
 
@@ -53,7 +51,7 @@ class MasterRecord(Base):
     date_of_birth: Mapped[datetime.date] = synonym("dateofbirth")
     nationalid_type: Mapped[str] = synonym("nationalidtype")
     effective_date: Mapped[datetime.datetime] = synonym("effectivedate")
-    creation_date: Mapped[Optional[datetime.datetime]] = synonym("creationdate")
+    creation_date: Mapped[datetime.datetime | None] = synonym("creationdate")
 
     def __str__(self):
         return (
@@ -76,8 +74,8 @@ class LinkRecord(Base):
     )
     linktype: Mapped[int] = mapped_column("linktype", Integer, nullable=False)
     linkcode: Mapped[int] = mapped_column("linkcode", Integer, nullable=False)
-    linkdesc: Mapped[Optional[str]] = mapped_column("linkdesc", String)
-    updatedby: Mapped[Optional[str]] = mapped_column("updatedby", String)
+    linkdesc: Mapped[str | None] = mapped_column("linkdesc", String)
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String)
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )
@@ -93,8 +91,8 @@ class LinkRecord(Base):
     master_id: Mapped[int] = synonym("masterid")
     link_type: Mapped[int] = synonym("linktype")
     link_code: Mapped[int] = synonym("linkcode")
-    link_desc: Mapped[Optional[str]] = synonym("linkdesc")
-    updated_by: Mapped[Optional[str]] = synonym("updatedby")
+    link_desc: Mapped[str | None] = synonym("linkdesc")
+    updated_by: Mapped[str | None] = synonym("updatedby")
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
 
     def __str__(self):
@@ -115,50 +113,50 @@ class Person(Base):
     # Person.localid must be unique for PidXRef relationship to work
     localid: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     localidtype: Mapped[str] = mapped_column("localidtype", String, nullable=False)
-    nationalid: Mapped[Optional[str]] = mapped_column("nationalid", String)
-    nationalidtype: Mapped[Optional[str]] = mapped_column("nationalidtype", String)
+    nationalid: Mapped[str | None] = mapped_column("nationalid", String)
+    nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String)
     dateofbirth: Mapped[datetime.date] = mapped_column(
         "dateofbirth", Date, nullable=False
     )
     gender: Mapped[str] = mapped_column("gender", String, nullable=False)
-    dateofdeath: Mapped[Optional[datetime.date]] = mapped_column("dateofdeath", Date)
-    givenname: Mapped[Optional[str]] = mapped_column("givenname", String)
-    surname: Mapped[Optional[str]] = mapped_column("surname", String)
-    prevsurname: Mapped[Optional[str]] = mapped_column("prevsurname", String)
-    othergivennames: Mapped[Optional[str]] = mapped_column("othergivennames", String)
-    title: Mapped[Optional[str]] = mapped_column("title", String)
-    postcode: Mapped[Optional[str]] = mapped_column("postcode", String)
-    street: Mapped[Optional[str]] = mapped_column("street", String)
-    stdsurname: Mapped[Optional[str]] = mapped_column("stdsurname", String)
-    stdprevsurname: Mapped[Optional[str]] = mapped_column("stdprevsurname", String)
-    stdgivenname: Mapped[Optional[str]] = mapped_column("stdgivenname", String)
-    stdpostcode: Mapped[Optional[str]] = mapped_column("stdpostcode", String)
-    skipduplicatecheck: Mapped[Optional[bool]] = mapped_column(
+    dateofdeath: Mapped[datetime.date | None] = mapped_column("dateofdeath", Date)
+    givenname: Mapped[str | None] = mapped_column("givenname", String)
+    surname: Mapped[str | None] = mapped_column("surname", String)
+    prevsurname: Mapped[str | None] = mapped_column("prevsurname", String)
+    othergivennames: Mapped[str | None] = mapped_column("othergivennames", String)
+    title: Mapped[str | None] = mapped_column("title", String)
+    postcode: Mapped[str | None] = mapped_column("postcode", String)
+    street: Mapped[str | None] = mapped_column("street", String)
+    stdsurname: Mapped[str | None] = mapped_column("stdsurname", String)
+    stdprevsurname: Mapped[str | None] = mapped_column("stdprevsurname", String)
+    stdgivenname: Mapped[str | None] = mapped_column("stdgivenname", String)
+    stdpostcode: Mapped[str | None] = mapped_column("stdpostcode", String)
+    skipduplicatecheck: Mapped[bool | None] = mapped_column(
         "skipduplicatecheck", Boolean
     )
 
     # --- Relationships ---
-    link_records: Mapped[List["LinkRecord"]] = relationship(
+    link_records: Mapped[list["LinkRecord"]] = relationship(
         "LinkRecord", back_populates="person", cascade="all, delete-orphan"
     )
-    work_items: Mapped[List["WorkItem"]] = relationship(
+    work_items: Mapped[list["WorkItem"]] = relationship(
         "WorkItem", back_populates="person", cascade="all, delete-orphan"
     )
-    xref_entries: Mapped[List["PidXRef"]] = relationship(
+    xref_entries: Mapped[list["PidXRef"]] = relationship(
         "PidXRef", back_populates="person", cascade="all, delete-orphan"
     )
     # --- Synonyms ---
     localid_type: Mapped[str] = synonym("localidtype")
-    nationalid_type: Mapped[Optional[str]] = synonym("nationalidtype")
+    nationalid_type: Mapped[str | None] = synonym("nationalidtype")
     date_of_birth: Mapped[datetime.date] = synonym("dateofbirth")
-    date_of_death: Mapped[Optional[datetime.date]] = synonym("dateofdeath")
-    prev_surname: Mapped[Optional[str]] = synonym("prevsurname")
-    other_given_names: Mapped[Optional[str]] = synonym("othergivennames")
-    std_surname: Mapped[Optional[str]] = synonym("stdsurname")
-    std_prev_surname: Mapped[Optional[str]] = synonym("stdprevsurname")
-    std_given_name: Mapped[Optional[str]] = synonym("stdgivenname")
-    std_postcode: Mapped[Optional[str]] = synonym("stdpostcode")
-    skip_duplicate_check: Mapped[Optional[bool]] = synonym("skipduplicatecheck")
+    date_of_death: Mapped[datetime.date | None] = synonym("dateofdeath")
+    prev_surname: Mapped[str | None] = synonym("prevsurname")
+    other_given_names: Mapped[str | None] = synonym("othergivennames")
+    std_surname: Mapped[str | None] = synonym("stdsurname")
+    std_prev_surname: Mapped[str | None] = synonym("stdprevsurname")
+    std_given_name: Mapped[str | None] = synonym("stdgivenname")
+    std_postcode: Mapped[str | None] = synonym("stdpostcode")
+    skip_duplicate_check: Mapped[bool | None] = synonym("skipduplicatecheck")
 
     def __str__(self):
         return (
@@ -182,15 +180,15 @@ class WorkItem(Base):
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
     description: Mapped[str] = mapped_column("description", String, nullable=False)
     status: Mapped[int] = mapped_column("status", Integer, nullable=False)
-    creationdate: Mapped[Optional[datetime.datetime]] = mapped_column(
+    creationdate: Mapped[datetime.datetime | None] = mapped_column(
         "creationdate", DateTime
     )
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )
-    updatedby: Mapped[Optional[str]] = mapped_column("updatedby", String)
-    updatedesc: Mapped[Optional[str]] = mapped_column("updatedesc", String)
-    attributes: Mapped[Optional[str]] = mapped_column("attributes", String)
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String)
+    updatedesc: Mapped[str | None] = mapped_column("updatedesc", String)
+    attributes: Mapped[str | None] = mapped_column("attributes", String)
 
     # --- Relationships ---
     person: Mapped["Person"] = relationship("Person", back_populates="work_items")
@@ -200,10 +198,10 @@ class WorkItem(Base):
     # --- Synonyms ---
     person_id: Mapped[int] = synonym("personid")
     master_id: Mapped[int] = synonym("masterid")
-    creation_date: Mapped[Optional[datetime.datetime]] = synonym("creationdate")
+    creation_date: Mapped[datetime.datetime | None] = synonym("creationdate")
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
-    updated_by: Mapped[Optional[str]] = synonym("updatedby")
-    update_description: Mapped[Optional[str]] = synonym("updatedesc")
+    updated_by: Mapped[str | None] = synonym("updatedby")
+    update_description: Mapped[str | None] = synonym("updatedesc")
 
     def __str__(self):
         return f"WorkItem({self.id}) <{self.person_id}, {self.master_id}>"
@@ -217,14 +215,12 @@ class Audit(Base):
     masterid: Mapped[int] = mapped_column("masterid", Integer, nullable=False)
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
     description: Mapped[str] = mapped_column("description", String, nullable=False)
-    mainnationalid: Mapped[Optional[str]] = mapped_column("mainnationalid", String)
-    mainnationalidtype: Mapped[Optional[str]] = mapped_column(
-        "mainnationalidtype", String
-    )
+    mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String)
+    mainnationalidtype: Mapped[str | None] = mapped_column("mainnationalidtype", String)
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )
-    updatedby: Mapped[Optional[str]] = mapped_column("updatedby", String)
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String)
 
     # --- Relationships ---
     # Can't use relations here, otherwise on delete sqla would try to
@@ -234,10 +230,10 @@ class Audit(Base):
     # --- Synonyms ---
     person_id: Mapped[int] = synonym("personid")
     master_id: Mapped[int] = synonym("masterid")
-    main_nationalid: Mapped[Optional[str]] = synonym("mainnationalid")
-    main_nationalid_type: Mapped[Optional[str]] = synonym("mainnationalidtype")
+    main_nationalid: Mapped[str | None] = synonym("mainnationalid")
+    main_nationalid_type: Mapped[str | None] = synonym("mainnationalidtype")
     last_updated: Mapped[datetime.datetime] = synonym("lastupdated")
-    updated_by: Mapped[Optional[str]] = synonym("updatedby")
+    updated_by: Mapped[str | None] = synonym("updatedby")
 
 
 class PidXRef(Base):
