@@ -47,6 +47,7 @@ class StandardCodesType:
     pv: str = "PV"
     ukrdc: str = "UKRDC"
     ukrr: str = "UKRR"
+    snomed: str = "SNOMED"
 
 
 @dataclass
