@@ -38,3 +38,20 @@ class GpType:
 
     gp: str = "GP"
     practice: str = "PRACTICE"
+
+@dataclass
+class StandardCodesType:
+    """Links to the various tables and codingstandards that can be used"""
+    pv: str = "PV"
+    ukrdc: str = "UKRDC"
+    ukrr: str = "UKRR"
+
+@dataclass
+class ConstantTypes(
+    RelationshipType,
+    CodeMapFacilityType,
+    FacilityType,
+    GpType,
+    StandardCodesType,
+):
+    """Combined set of all constant values defined in this file."""
