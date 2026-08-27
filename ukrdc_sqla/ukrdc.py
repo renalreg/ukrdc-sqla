@@ -2496,8 +2496,23 @@ class Facility(Base):
     pvoutpkb: Mapped[bool] = mapped_column(
         "pvoutpkb", Boolean, nullable=False, server_default=text("false")
     )
-    enable_radar_export: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("true")
+    radar_out: Mapped[bool] = mapped_column(
+        "radar_out",
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+        sqla_info=ColumnInfo(
+            label="Radar export enabled",
+            description="Master switch for RADAR export for this facility. If false, nothing exports for this facility, regardless of enabled_radar_extracts or which extracts are enabled globally.",
+        ),
+    )
+    enabled_radar_extracts: Mapped[list[str] | None] = mapped_column(
+        "enabled_radar_extracts",
+        ARRAY(Text),
+        sqla_info=ColumnInfo(
+            label="Radar enabled extracts",
+            description="Sending extracts that RADAR should export for this facility. An extract must ALSO be enabled globally via SendingExtractMetadata.enable_radar_export - this list only narrows that down per facility, it cannot widen it. A null/empty list means nothing exports for this facility.",
+        ),
     )
     startdate: Mapped[datetime | None] = mapped_column("startdate", DateTime)
     enddate: Mapped[datetime | None] = mapped_column("enddate", DateTime)
