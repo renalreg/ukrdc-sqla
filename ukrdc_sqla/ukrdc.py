@@ -2496,8 +2496,13 @@ class Facility(Base):
     pvoutpkb: Mapped[bool] = mapped_column(
         "pvoutpkb", Boolean, nullable=False, server_default=text("false")
     )
-    enable_radar_export: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("true")
+    radar_msg_exclusions: Mapped[list[str] | None] = mapped_column(
+        "radar_msg_exclusions",
+        ARRAY(Text),
+        sqla_info=ColumnInfo(
+            label="Radar export exclusions",
+            description="Sending extracts that RADAR should NOT export for this facility, this can be overridden by 'SendingExtractMetadata.enable_radar_export'",
+        ),
     )
     startdate: Mapped[datetime | None] = mapped_column("startdate", DateTime)
     enddate: Mapped[datetime | None] = mapped_column("enddate", DateTime)
