@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.5.0...v4.6.0) (2026-08-27)
+
+
+### Features
+
+* **UK-375:** swapped boolean field for array text field ([#185](https://github.com/renalreg/ukrdc-sqla/issues/185)) ([719694f](https://github.com/renalreg/ukrdc-sqla/commit/719694f15fee3fdb828d73fb70fa4855a1bba170))
+
 ## [4.5.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.4.0...v4.5.0) (2026-08-06)
 
 
