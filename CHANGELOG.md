@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.1](https://github.com/renalreg/ukrdc-sqla/compare/v4.6.0...v4.6.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **readme:** added to readme ([#189](https://github.com/renalreg/ukrdc-sqla/issues/189)) ([a2443c3](https://github.com/renalreg/ukrdc-sqla/commit/a2443c3bc3d71430b27930facd8bb11d0373c7dc))
+
 ## [4.6.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.5.0...v4.6.0) (2026-08-27)
 
 
