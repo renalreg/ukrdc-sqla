@@ -5,6 +5,7 @@ SQLAlchemy models for the UKRDC and related databases.
 ## Installation
 
 `pip install ukrdc-sqla`
+`poetry add ukrdc-sqla`
 
 ## Example Usage
 
