@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.7.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.6.1...v4.7.0) (2026-09-15)
+
+
+### Features
+
+* **UK-355:** Add get_facility_parent_unit facility relationship helper ([7d7ff27](https://github.com/renalreg/ukrdc-sqla/commit/7d7ff27f8bb0e4e3d2cb11d52ad32f036d0913b3))
+* **UK-355:** add get_facility_parent_unit to facilities.py ([708f635](https://github.com/renalreg/ukrdc-sqla/commit/708f6351f8cdad477c67880243e6cebd1e217872))
+
 ## [4.6.1](https://github.com/renalreg/ukrdc-sqla/compare/v4.6.0...v4.6.1) (2026-09-01)
 
 
