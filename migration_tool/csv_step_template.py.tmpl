@@ -1,0 +1,68 @@
+"""${message}
+
+Step ${step}${after}.
+"""
+
+from __future__ import annotations
+
+import sys
+
+import polars as pl
+
+step = ${step_q}
+previous = ${previous_q}
+
+
+def load(path) -> pl.DataFrame:
+    return pl.read_csv(path, infer_schema=False)
+
+
+def save(df: pl.DataFrame, path, line_terminator: str = "\n") -> None:
+    df.write_csv(path, line_terminator=line_terminator)
+
+
+def line_ending(path) -> str:
+    with open(path, "rb") as f:
+        return "\r\n" if b"\r\n" in f.read(65536) else "\n"
+
+
+def upgrade_template(df: pl.DataFrame) -> pl.DataFrame:
+    return df
+
+
+def downgrade_template(df: pl.DataFrame) -> pl.DataFrame:
+    return df
+
+
+# None: nothing to do for that model in this step.
+UPGRADES = {
+${upgrades}}
+
+DOWNGRADES = {
+${downgrades}}
+
+
+def upgrade(model: str, df: pl.DataFrame) -> pl.DataFrame:
+    return UPGRADES[model](df)
+
+
+def downgrade(model: str, df: pl.DataFrame) -> pl.DataFrame:
+    return DOWNGRADES[model](df)
+
+
+def run(direction: str, model: str, source, dest=None) -> bool:
+    """Load, transform and save the CSV; False (untouched) when the model has nothing to do."""
+    if (UPGRADES if direction == "upgrade" else DOWNGRADES).get(model) is None:
+        return False
+    ending = line_ending(source)
+    df = load(source)
+    df = upgrade(model, df) if direction == "upgrade" else downgrade(model, df)
+    save(df, dest or source, ending)
+    return True
+
+
+if __name__ == "__main__":
+    if len(sys.argv) not in (4, 5) or sys.argv[1] not in ("upgrade", "downgrade"):
+        sys.exit(f"usage: python {sys.argv[0]} upgrade|downgrade MODEL IN.csv [OUT.csv]")
+    if not run(*sys.argv[1:]):
+        print(f"step {step} has no {sys.argv[1]} for {sys.argv[2]}: nothing done")
