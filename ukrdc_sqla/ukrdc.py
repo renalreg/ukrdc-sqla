@@ -1739,7 +1739,7 @@ class Question(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(30), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -1757,7 +1757,7 @@ class Score(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(30), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -1778,7 +1778,7 @@ class Level(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(30), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
