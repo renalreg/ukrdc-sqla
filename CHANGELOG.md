@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.7.0...v4.8.0) (2026-09-23)
+
+
+### Features
+
+* **TYPES:** added extra types ([#184](https://github.com/renalreg/ukrdc-sqla/issues/184)) ([297d420](https://github.com/renalreg/ukrdc-sqla/commit/297d42088e86699efc656613fbda7a713fa84c10))
+
 ## [4.7.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.6.1...v4.7.0) (2026-09-15)
 
 
