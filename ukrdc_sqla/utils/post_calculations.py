@@ -56,22 +56,21 @@ def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
         return len(sessions) > 0
 
     # Set all the resultitems in that laborder to the calculated prepost value
+    # Are we assigning in place or returning them?
     def _assign_prepost(lab_order: "LabOrder", value: str) -> str:
 
         for result_item in lab_order.resultitems:
 
+            # Should we check if some prepost value already exists before overwriting it?
             result_item.prepost = value
 
-        return value
+        return
     
-    if not _patient_on_dialysis(lab_order):
+    if not _patient_on_dialysis(lab_order) or not _dialysed_on_result_date(lab_order):
 
-        return _assign_prepost(lab_order, "UNK")
+        _assign_prepost(lab_order, "NA")
 
-    if not _dialysed_on_result_date(lab_order):
-
-        return _assign_prepost(lab_order, "UNK")
-
+        return
     
 
     # Following the code from Leicester: 
@@ -79,6 +78,8 @@ def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
 
     # On the day of dialysis, sort laborders by QBLA3 (serum urea) resultitem value provided there are at least 2 entries
         # What if QBLA3 is clearly down, but other resultitems suggest otherwise?
+
+    
 
 
     # Mark the highest value as pre and the lowest value post
