@@ -609,7 +609,7 @@ class GPInfo(Base):
     )
     name: Mapped[Optional[str]] = mapped_column(String(50))
     address1: Mapped[Optional[str]] = mapped_column(String(35))
-    postcode: Mapped[Optional[Optional[str]]] = mapped_column(String)
+    postcode: Mapped[Optional[Optional[str]]] = mapped_column(String(8))
     phone: Mapped[Optional[str]] = mapped_column(String(12))
     type: Mapped[Optional[str]] = mapped_column(
         Enum(GpType.gp, GpType.practice, name="gp_type")
@@ -1049,7 +1049,7 @@ class RenalDiagnosis(Base):
     diagnosingcliniciancode: Mapped[str | None] = mapped_column(String(100))
     diagnosingcliniciancodestd: Mapped[str | None] = coding_standard_column()
     diagnosingcliniciandesc: Mapped[str | None] = mapped_column(String(100))
-    comments: Mapped[str | None] = mapped_column(String)
+    comments: Mapped[str | None] = mapped_column(Text)
     identificationtime: Mapped[datetime | None] = mapped_column(
         "identificationtime", DateTime
     )
@@ -1489,7 +1489,7 @@ class Address(Base):
     street: Mapped[str | None] = mapped_column(String(100))
     town: Mapped[str | None] = mapped_column(String(100))
     county: Mapped[str | None] = mapped_column(String(100))
-    postcode: Mapped[str | None] = mapped_column(String)
+    postcode: Mapped[str | None] = mapped_column(String(10))
     countrycode: Mapped[str | None] = mapped_column(String(100))
     countrycodestd: Mapped[str | None] = coding_standard_column()
     countrydesc: Mapped[str | None] = mapped_column(String(100))
@@ -1944,7 +1944,7 @@ class ResultItem(Base):
     __tablename__ = "resultitem"
 
     id: Mapped[str] = mapped_column(
-        String(30),
+        String(100),
         primary_key=True,
         sqla_info=ColumnInfo(
             label="Result Item ID",
@@ -1953,7 +1953,7 @@ class ResultItem(Base):
     )
     orderid: Mapped[str] = mapped_column(
         "orderid",
-        String(30),
+        String(100),
         ForeignKey("laborder.id"),
         sqla_info=ColumnInfo(
             label="Order ID",
