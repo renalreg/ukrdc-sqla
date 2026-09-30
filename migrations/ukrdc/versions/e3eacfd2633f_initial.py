@@ -1513,7 +1513,7 @@ def upgrade():
         "pvdata",
         sa.Column(
             "id",
-            sa.String(length=30),
+            sa.String(length=100),
             nullable=False,
             comment="Unique identifier for the patient record, referencing patientrecord.pid.",
         ),
