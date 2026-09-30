@@ -2,6 +2,9 @@
 
 SQLAlchemy models for the UKRDC and related databases.
 
+### [migration_tool](./migration_tool/README.md)
+Two command-line tools for keeping the database and the CSV data in step with the SQLAlchemy models.
+
 ## Installation
 
 `pip install ukrdc-sqla`
