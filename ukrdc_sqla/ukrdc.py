@@ -555,7 +555,7 @@ class FamilyDoctor(Base):
     __tablename__ = "familydoctor"
 
     id: Mapped[str] = mapped_column(
-        String(30), ForeignKey("patient.pid"), primary_key=True
+        String(100), ForeignKey("patient.pid"), primary_key=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -1540,7 +1540,7 @@ class ContactDetail(Base):
 class Medication(Base):
     __tablename__ = "medication"
 
-    id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
+    id: Mapped[str] = mapped_column(String(length=150), primary_key=True)
     pid: Mapped[str] = pid_column()
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -2285,7 +2285,7 @@ class Treatment(Base):
     enteredatcode: Mapped[str | None] = mapped_column(String(100))
     enteredatcodestd: Mapped[str | None] = coding_standard_column()
     enteredatdesc: Mapped[str | None] = mapped_column(String(100))
-    visitdescription: Mapped[str | None] = mapped_column(String(100))
+    visitdescription: Mapped[str | None] = mapped_column(String(255))
     updatedon: Mapped[datetime | None] = mapped_column(DateTime)
     actioncode: Mapped[str | None] = mapped_column(String(3))
     externalid: Mapped[str | None] = mapped_column(String(100))
@@ -2415,7 +2415,7 @@ class Code(Base):
     update_date: Mapped[datetime | None] = mapped_column(DateTime)
     units: Mapped[str | None] = mapped_column(String(256))
     pkb_reference_range: Mapped[str | None] = mapped_column(String(10))
-    pkb_comment: Mapped[str | None] = mapped_column(String(365))
+    pkb_comment: Mapped[str | None] = mapped_column(Text())
 
     coding_standards_entry: Mapped["CodingStandards"] = relationship(
         back_populates="codes"
