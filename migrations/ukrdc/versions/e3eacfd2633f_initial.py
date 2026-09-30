@@ -2,7 +2,7 @@
 
 Revision ID: e3eacfd2633f
 Revises:
-Create Date: 2026-09-30 10:43:50.557250
+Create Date: 2026-09-30 15:42:30.869055
 
 """
 
@@ -108,8 +108,8 @@ def upgrade():
     )
     op.create_table(
         "rr_codes",
-        sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("rr_code", sa.String(), nullable=False),
+        sa.Column("id", sa.String(length=10), nullable=False),
+        sa.Column("rr_code", sa.String(length=10), nullable=False),
         sa.Column("description_1", sa.String(length=255), nullable=True),
         sa.Column("description_2", sa.String(length=70), nullable=True),
         sa.Column("description_3", sa.String(length=60), nullable=True),
@@ -190,7 +190,12 @@ def upgrade():
     op.create_table(
         "allergy",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -199,16 +204,16 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("allergycode", sa.String(length=100), nullable=True),
-        sa.Column("allergycodestd", sa.String(length=100), nullable=True),
+        sa.Column("allergycodestd", sa.String(length=256), nullable=True),
         sa.Column("allergydesc", sa.String(length=100), nullable=True),
         sa.Column("allergycategorycode", sa.String(length=100), nullable=True),
-        sa.Column("allergycategorycodestd", sa.String(length=100), nullable=True),
+        sa.Column("allergycategorycodestd", sa.String(length=256), nullable=True),
         sa.Column("allergycategorydesc", sa.String(length=100), nullable=True),
         sa.Column("severitycode", sa.String(length=100), nullable=True),
-        sa.Column("severitycodestd", sa.String(length=100), nullable=True),
+        sa.Column("severitycodestd", sa.String(length=256), nullable=True),
         sa.Column("severitydesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("discoverytime", sa.DateTime(), nullable=True),
         sa.Column("confirmedtime", sa.DateTime(), nullable=True),
@@ -244,7 +249,12 @@ def upgrade():
     )
     op.create_table(
         "causeofdeath",
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -258,7 +268,7 @@ def upgrade():
             comment="Type of cause of death diagnosis",
         ),
         sa.Column("diagnosingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("diagnosingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("diagnosingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("diagnosingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column(
             "diagnosiscode",
@@ -301,7 +311,12 @@ def upgrade():
     op.create_table(
         "clinicalrelationship",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -310,10 +325,10 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("facilitycode", sa.String(length=100), nullable=True),
-        sa.Column("facilitycodestd", sa.String(length=100), nullable=True),
+        sa.Column("facilitycodestd", sa.String(length=256), nullable=True),
         sa.Column("facilitydesc", sa.String(length=100), nullable=True),
         sa.Column("fromtime", sa.Date(), nullable=True),
         sa.Column("totime", sa.Date(), nullable=True),
@@ -399,7 +414,12 @@ def upgrade():
     op.create_table(
         "diagnosis",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -414,7 +434,7 @@ def upgrade():
             comment="Type of diagnosis",
         ),
         sa.Column("diagnosingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("diagnosingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("diagnosingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("diagnosingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column(
             "diagnosiscode",
@@ -443,7 +463,7 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("encounternumber", sa.String(length=100), nullable=True),
         sa.Column("verificationstatus", sa.String(length=100), nullable=True),
@@ -468,7 +488,12 @@ def upgrade():
     op.create_table(
         "dialysissession",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -482,10 +507,10 @@ def upgrade():
             nullable=True,
             comment="Code representing dialysis procedure type",
         ),
-        sa.Column("proceduretypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("proceduretypecodestd", sa.String(length=256), nullable=True),
         sa.Column("proceduretypedesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column(
             "proceduretime",
@@ -494,10 +519,10 @@ def upgrade():
             comment="Date and time of dialysis session",
         ),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("qhd19", sa.String(length=255), nullable=True),
         sa.Column(
@@ -546,7 +571,12 @@ def upgrade():
     op.create_table(
         "document",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column("repositoryupdatedate", sa.DateTime(), nullable=False),
         sa.Column(
             "creation_date",
@@ -558,20 +588,20 @@ def upgrade():
         sa.Column("documenttime", sa.DateTime(), nullable=True),
         sa.Column("notetext", sa.Text(), nullable=True),
         sa.Column("documenttypecode", sa.String(length=100), nullable=True),
-        sa.Column("documenttypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("documenttypecodestd", sa.String(length=256), nullable=True),
         sa.Column("documenttypedesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("documentname", sa.String(length=100), nullable=True),
         sa.Column("statuscode", sa.String(length=100), nullable=True),
-        sa.Column("statuscodestd", sa.String(length=100), nullable=True),
+        sa.Column("statuscodestd", sa.String(length=256), nullable=True),
         sa.Column("statusdesc", sa.String(length=100), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("filetype", sa.String(length=100), nullable=True),
         sa.Column("filename", sa.String(length=100), nullable=True),
@@ -610,7 +640,12 @@ def upgrade():
     op.create_table(
         "encounter",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -623,25 +658,25 @@ def upgrade():
         sa.Column("fromtime", sa.DateTime(), nullable=True),
         sa.Column("totime", sa.DateTime(), nullable=True),
         sa.Column("admittingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("admittingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("admittingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("admittingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("admitreasoncode", sa.String(length=100), nullable=True),
-        sa.Column("admitreasoncodestd", sa.String(length=100), nullable=True),
+        sa.Column("admitreasoncodestd", sa.String(length=256), nullable=True),
         sa.Column("admitreasondesc", sa.String(length=100), nullable=True),
         sa.Column("admissionsourcecode", sa.String(length=100), nullable=True),
-        sa.Column("admissionsourcecodestd", sa.String(length=100), nullable=True),
+        sa.Column("admissionsourcecodestd", sa.String(length=256), nullable=True),
         sa.Column("admissionsourcedesc", sa.String(length=100), nullable=True),
         sa.Column("dischargereasoncode", sa.String(length=100), nullable=True),
-        sa.Column("dischargereasoncodestd", sa.String(length=100), nullable=True),
+        sa.Column("dischargereasoncodestd", sa.String(length=256), nullable=True),
         sa.Column("dischargereasondesc", sa.String(length=100), nullable=True),
         sa.Column("dischargelocationcode", sa.String(length=100), nullable=True),
-        sa.Column("dischargelocationcodestd", sa.String(length=100), nullable=True),
+        sa.Column("dischargelocationcodestd", sa.String(length=256), nullable=True),
         sa.Column("dischargelocationdesc", sa.String(length=100), nullable=True),
         sa.Column("healthcarefacilitycode", sa.String(length=100), nullable=True),
-        sa.Column("healthcarefacilitycodestd", sa.String(length=100), nullable=True),
+        sa.Column("healthcarefacilitycodestd", sa.String(length=256), nullable=True),
         sa.Column("healthcarefacilitydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("visitdescription", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
@@ -685,7 +720,12 @@ def upgrade():
     op.create_table(
         "familyhistory",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -694,14 +734,14 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("familymembercode", sa.String(length=100), nullable=True),
-        sa.Column("familymembercodestd", sa.String(length=100), nullable=True),
+        sa.Column("familymembercodestd", sa.String(length=256), nullable=True),
         sa.Column("familymemberdesc", sa.String(length=100), nullable=True),
         sa.Column("diagnosiscode", sa.String(length=100), nullable=True),
-        sa.Column("diagnosiscodestd", sa.String(length=100), nullable=True),
+        sa.Column("diagnosiscodestd", sa.String(length=256), nullable=True),
         sa.Column("diagnosisdesc", sa.String(length=100), nullable=True),
         sa.Column("notetext", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("fromtime", sa.DateTime(), nullable=True),
         sa.Column("totime", sa.DateTime(), nullable=True),
@@ -730,7 +770,12 @@ def upgrade():
     op.create_table(
         "laborder",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -740,34 +785,34 @@ def upgrade():
         sa.Column("placerid", sa.String(length=100), nullable=True),
         sa.Column("fillerid", sa.String(length=100), nullable=True),
         sa.Column("receivinglocationcode", sa.String(length=100), nullable=True),
-        sa.Column("receivinglocationcodestd", sa.String(length=100), nullable=True),
+        sa.Column("receivinglocationcodestd", sa.String(length=256), nullable=True),
         sa.Column("receivinglocationdesc", sa.String(length=100), nullable=True),
         sa.Column("orderedbycode", sa.String(length=100), nullable=True),
-        sa.Column("orderedbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("orderedbycodestd", sa.String(length=256), nullable=True),
         sa.Column("orderedbydesc", sa.String(length=100), nullable=True),
         sa.Column("orderitemcode", sa.String(length=100), nullable=True),
-        sa.Column("orderitemcodestd", sa.String(length=100), nullable=True),
+        sa.Column("orderitemcodestd", sa.String(length=256), nullable=True),
         sa.Column("orderitemdesc", sa.String(length=100), nullable=True),
         sa.Column("prioritycode", sa.String(length=100), nullable=True),
-        sa.Column("prioritycodestd", sa.String(length=100), nullable=True),
+        sa.Column("prioritycodestd", sa.String(length=256), nullable=True),
         sa.Column("prioritydesc", sa.String(length=100), nullable=True),
         sa.Column("status", sa.String(length=100), nullable=True),
         sa.Column("ordercategorycode", sa.String(length=100), nullable=True),
-        sa.Column("ordercategorycodestd", sa.String(length=100), nullable=True),
+        sa.Column("ordercategorycodestd", sa.String(length=256), nullable=True),
         sa.Column("ordercategorydesc", sa.String(length=100), nullable=True),
         sa.Column("specimensource", sa.String(length=50), nullable=True),
         sa.Column("specimenreceivedtime", sa.DateTime(), nullable=True),
         sa.Column("specimencollectedtime", sa.DateTime(), nullable=True),
         sa.Column("duration", sa.String(length=50), nullable=True),
         sa.Column("patientclasscode", sa.String(length=100), nullable=True),
-        sa.Column("patientclasscodestd", sa.String(length=100), nullable=True),
+        sa.Column("patientclasscodestd", sa.String(length=256), nullable=True),
         sa.Column("patientclassdesc", sa.String(length=100), nullable=True),
         sa.Column("enteredon", sa.DateTime(), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("enteringorganizationcode", sa.String(length=100), nullable=True),
-        sa.Column("enteringorganizationcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteringorganizationcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteringorganizationdesc", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
         sa.Column("actioncode", sa.String(length=3), nullable=True),
@@ -827,7 +872,12 @@ def upgrade():
     op.create_table(
         "medication",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -850,10 +900,10 @@ def upgrade():
             comment="End time of the prescription",
         ),
         sa.Column("orderedbycode", sa.String(length=100), nullable=True),
-        sa.Column("orderedbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("orderedbycodestd", sa.String(length=256), nullable=True),
         sa.Column("orderedbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteringorganizationcode", sa.String(length=100), nullable=True),
-        sa.Column("enteringorganizationcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteringorganizationcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteringorganizationdesc", sa.String(length=100), nullable=True),
         sa.Column(
             "routecode",
@@ -861,7 +911,7 @@ def upgrade():
             nullable=True,
             comment="Code representing medication route",
         ),
-        sa.Column("routecodestd", sa.String(length=100), nullable=True),
+        sa.Column("routecodestd", sa.String(length=256), nullable=True),
         sa.Column("routedesc", sa.String(length=100), nullable=True),
         sa.Column(
             "drugproductidcode",
@@ -894,11 +944,11 @@ def upgrade():
             comment="Drug product label name",
         ),
         sa.Column("drugproductformcode", sa.String(length=100), nullable=True),
-        sa.Column("drugproductformcodestd", sa.String(length=100), nullable=True),
+        sa.Column("drugproductformcodestd", sa.String(length=256), nullable=True),
         sa.Column("drugproductformdesc", sa.String(length=100), nullable=True),
         sa.Column("drugproductstrengthunitscode", sa.String(length=100), nullable=True),
         sa.Column(
-            "drugproductstrengthunitscodestd", sa.String(length=100), nullable=True
+            "drugproductstrengthunitscodestd", sa.String(length=256), nullable=True
         ),
         sa.Column("drugproductstrengthunitsdesc", sa.String(length=100), nullable=True),
         sa.Column(
@@ -925,7 +975,7 @@ def upgrade():
             nullable=True,
             comment="Medication units code",
         ),
-        sa.Column("doseuomcodestd", sa.String(length=100), nullable=True),
+        sa.Column("doseuomcodestd", sa.String(length=256), nullable=True),
         sa.Column("doseuomdesc", sa.String(length=100), nullable=True),
         sa.Column("indication", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
@@ -971,15 +1021,15 @@ def upgrade():
         "observation",
         sa.Column(
             "id",
-            sa.String(),
+            sa.String(length=100),
             nullable=False,
             comment="Unique identifier for the observation record.",
         ),
         sa.Column(
             "pid",
-            sa.String(),
+            sa.String(length=30),
             nullable=False,
-            comment="Identifier of the patient associated with this observation.",
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
         ),
         sa.Column(
             "creation_date",
@@ -1139,7 +1189,12 @@ def upgrade():
     op.create_table(
         "optout",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1150,10 +1205,10 @@ def upgrade():
         sa.Column("programname", sa.String(length=100), nullable=True),
         sa.Column("programdescription", sa.String(length=100), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("fromtime", sa.Date(), nullable=True),
         sa.Column("totime", sa.Date(), nullable=True),
@@ -1179,7 +1234,7 @@ def upgrade():
         "patient",
         sa.Column(
             "pid",
-            sa.String(),
+            sa.String(length=30),
             nullable=False,
             comment="Unique identifier for the patient record, referencing patientrecord.pid.",
         ),
@@ -1358,7 +1413,12 @@ def upgrade():
     op.create_table(
         "procedure",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1367,17 +1427,17 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("proceduretypecode", sa.String(length=100), nullable=True),
-        sa.Column("proceduretypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("proceduretypecodestd", sa.String(length=256), nullable=True),
         sa.Column("proceduretypedesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("proceduretime", sa.DateTime(), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
         sa.Column("actioncode", sa.String(length=3), nullable=True),
@@ -1408,7 +1468,12 @@ def upgrade():
     op.create_table(
         "programmembership",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1418,10 +1483,10 @@ def upgrade():
         sa.Column("programname", sa.String(length=100), nullable=True),
         sa.Column("programdescription", sa.String(length=100), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("fromtime", sa.Date(), nullable=True),
         sa.Column("totime", sa.Date(), nullable=True),
@@ -1445,7 +1510,12 @@ def upgrade():
     )
     op.create_table(
         "pvdata",
-        sa.Column("id", sa.String(length=100), nullable=False),
+        sa.Column(
+            "id",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1466,7 +1536,12 @@ def upgrade():
     op.create_table(
         "pvdelete",
         sa.Column("did", sa.Integer(), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1484,7 +1559,12 @@ def upgrade():
     )
     op.create_table(
         "renaldiagnosis",
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1499,7 +1579,7 @@ def upgrade():
         ),
         sa.Column(
             "diagnosiscode",
-            sa.String(),
+            sa.String(length=100),
             nullable=True,
             comment="Code representing the renal diagnosis",
         ),
@@ -1511,12 +1591,12 @@ def upgrade():
         ),
         sa.Column(
             "diagnosisdesc",
-            sa.String(),
+            sa.String(length=255),
             nullable=True,
             comment="Text description of the renal diagnosis",
         ),
         sa.Column("diagnosingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("diagnosingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("diagnosingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("diagnosingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("comments", sa.String(), nullable=True),
         sa.Column("identificationtime", sa.DateTime(), nullable=True),
@@ -1543,7 +1623,12 @@ def upgrade():
     op.create_table(
         "socialhistory",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1552,7 +1637,7 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("socialhabitcode", sa.String(length=100), nullable=True),
-        sa.Column("socialhabitcodestd", sa.String(length=100), nullable=True),
+        sa.Column("socialhabitcodestd", sa.String(length=256), nullable=True),
         sa.Column("socialhabitdesc", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
         sa.Column("actioncode", sa.String(length=3), nullable=True),
@@ -1571,7 +1656,12 @@ def upgrade():
     op.create_table(
         "survey",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1580,16 +1670,16 @@ def upgrade():
         ),
         sa.Column("surveytime", sa.DateTime(), nullable=False),
         sa.Column("surveytypecode", sa.String(length=100), nullable=True),
-        sa.Column("surveytypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("surveytypecodestd", sa.String(length=256), nullable=True),
         sa.Column("surveytypedesc", sa.String(length=100), nullable=True),
         sa.Column("typeoftreatment", sa.String(length=100), nullable=True),
         sa.Column("hdlocation", sa.String(length=100), nullable=True),
         sa.Column("template", sa.String(length=100), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
         sa.Column("actioncode", sa.String(length=3), nullable=True),
@@ -1616,7 +1706,12 @@ def upgrade():
     op.create_table(
         "transplant",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1630,10 +1725,10 @@ def upgrade():
             nullable=True,
             comment="Code representing transplant procedure type",
         ),
-        sa.Column("proceduretypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("proceduretypecodestd", sa.String(length=256), nullable=True),
         sa.Column("proceduretypedesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column(
             "proceduretime",
@@ -1642,7 +1737,7 @@ def upgrade():
             comment="Date of kidney transplant",
         ),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column(
             "enteredatcode",
@@ -1729,7 +1824,12 @@ def upgrade():
     op.create_table(
         "transplantlist",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column("idx", sa.Integer(), nullable=False),
         sa.Column(
             "creation_date",
@@ -1742,25 +1842,25 @@ def upgrade():
         sa.Column("fromtime", sa.DateTime(), nullable=True),
         sa.Column("totime", sa.DateTime(), nullable=True),
         sa.Column("admittingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("admittingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("admittingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("admittingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("admitreasoncode", sa.String(length=100), nullable=True),
-        sa.Column("admitreasoncodestd", sa.String(length=100), nullable=True),
+        sa.Column("admitreasoncodestd", sa.String(length=256), nullable=True),
         sa.Column("admitreasondesc", sa.String(length=100), nullable=True),
         sa.Column("admissionsourcecode", sa.String(length=100), nullable=True),
-        sa.Column("admissionsourcecodestd", sa.String(length=100), nullable=True),
+        sa.Column("admissionsourcecodestd", sa.String(length=256), nullable=True),
         sa.Column("admissionsourcedesc", sa.String(length=100), nullable=True),
         sa.Column("dischargereasoncode", sa.String(length=100), nullable=True),
-        sa.Column("dischargereasoncodestd", sa.String(length=100), nullable=True),
+        sa.Column("dischargereasoncodestd", sa.String(length=256), nullable=True),
         sa.Column("dischargereasondesc", sa.String(length=100), nullable=True),
         sa.Column("dischargelocationcode", sa.String(length=100), nullable=True),
-        sa.Column("dischargelocationcodestd", sa.String(length=100), nullable=True),
+        sa.Column("dischargelocationcodestd", sa.String(length=256), nullable=True),
         sa.Column("dischargelocationdesc", sa.String(length=100), nullable=True),
         sa.Column("healthcarefacilitycode", sa.String(length=100), nullable=True),
-        sa.Column("healthcarefacilitycodestd", sa.String(length=100), nullable=True),
+        sa.Column("healthcarefacilitycodestd", sa.String(length=256), nullable=True),
         sa.Column("healthcarefacilitydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("visitdescription", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
@@ -1804,7 +1904,12 @@ def upgrade():
     op.create_table(
         "treatment",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -1821,7 +1926,7 @@ def upgrade():
             "totime", sa.DateTime(), nullable=True, comment="End of treatment date"
         ),
         sa.Column("admittingcliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("admittingcliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("admittingcliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("admittingcliniciandesc", sa.String(length=100), nullable=True),
         sa.Column(
             "admitreasoncode",
@@ -1860,7 +1965,7 @@ def upgrade():
             comment="Text description of admission source",
         ),
         sa.Column("dischargereasoncode", sa.String(length=100), nullable=True),
-        sa.Column("dischargereasoncodestd", sa.String(length=100), nullable=True),
+        sa.Column("dischargereasoncodestd", sa.String(length=256), nullable=True),
         sa.Column("dischargereasondesc", sa.String(length=100), nullable=True),
         sa.Column(
             "dischargelocationcode",
@@ -1899,7 +2004,7 @@ def upgrade():
             comment="Text description of the treatment centre",
         ),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("visitdescription", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
@@ -1957,7 +2062,12 @@ def upgrade():
     op.create_table(
         "vascularaccess",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("pid", sa.String(length=30), nullable=False),
+        sa.Column(
+            "pid",
+            sa.String(length=30),
+            nullable=False,
+            comment="Unique identifier for the patient record, referencing patientrecord.pid.",
+        ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column(
             "creation_date",
@@ -1966,17 +2076,17 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("proceduretypecode", sa.String(length=100), nullable=True),
-        sa.Column("proceduretypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("proceduretypecodestd", sa.String(length=256), nullable=True),
         sa.Column("proceduretypedesc", sa.String(length=100), nullable=True),
         sa.Column("cliniciancode", sa.String(length=100), nullable=True),
-        sa.Column("cliniciancodestd", sa.String(length=100), nullable=True),
+        sa.Column("cliniciancodestd", sa.String(length=256), nullable=True),
         sa.Column("cliniciandesc", sa.String(length=100), nullable=True),
         sa.Column("proceduretime", sa.DateTime(), nullable=True),
         sa.Column("enteredbycode", sa.String(length=100), nullable=True),
-        sa.Column("enteredbycodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredbycodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredbydesc", sa.String(length=100), nullable=True),
         sa.Column("enteredatcode", sa.String(length=100), nullable=True),
-        sa.Column("enteredatcodestd", sa.String(length=100), nullable=True),
+        sa.Column("enteredatcodestd", sa.String(length=256), nullable=True),
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("updatedon", sa.DateTime(), nullable=True),
         sa.Column("actioncode", sa.String(length=3), nullable=True),
@@ -2010,6 +2120,7 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
     op.create_table(
         "address",
         sa.Column("id", sa.String(length=100), nullable=False),
@@ -2029,7 +2140,7 @@ def upgrade():
         sa.Column("county", sa.String(length=100), nullable=True),
         sa.Column("postcode", sa.String(), nullable=True),
         sa.Column("countrycode", sa.String(length=100), nullable=True),
-        sa.Column("countrycodestd", sa.String(length=100), nullable=True),
+        sa.Column("countrycodestd", sa.String(length=256), nullable=True),
         sa.Column("countrydesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -2069,7 +2180,7 @@ def upgrade():
     op.create_table(
         "facility_new",
         sa.Column("facilitycode", sa.String(length=100), nullable=False),
-        sa.Column("facilitycodestd", sa.String(length=100), nullable=False),
+        sa.Column("facilitycodestd", sa.String(length=256), nullable=False),
         sa.Column(
             "facilitytype",
             sa.Enum(
@@ -2138,7 +2249,7 @@ def upgrade():
     )
     op.create_table(
         "familydoctor",
-        sa.Column("id", sa.String(length=100), nullable=False),
+        sa.Column("id", sa.String(length=30), nullable=False),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -2156,7 +2267,7 @@ def upgrade():
         sa.Column("county", sa.String(length=100), nullable=True),
         sa.Column("postcode", sa.String(length=10), nullable=True),
         sa.Column("countrycode", sa.String(length=100), nullable=True),
-        sa.Column("countrycodestd", sa.String(length=100), nullable=True),
+        sa.Column("countrycodestd", sa.String(length=256), nullable=True),
         sa.Column("countrydesc", sa.String(length=100), nullable=True),
         sa.Column("contactuse", sa.String(length=10), nullable=True),
         sa.Column("contactvalue", sa.String(length=100), nullable=True),
@@ -2184,7 +2295,7 @@ def upgrade():
     op.create_table(
         "level",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("surveyid", sa.String(), nullable=False),
+        sa.Column("surveyid", sa.String(length=100), nullable=False),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -2194,7 +2305,7 @@ def upgrade():
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("levelvalue", sa.String(length=100), nullable=True),
         sa.Column("leveltypecode", sa.String(length=100), nullable=True),
-        sa.Column("leveltypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("leveltypecodestd", sa.String(length=256), nullable=True),
         sa.Column("leveltypedesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -2261,7 +2372,7 @@ def upgrade():
     op.create_table(
         "question",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("surveyid", sa.String(), nullable=False),
+        sa.Column("surveyid", sa.String(length=100), nullable=False),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -2270,7 +2381,7 @@ def upgrade():
         ),
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("questiontypecode", sa.String(length=100), nullable=True),
-        sa.Column("questiontypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("questiontypecodestd", sa.String(length=256), nullable=True),
         sa.Column("questiontypedesc", sa.String(length=100), nullable=True),
         sa.Column("response", sa.String(length=100), nullable=True),
         sa.Column("questiontext", sa.String(length=100), nullable=True),
@@ -2289,13 +2400,13 @@ def upgrade():
         "resultitem",
         sa.Column(
             "id",
-            sa.String(),
+            sa.String(length=30),
             nullable=False,
             comment="Unique identifier for the result item.",
         ),
         sa.Column(
             "orderid",
-            sa.String(),
+            sa.String(length=30),
             nullable=False,
             comment="Identifier of the related laboratory order.",
         ),
@@ -2422,7 +2533,7 @@ def upgrade():
     op.create_table(
         "score",
         sa.Column("id", sa.String(length=100), nullable=False),
-        sa.Column("surveyid", sa.String(), nullable=False),
+        sa.Column("surveyid", sa.String(length=100), nullable=False),
         sa.Column(
             "creation_date",
             sa.DateTime(),
@@ -2432,7 +2543,7 @@ def upgrade():
         sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column("scorevalue", sa.String(length=100), nullable=True),
         sa.Column("scoretypecode", sa.String(length=100), nullable=True),
-        sa.Column("scoretypecodestd", sa.String(length=100), nullable=True),
+        sa.Column("scoretypecodestd", sa.String(length=256), nullable=True),
         sa.Column("scoretypedesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -2445,6 +2556,7 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    # ### end Alembic commands ###
 
     op.execute(VWE_FACILITY_RELATIONSHIP)
     op.execute(VWE_SATELLITE_MAP)
