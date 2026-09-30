@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.orm import Session
 
 if TYPE_CHECKING:
-    from ukrdc_sqla.ukrdc import ResultItem, PatientRecord
+    from ukrdc_sqla.ukrdc import ResultItem,LabOrder
 
 
 def example_prepost(result_item: "ResultItem", session: Session) -> str:
@@ -11,29 +11,81 @@ def example_prepost(result_item: "ResultItem", session: Session) -> str:
         return "greater"
     return "less"
 
-def prepost_calculation(result_item: "ResultItem", session: Session) -> str:
 
-    # Check if the resultitem was relating to a dialysis session
-    def _was_on_dialysis(ukrdcid, result_item_date):
+# Questions
+# - Should we consider both observationtime and enteredon dates for dialysis check?
+# - Should we honour existing prepost values or replace them?
+# - Should we be checking a single record, or the entire patient?
+# - Should we only check in an incoming file for a dialysis session, or across all historical data?
+# - Which resultitem codes should be ignored? (i.e which ones are not relevant to dialysis)
+# - Will the calculation happen after the record is commited to the database?
+# - Should we do this on a table or a single laborder?
 
+# Would it be quicker to do this per dialysis session?
+# Effectively this function would be called fewer times as number of DialysisSessions > Laborders
+def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
+
+    # Check first if they are a patient that would even need dialysis in the first place?
+    # I.e ignore transplanted patients
+    # Save getting all dialysis sessions
+    # AdmitReasonCode on Treatment record via ModalityCodes, Modality_Type = HD.
+    def _patient_on_dialysis(lab_order: "LabOrder") -> bool:
+
+        for treatment in lab_order.record.treatments:
+
+            # We probably need to include the other HD adjacent modality codes such as 4
+            if (treatment.admit_reason_code == 1 and treatment.to_time is None):
+
+                return True
+            
         return False
 
-    # Get the day of the resultitem
-    # Observationtime is mandatory, enteredon is not
-    dates = [result_item.observationtime.date()]
+    # Check if the resultitem was relating to a dialysis session
+    # Is there a risk that with patients on CF_RR7_TREATMENT treatment 4 (dialysis daily)
+    # that this might be incorrect?
+    def _dialysed_on_result_date(lab_order: "LabOrder") -> bool:
 
-    # Some logic to check both resultitem days if they are different
-    if result_item.enteredon.date() is not None:
-        if result_item.observationtime.date() != result_item.enteredon.date():
-            dates = [result_item.observationtime.date(), result_item.enteredon.date()]
+        date = lab_order.specimencollectedtime.date()
+
+        record = lab_order.record
+
+        sessions = record.dialysis_sessions.filter_by(date=date).all()
+
+        # As a sanity check should we check that there are not more than one dialysis session on a day
+        # This probably already done as part of data validation?
+        return len(sessions) > 0
+
+    # Set all the resultitems in that laborder to the calculated prepost value
+    def _assign_prepost(lab_order: "LabOrder", value: str) -> str:
+
+        for result_item in lab_order.resultitems:
+
+            result_item.prepost = value
+
+        return value
+    
+    if not _patient_on_dialysis(lab_order):
+
+        return _assign_prepost(lab_order, "UNK")
+
+    if not _dialysed_on_result_date(lab_order):
+
+        return _assign_prepost(lab_order, "UNK")
+
+    
+
+    # Following the code from Leicester: 
 
 
-    # Check for dialysis on both dates (if applicable)
-    for date in dates:
+    # On the day of dialysis, sort laborders by QBLA3 (serum urea) resultitem value provided there are at least 2 entries
+        # What if QBLA3 is clearly down, but other resultitems suggest otherwise?
 
-        # Check the treatments for dialysis on that day
-        if not _was_on_dialysis(id, date):
 
-            result_item.prepost = "UNK"
+    # Mark the highest value as pre and the lowest value post
+        # There should probably be a minimum difference between pre and post values to consider them valid
 
-    return
+
+    # The laborders that contain the QBLA3 pre/post should have all other resultitems on the same laborder marked accordingly
+        # Is this misleading if only QBLA3 is used to determine pre/post and other resultitems do not align?
+
+    return prepost_value
