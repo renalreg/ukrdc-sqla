@@ -65,6 +65,11 @@ def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
             result_item.prepost = value
 
         return
+
+    # For a specific blood measurement code, check that across laborders that day that the result reduces enough to be considered 
+    def _reduces_within_range(code, min_delta):
+
+        return
     
     if not _patient_on_dialysis(lab_order) or not _dialysed_on_result_date(lab_order):
 
@@ -73,14 +78,21 @@ def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
         return
     
 
-    # Following the code from Leicester: 
+    # A more robust version of the code from Leicester: 
 
 
-    # On the day of dialysis, sort laborders by QBLA3 (serum urea) resultitem value provided there are at least 2 entries
-        # What if QBLA3 is clearly down, but other resultitems suggest otherwise?
+    # On the day of dialysis, sort laborders resultitem value provided there are at least 2 entries
+    # Weighted ensemble of whether a laborder is pre or post based on each individual result item 
+    # There should be a minimum difference between pre and post values to consider them valid
 
-    
+    # The idea here is to give each indicating code a 'vote' of what the correct pre/post markings are
+    # If most (say 75% of results) agree on the pre/post designation, we can assign it. Otherwise, it is UNK
 
+    # Creatinine, urea, potassium, phosphate
+    # Is lab calculated eGFR appropriate?
+    indicating_codes = ['QBLA1', 'QBLA3', 'QBLA9', 'QBLB1']
+
+    for code in indicating_codes:
 
     # Mark the highest value as pre and the lowest value post
         # There should probably be a minimum difference between pre and post values to consider them valid
