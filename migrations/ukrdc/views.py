@@ -81,10 +81,10 @@ def set_materialized_view_owner(view, owner):
 
 
 def drop_materialized_view(view):
-    command = f"DROP MATERIALIZED VIEW IF EXISTS {view}p"
+    command = f"DROP MATERIALIZED VIEW IF EXISTS {view}"
     return command
 
 
 def drop_view(view):
-    command = f"DROP VIEW IF EXISTS {view}p"
+    command = f"DROP VIEW IF EXISTS {view}"
     return command
