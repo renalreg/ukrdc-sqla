@@ -226,24 +226,8 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["allergycategorycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["allergycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["severitycodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -295,14 +279,6 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["diagnosingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["diagnosiscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -337,14 +313,6 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["facilitycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -355,10 +323,6 @@ def upgrade():
         sa.Column("coding_standard", sa.String(length=100), nullable=False),
         sa.Column("code", sa.String(), nullable=False),
         sa.Column("system", sa.String(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["coding_standard"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.PrimaryKeyConstraint("coding_standard", "code", "system"),
     )
     op.create_table(
@@ -377,10 +341,6 @@ def upgrade():
         sa.Column("units", sa.String(length=256), nullable=True),
         sa.Column("pkb_reference_range", sa.String(length=10), nullable=True),
         sa.Column("pkb_comment", sa.Text(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["coding_standard"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.PrimaryKeyConstraint("coding_standard", "code"),
     )
     op.create_table(
@@ -396,14 +356,6 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["destination_coding_standard"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["source_coding_standard"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.PrimaryKeyConstraint(
             "source_coding_standard",
             "source_code",
@@ -467,18 +419,6 @@ def upgrade():
         sa.Column("enteredatdesc", sa.String(length=100), nullable=True),
         sa.Column("encounternumber", sa.String(length=100), nullable=True),
         sa.Column("verificationstatus", sa.String(length=100), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["diagnosingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["diagnosiscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
@@ -546,25 +486,10 @@ def upgrade():
         sa.Column("actioncode", sa.String(length=3), nullable=True),
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
+
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["proceduretypecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -612,28 +537,8 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["documenttypecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["statuscodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -684,34 +589,6 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["admissionsourcecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admitreasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admittingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargelocationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargereasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["healthcarefacilitycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -749,18 +626,6 @@ def upgrade():
         sa.Column("actioncode", sa.String(length=3), nullable=True),
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["diagnosiscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["familymembercodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
@@ -820,40 +685,8 @@ def upgrade():
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.Column("repository_update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteringorganizationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["ordercategorycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["orderedbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["orderitemcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["patientclasscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["prioritycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["receivinglocationcodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -984,36 +817,8 @@ def upgrade():
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.Column("encounternumber", sa.String(length=100), nullable=True),
         sa.ForeignKeyConstraint(
-            ["doseuomcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["drugproductformcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["drugproductidcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["drugproductstrengthunitscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteringorganizationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["orderedbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["routecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -1165,22 +970,6 @@ def upgrade():
             comment="Date and time when the record was last updated.",
         ),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteringorganizationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["observationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -1216,14 +1005,6 @@ def upgrade():
         sa.Column("actioncode", sa.String(length=3), nullable=True),
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
@@ -1392,21 +1173,10 @@ def upgrade():
             nullable=True,
             comment="Date and time when the record was last updated.",
         ),
-        sa.ForeignKeyConstraint(
-            ["ethnicgroupcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["occupationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
+
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["primarylanguagecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("pid"),
     )
@@ -1444,24 +1214,8 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["proceduretypecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -1494,14 +1248,6 @@ def upgrade():
         sa.Column("actioncode", sa.String(length=3), nullable=True),
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
@@ -1607,14 +1353,6 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["diagnosingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["diagnosiscodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -1646,10 +1384,6 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["socialhabitcodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -1686,20 +1420,8 @@ def upgrade():
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["surveytypecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -1800,24 +1522,8 @@ def upgrade():
         sa.Column("tra98", sa.String(length=255), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["proceduretypecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -1867,34 +1573,6 @@ def upgrade():
         sa.Column("actioncode", sa.String(length=3), nullable=True),
         sa.Column("externalid", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["admissionsourcecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admitreasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admittingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargelocationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargereasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["healthcarefacilitycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
@@ -2026,34 +1704,6 @@ def upgrade():
         sa.Column("pat35", sa.String(length=255), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["admissionsourcecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admitreasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["admittingcliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargelocationcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["dischargereasoncodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["healthcarefacilitycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
         ),
@@ -2099,24 +1749,8 @@ def upgrade():
         sa.Column("acc40", sa.String(length=255), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["cliniciancodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredatcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["enteredbycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["pid"],
             ["patientrecord.pid"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["proceduretypecodestd"],
-            ["coding_standards.coding_standard"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2143,10 +1777,6 @@ def upgrade():
         sa.Column("countrycodestd", sa.String(length=100), nullable=True),
         sa.Column("countrydesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["countrycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["pid"],
             ["patient.pid"],
@@ -2241,10 +1871,6 @@ def upgrade():
             onupdate="CASCADE",
             ondelete="RESTRICT",
         ),
-        sa.ForeignKeyConstraint(
-            ["facilitycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.PrimaryKeyConstraint("facilitycode", "facilitycodestd"),
     )
     op.create_table(
@@ -2275,10 +1901,6 @@ def upgrade():
         sa.Column("commenttext", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["countrycodestd"],
-            ["coding_standards.coding_standard"],
-        ),
-        sa.ForeignKeyConstraint(
             ["gpid"],
             ["ukrdc_ods_gp_codes.code"],
         ),
@@ -2308,10 +1930,6 @@ def upgrade():
         sa.Column("leveltypecodestd", sa.String(length=100), nullable=True),
         sa.Column("leveltypedesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["leveltypecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["surveyid"],
             ["survey.id"],
@@ -2386,10 +2004,6 @@ def upgrade():
         sa.Column("response", sa.String(length=100), nullable=True),
         sa.Column("questiontext", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["questiontypecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["surveyid"],
             ["survey.id"],
@@ -2524,10 +2138,6 @@ def upgrade():
             ["orderid"],
             ["laborder.id"],
         ),
-        sa.ForeignKeyConstraint(
-            ["serviceidcodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -2546,10 +2156,6 @@ def upgrade():
         sa.Column("scoretypecodestd", sa.String(length=100), nullable=True),
         sa.Column("scoretypedesc", sa.String(length=100), nullable=True),
         sa.Column("update_date", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["scoretypecodestd"],
-            ["coding_standards.coding_standard"],
-        ),
         sa.ForeignKeyConstraint(
             ["surveyid"],
             ["survey.id"],
