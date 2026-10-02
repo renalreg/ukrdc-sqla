@@ -47,7 +47,7 @@ def coding_standard_column(
 ) -> MappedColumn:
     return mapped_column(
         String(256),
-        ForeignKey("coding_standards.coding_standard"),
+        # ForeignKey("coding_standards.coding_standard"),
         primary_key=primary_key,
         sqla_info=sqla_info,
     )
@@ -1800,7 +1800,7 @@ class Document(Base):
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column()
 
-    repositoryupdatedate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    repositoryupdatedate: Mapped[datetime | None] = mapped_column(DateTime)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -2366,7 +2366,7 @@ class TransplantList(Base):
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column()
 
-    idx: Mapped[int] = mapped_column(Integer)
+    idx: Mapped[int | None] = mapped_column(Integer)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -2573,16 +2573,16 @@ class Locations(Base):
     __tablename__ = "locations"
 
     centre_code: Mapped[str] = mapped_column(String(10), primary_key=True)
-    centre_name: Mapped[str | None] = mapped_column(String(255))
-    country_code: Mapped[str | None] = mapped_column(String(6))
+    centre_name: Mapped[str] = mapped_column(String(255))
+    country_code: Mapped[str] = mapped_column(String(6))
     region_code: Mapped[str | None] = mapped_column(String(10))
-    paed_unit: Mapped[int | None] = mapped_column(Integer)
+    paed_unit: Mapped[int] = mapped_column(Integer)
 
 
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key: Mapped[str] = mapped_column(String(5), primary_key=True)
+    upload_key: Mapped[str] = mapped_column(String(5))
 
     table_name = mapped_column("TABLE_NAME", String(30), nullable=False)
     field_name: Mapped[str] = mapped_column(String(30), nullable=False)
