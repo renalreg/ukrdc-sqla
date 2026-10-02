@@ -30,15 +30,17 @@ from sqlalchemy.orm import (
 )
 
 from ukrdc_sqla.utils.constants import FacilityType, GpType
-from ukrdc_sqla.utils.structure import ColumnInfo, get_column_info, mapped_column
+from ukrdc_sqla.utils.structure import (
+    ColumnInfo,
+    get_column_info,
+    mapped_column,
+    ORM_ONLY,
+)
 
 get_column_info = get_column_info
 
 GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
 
-# some fks do not exist db side, this tells alembic to not add them
-# SQLAlchemy does not care about the db and will work either way
-ORM_ONLY="orm_only"
 
 class Base(DeclarativeBase):
     pass
@@ -50,7 +52,7 @@ def coding_standard_column(
 ) -> MappedColumn:
     return mapped_column(
         String(256),
-        ForeignKey("coding_standards.coding_standard",info={ORM_ONLY: True}),
+        ForeignKey("coding_standards.coding_standard", info={ORM_ONLY: True}),
         primary_key=primary_key,
         sqla_info=sqla_info,
     )
@@ -59,7 +61,7 @@ def coding_standard_column(
 def pid_column(primary_key=False) -> MappedColumn:
     return mapped_column(
         String(30),
-        ForeignKey("patientrecord.pid",info={ORM_ONLY: True}),
+        ForeignKey("patientrecord.pid", info={ORM_ONLY: True}),
         primary_key=primary_key,
         sqla_info=ColumnInfo(
             label="Patient ID",
@@ -558,7 +560,7 @@ class FamilyDoctor(Base):
     __tablename__ = "familydoctor"
 
     id: Mapped[str] = mapped_column(
-        String(100), ForeignKey("patient.pid"), primary_key=True
+        String(100), ForeignKey("patient.pid", info={ORM_ONLY: True}), primary_key=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -567,10 +569,10 @@ class FamilyDoctor(Base):
     gpname: Mapped[str | None] = mapped_column(String(100))
 
     gpid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code")
+        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
     )
     gppracticeid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code")
+        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
     )
 
     addressuse: Mapped[str | None] = mapped_column(String(10))
@@ -1430,7 +1432,9 @@ class Name(Base):
     __tablename__ = "name"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = mapped_column(String(30), ForeignKey("patient.pid"))
+    pid: Mapped[str] = mapped_column(
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+    )
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1452,7 +1456,9 @@ class PatientNumber(Base):
     __tablename__ = "patientnumber"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = mapped_column(String(30), ForeignKey("patient.pid"))
+    pid: Mapped[str] = mapped_column(
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+    )
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1480,7 +1486,9 @@ class Address(Base):
     __tablename__ = "address"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = mapped_column(String(30), ForeignKey("patient.pid"))
+    pid: Mapped[str] = mapped_column(
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+    )
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1518,7 +1526,9 @@ class ContactDetail(Base):
     __tablename__ = "contactdetail"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = mapped_column(String(30), ForeignKey("patient.pid"))
+    pid: Mapped[str] = mapped_column(
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+    )
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1742,7 +1752,9 @@ class Question(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(
+        String(100), ForeignKey("survey.id", info={ORM_ONLY: True})
+    )
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -1760,7 +1772,9 @@ class Score(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(
+        String(100), ForeignKey("survey.id", info={ORM_ONLY: True})
+    )
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -1781,7 +1795,9 @@ class Level(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
 
-    surveyid: Mapped[str] = mapped_column(String(100), ForeignKey("survey.id"))
+    surveyid: Mapped[str] = mapped_column(
+        String(100), ForeignKey("survey.id", info={ORM_ONLY: True})
+    )
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -1957,7 +1973,7 @@ class ResultItem(Base):
     orderid: Mapped[str] = mapped_column(
         "orderid",
         String(100),
-        ForeignKey("laborder.id"),
+        ForeignKey("laborder.id", info={ORM_ONLY: True}),
         sqla_info=ColumnInfo(
             label="Order ID",
             description="Identifier of the related laboratory order.",
@@ -2585,7 +2601,7 @@ class Locations(Base):
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key: Mapped[str] = mapped_column(String(5))
+    upload_key: Mapped[str|None] = mapped_column(String(5))
 
     table_name = mapped_column("TABLE_NAME", String(30), nullable=False)
     field_name: Mapped[str] = mapped_column(String(30), nullable=False)
