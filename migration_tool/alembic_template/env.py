@@ -41,7 +41,10 @@ def is_orm_only(fk_constraint) -> bool:
 
 
 def include_object(obj, name, type_, reflected, compare_to):
-    """Skip adding ORM-only FKs to existing tables."""
+    # Views mapped as models
+    if type_ == "table" and name.startswith("vwe_"):
+        return False
+    # FKs that exist only for SQLAlchemy relationships, not in the DB
     if type_ == "foreign_key_constraint" and not reflected and is_orm_only(obj):
         return False
     return True
