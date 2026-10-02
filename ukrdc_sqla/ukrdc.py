@@ -2576,8 +2576,8 @@ class Facility(Base):
 class RRCodes(Base):
     __tablename__ = "rr_codes"
 
-    id: Mapped[str] = mapped_column(String(10), primary_key=True)
-    rr_code = mapped_column("rr_code", String(10), primary_key=True)
+    id: Mapped[str] = mapped_column(String(10))
+    rr_code = mapped_column("rr_code", String(10))
 
     description_1: Mapped[str | None] = mapped_column(String(255))
     description_2: Mapped[str | None] = mapped_column(String(70))
@@ -2591,7 +2591,7 @@ class RRCodes(Base):
 class Locations(Base):
     __tablename__ = "locations"
 
-    centre_code: Mapped[str] = mapped_column(String(10), primary_key=True)
+    centre_code: Mapped[str] = mapped_column(String(10))
     centre_name: Mapped[str] = mapped_column(String(255))
     country_code: Mapped[str] = mapped_column(String(6))
     region_code: Mapped[str | None] = mapped_column(String(10))
@@ -2601,7 +2601,7 @@ class Locations(Base):
 class RRDataDefinition(Base):
     __tablename__ = "rr_data_definition"
 
-    upload_key: Mapped[str|None] = mapped_column(String(5))
+    upload_key: Mapped[str | None] = mapped_column(String(5))
 
     table_name = mapped_column("TABLE_NAME", String(30), nullable=False)
     field_name: Mapped[str] = mapped_column(String(30), nullable=False)
@@ -2647,7 +2647,7 @@ class RRDataDefinition(Base):
 class ModalityCodes(Base):
     __tablename__ = "modality_codes"
 
-    registry_code: Mapped[str] = mapped_column(String(8), primary_key=True)
+    registry_code: Mapped[str] = mapped_column(String(8))
 
     registry_code_desc: Mapped[str | None] = mapped_column(String(100))
     registry_code_type: Mapped[str] = mapped_column(String(3), nullable=False)
