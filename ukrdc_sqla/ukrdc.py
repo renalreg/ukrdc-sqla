@@ -36,6 +36,9 @@ get_column_info = get_column_info
 
 GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
 
+# some fks do not exist db side, this tells alembic to not add them
+# SQLAlchemy does not care about the db and will work either way
+ORM_ONLY="orm_only"
 
 class Base(DeclarativeBase):
     pass
@@ -47,7 +50,7 @@ def coding_standard_column(
 ) -> MappedColumn:
     return mapped_column(
         String(256),
-        # ForeignKey("coding_standards.coding_standard"),
+        ForeignKey("coding_standards.coding_standard",info={ORM_ONLY: True}),
         primary_key=primary_key,
         sqla_info=sqla_info,
     )
@@ -56,7 +59,7 @@ def coding_standard_column(
 def pid_column(primary_key=False) -> MappedColumn:
     return mapped_column(
         String(30),
-        ForeignKey("patientrecord.pid"),
+        ForeignKey("patientrecord.pid",info={ORM_ONLY: True}),
         primary_key=primary_key,
         sqla_info=ColumnInfo(
             label="Patient ID",
