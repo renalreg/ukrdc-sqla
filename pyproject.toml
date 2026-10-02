@@ -8,6 +8,16 @@ version = "4.8.0"
 [tool.poetry.dependencies]
 SQLAlchemy = ">=2.0.0,<3.0.0"
 python = ">=3.10.0,<4.0"
+psycopg2 = "^2.9.13"
+polars = "^1.44.2"
+
+# Optional dependencies, installed only via the "migration" extra below
+alembic = { version = "^1.20.0", optional = true }
+click = { version = "^8.5.0", optional = true }
+psycopg = { version = "^3.3.6", extras = ["binary"], optional = true }
+
+[tool.poetry.extras]
+migration = ["alembic", "click", "psycopg"]
 
 [tool.poetry.group.dev.dependencies]
 deptry = "^0.25.1"
@@ -20,16 +30,3 @@ mypy = "*"
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
-
-
-[tool.isort]
-ensure_newline_before_comments = true
-force_grid_wrap = 0
-include_trailing_comma = true
-line_length = 160
-multi_line_output = 3
-use_parentheses = true
-
-[tool.pylint.'MESSAGES CONTROL']
-disable = "too-many-lines, too-few-public-methods, missing-module-docstring, missing-class-docstring, duplicate-code, line-too-long"
-max-line-length = 160
