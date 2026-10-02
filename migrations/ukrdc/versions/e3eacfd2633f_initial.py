@@ -53,10 +53,10 @@ def upgrade():
     op.create_table(
         "locations",
         sa.Column("centre_code", sa.String(length=10), nullable=False),
-        sa.Column("centre_name", sa.String(length=255), nullable=True),
-        sa.Column("country_code", sa.String(length=6), nullable=True),
+        sa.Column("centre_name", sa.String(length=255), nullable=False),
+        sa.Column("country_code", sa.String(length=6), nullable=False),
         sa.Column("region_code", sa.String(length=10), nullable=True),
-        sa.Column("paed_unit", sa.Integer(), nullable=True),
+        sa.Column("paed_unit", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("centre_code"),
     )
     op.create_table(
@@ -83,7 +83,7 @@ def upgrade():
         sa.Column("sendingextract", sa.String(length=6), nullable=False),
         sa.Column("localpatientid", sa.String(length=17), nullable=False),
         sa.Column("repositorycreationdate", sa.DateTime(), nullable=False),
-        sa.Column("repositoryupdatedate", sa.DateTime(), nullable=False),
+        sa.Column("repositoryupdatedate", sa.DateTime(), nullable=True),
         sa.Column(
             "migrated", sa.Boolean(), server_default=sa.text("false"), nullable=False
         ),
@@ -120,7 +120,7 @@ def upgrade():
     )
     op.create_table(
         "rr_data_definition",
-        sa.Column("upload_key", sa.String(length=5), nullable=False),
+        sa.Column("upload_key", sa.String(length=5), nullable=True),
         sa.Column("TABLE_NAME", sa.String(length=30), nullable=False),
         sa.Column("field_name", sa.String(length=30), nullable=False),
         sa.Column("code_id", sa.String(length=10), nullable=True),
@@ -147,7 +147,6 @@ def upgrade():
         sa.Column("valid_before_dob", sa.Numeric(precision=1, scale=0), nullable=True),
         sa.Column("valid_after_dod", sa.Numeric(precision=1, scale=0), nullable=True),
         sa.Column("in_quarter", sa.Numeric(precision=1, scale=0), nullable=True),
-        sa.PrimaryKeyConstraint("upload_key"),
     )
     op.create_table(
         "sendingextractmetadata",
@@ -1831,7 +1830,7 @@ def upgrade():
             nullable=False,
             comment="Unique identifier for the patient record, referencing patientrecord.pid.",
         ),
-        sa.Column("idx", sa.Integer(), nullable=False),
+        sa.Column("idx", sa.Integer(), nullable=True),
         sa.Column(
             "creation_date",
             sa.DateTime(),
