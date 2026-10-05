@@ -1853,7 +1853,7 @@ class Document(Base):
 
     # Synonyms
 
-    repository_update_date: Mapped[datetime] = synonym("repositoryupdatedate")
+    repository_update_date: Mapped[datetime | None] = synonym("repositoryupdatedate")
 
 
 class LabOrder(Base):
