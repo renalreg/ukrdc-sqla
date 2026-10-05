@@ -8,7 +8,8 @@ SQLAlchemy models for the UKRDC and related databases.
 `poetry add ukrdc-sqla`
 
 ## Example Usage
-
+> [!IMPORTANT]
+> Don't call `Base.metadata.create_all()` directly. see [ORM-only Foreign Keys](#orm-only-foreign-keys).
 ```python
 from datetime import datetime
 
@@ -146,6 +147,41 @@ high_results = session.scalars(
     .order_by(ResultItem.numeric_value.desc())
 ).all()
 ```
+
+### ORM-only Foreign Keys
+
+Some foreign keys exist on the models but not in the database. They are marked with `info={ORM_ONLY: True}`:
+
+```python
+gpid: Mapped[str | None] = mapped_column(
+    String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
+)
+```
+
+The marker does two things:
+
+- It tells us, and Alembic, that the constraint is not in the database, so the migrations never create it.
+- SQLAlchemy can still use it to join the tables, e.g. `select(FamilyDoctor).join(GPInfo)`, without an explicit `ON` clause.
+
+SQLAlchemy never checks a foreign key itself; only the database does, and only if the constraint exists there. With an ORM-only key, nothing stops a `gpid` that has no matching row in `ukrdc_ods_gp_codes`.
+
+#### Creating tables with `create_all`
+
+`Base.metadata.create_all()` does not know about `ORM_ONLY` and creates **every** foreign key, including these. A database built that way rejects rows the real database accepts, for example:
+
+```
+ForeignKeyViolation: insert or update on table "familydoctor" violates foreign key constraint "familydoctor_gpid_fkey"
+```
+
+Prefer building databases from the migrations, so they match production. When you do need `create_all` (tests, local setup), call it on `db_metadata(Base.metadata)`, never on `Base.metadata` directly:
+
+```python
+from ukrdc_sqla.ukrdc import Base
+
+db_metadata(Base.metadata).create_all(engine)
+```
+
+`db_metadata` returns a copy of the metadata without the ORM-only foreign keys. `Base.metadata` is left unchanged, so joins and relationships keep working:
 
 ### Publish Updates
 
