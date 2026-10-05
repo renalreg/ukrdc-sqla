@@ -2718,3 +2718,13 @@ class File(Base):
         server_default=text("now()"),
     )
     update_date: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class PKBLink(Base):
+    __tablename__ = "pkb_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    link: Mapped[str | None] = mapped_column(String)
+    link_name: Mapped[str | None] = mapped_column(String)
+    coding_standard: Mapped[str | None] = mapped_column(String)
+    code: Mapped[str | None] = mapped_column(String)

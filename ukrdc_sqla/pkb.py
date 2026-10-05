@@ -1,16 +1,11 @@
-"""Modules which relate to the Repository System Tables"""
+"""Deprecated: PKBLink has moved to the ukrdc module."""
 
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+import warnings
 
-from .ukrdc import Base
+from .ukrdc import PKBLink  # noqa: F401
 
-
-class PKBLink(Base):
-    __tablename__ = "pkb_links"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    link: Mapped[str | None] = mapped_column(String)
-    link_name: Mapped[str | None] = mapped_column(String)
-    coding_standard: Mapped[str | None] = mapped_column(String)
-    code: Mapped[str | None] = mapped_column(String)
+warnings.warn(
+    "PKBLink has moved; import it from ukrdc_sqla.ukrdc instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
