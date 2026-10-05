@@ -15,7 +15,7 @@ class Channel(Base):
     __tablename__ = "channels"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    name: Mapped[str | None] = mapped_column("name", String)
+    name: Mapped[str | None] = mapped_column(String)
     direction: Mapped[str | None] = mapped_column(String)
     enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     store_first_message: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -34,21 +34,19 @@ class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    message_id: Mapped[int | None] = mapped_column("message_id", Integer, unique=True)
-    channel_id: Mapped[str | None] = mapped_column(
-        "channel_id", String, ForeignKey("channels.id")
-    )
-    received: Mapped[datetime | None] = mapped_column("received", DateTime)
-    msg_status: Mapped[str | None] = mapped_column("msg_status", String)
+    message_id: Mapped[int | None] = mapped_column(Integer, unique=True)
+    channel_id: Mapped[str | None] = mapped_column(String, ForeignKey("channels.id"))
+    received: Mapped[datetime | None] = mapped_column(DateTime)
+    msg_status: Mapped[str | None] = mapped_column(String)
     connector_index: Mapped[int | None] = mapped_column(Integer)
     connector_name: Mapped[str | None] = mapped_column(String)
     resolved_by: Mapped[int | None] = mapped_column(Integer)
     # Metadata
-    ni: Mapped[str | None] = mapped_column("ni", String)
-    filename: Mapped[str | None] = mapped_column("filename", String)
-    facility: Mapped[str | None] = mapped_column("facility", String)
-    error: Mapped[str | None] = mapped_column("error", String)
-    status: Mapped[str | None] = mapped_column("status", String)
+    ni: Mapped[str | None] = mapped_column(String)
+    filename: Mapped[str | None] = mapped_column(String)
+    facility: Mapped[str | None] = mapped_column(String)
+    error: Mapped[str | None] = mapped_column(String)
+    status: Mapped[str | None] = mapped_column(String)
 
     latests: Mapped[list["Latest"]] = relationship("Latest", back_populates="message")
 
@@ -56,7 +54,7 @@ class Message(Base):
 class Facility(Base):
     __tablename__ = "facilities"
 
-    facility: Mapped[str] = mapped_column("facility", String, primary_key=True)
+    facility: Mapped[str] = mapped_column(String, primary_key=True)
 
 
 class Latest(Base):
