@@ -211,9 +211,7 @@ class WorkItem(Base):
         nullable=False,
     )
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
-    description: Mapped[str] = mapped_column(
-        "description", String(100), nullable=False
-    )
+    description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     status: Mapped[int] = mapped_column("status", Integer, nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(
         "creationdate", DateTime, nullable=False
@@ -249,9 +247,7 @@ class Audit(Base):
     personid: Mapped[int] = mapped_column("personid", Integer, nullable=False)
     masterid: Mapped[int] = mapped_column("masterid", Integer, nullable=False)
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
-    description: Mapped[str] = mapped_column(
-        "description", String(100), nullable=False
-    )
+    description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     attributes: Mapped[str | None] = mapped_column("attributes", String(1024))
     mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String(10))
     mainnationalidtype: Mapped[str | None] = mapped_column(
