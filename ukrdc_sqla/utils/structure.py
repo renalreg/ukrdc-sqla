@@ -201,6 +201,7 @@ def computed_hybrid(
     """
     return hybrid_property(fn).expression(classmethod(expression))
 
+
 # some fks do not exist db side, this tells alembic to not add them
 # SQLAlchemy does not care about the db and will work either way
 ORM_ONLY = "orm_only"
