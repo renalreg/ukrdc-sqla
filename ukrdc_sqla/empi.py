@@ -32,6 +32,7 @@ class MasterRecord(Base):
     __tablename__ = "masterrecord"
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
+    __mapper_args__ = {"primary_key": [id]}
     lastupdated: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
     dateofbirth: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     gender: Mapped[str | None] = mapped_column(String(5))
@@ -71,6 +72,7 @@ class LinkRecord(Base):
     __tablename__ = "linkrecord"
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
+    __mapper_args__ = {"primary_key": [id]}
     personid: Mapped[int] = mapped_column(
         "personid",
         Integer,
@@ -123,6 +125,7 @@ class Person(Base):
     __tablename__ = "person"
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
+    __mapper_args__ = {"primary_key": [id]}
     originator: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Not unique on its own in the database (only as part of ix_person_mrn),
@@ -278,6 +281,7 @@ class PidXRef(Base):
 
     # --- Attributes ---
     id: Mapped[int] = mapped_column(Integer, nullable=False)
+    __mapper_args__ = {"primary_key": [id]}
     pid: Mapped[str] = mapped_column(
         String(10),
         ForeignKey("person.localid", info={ORM_ONLY: True}),
