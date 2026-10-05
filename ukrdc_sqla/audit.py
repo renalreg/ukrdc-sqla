@@ -10,6 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
+    relationship,
     synonym,
 )
 
@@ -36,6 +37,10 @@ class AccessEvent(Base):
     method: Mapped[str] = mapped_column(String)
     body: Mapped[str] = mapped_column(String)
 
+    audit_event: Mapped["AuditEvent"] = relationship(
+        back_populates="access_event",
+    )
+
 
 class AuditEvent(Base):
     """Represents an audit event in the audit database."""
@@ -52,3 +57,8 @@ class AuditEvent(Base):
 
     # Synonyms
     ukrdc_pid: Mapped[str] = synonym("resource_id")
+
+    # Relationships
+    access_event: Mapped["AccessEvent"] = relationship(
+        back_populates="audit_event",
+    )
