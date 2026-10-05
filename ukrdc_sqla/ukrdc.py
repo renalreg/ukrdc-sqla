@@ -31,10 +31,10 @@ from sqlalchemy.orm import (
 
 from ukrdc_sqla.utils.constants import FacilityType, GpType
 from ukrdc_sqla.utils.structure import (
+    ORM_ONLY,
     ColumnInfo,
     get_column_info,
     mapped_column,
-    ORM_ONLY,
 )
 
 get_column_info = get_column_info
