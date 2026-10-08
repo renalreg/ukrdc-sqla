@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.8.0...v4.9.0) (2026-10-07)
+
+
+### Features
+
+* **UK-422:** add auditdb models ([52d6f30](https://github.com/renalreg/ukrdc-sqla/commit/52d6f3082559771ee394a0f4c5a22c0ae8a2f9c7))
+
 ## [4.8.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.7.0...v4.8.0) (2026-09-23)
 
 
