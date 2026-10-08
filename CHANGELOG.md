@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.9.0...v5.0.0) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **models:** updated models to be more in line with the current database/ preperation for adding alembic
+
+### Features
+
+* **models:** updated models to be more in line with the current database/ preperation for adding alembic ([9a5ede3](https://github.com/renalreg/ukrdc-sqla/commit/9a5ede32899fa98757ad22a4cdb64eeff79b938b))
+
 ## [4.9.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.8.0...v4.9.0) (2026-10-07)
 
 
