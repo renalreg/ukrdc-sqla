@@ -200,3 +200,6 @@ def computed_hybrid(
         )
     """
     return hybrid_property(fn).expression(classmethod(expression))
+
+
+ORM_ONLY = "orm_only"

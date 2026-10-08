@@ -1,7 +1,10 @@
 from collections.abc import Iterable
 
 from sqlalchemy import Column as Col
+from sqlalchemy import MetaData
 from sqlalchemy.orm import InstrumentedAttribute
+
+from ukrdc_sqla.utils.structure import ORM_ONLY
 
 
 def column_name(col: Col | InstrumentedAttribute) -> str:
@@ -35,3 +38,18 @@ def column_names(
             names.append(item.name)
 
     return names
+
+
+def db_metadata(metadata: MetaData) -> MetaData:
+    """A copy of METADATA without the ORM_ONLY foreign keys, for create_all."""
+    copy = MetaData(
+        schema=metadata.schema, naming_convention=metadata.naming_convention
+    )
+    for table in metadata.sorted_tables:
+        t = table.to_metadata(copy)
+        for fkc in list(t.foreign_key_constraints):
+            if any(fk.info.get(ORM_ONLY) for fk in fkc.elements):
+                t.constraints.discard(fkc)
+                for fk in fkc.elements:
+                    fk.parent.foreign_keys.discard(fk)
+    return copy
