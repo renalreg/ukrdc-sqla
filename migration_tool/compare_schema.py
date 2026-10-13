@@ -96,33 +96,33 @@ def compare(migrated: dict, local: dict, check_defaults: bool) -> list[str]:
     for key in sorted(local.keys() - migrated.keys()):
         lines.append(f"{key[0]}.{key[1]}: only in the local database")
     for key in sorted(migrated.keys() & local.keys()):
-        m, l, diffs = migrated[key], local[key], []
-        for col in m["columns"].keys() - l["columns"].keys():
+        m, lec, diffs = migrated[key], local[key], []
+        for col in m["columns"].keys() - lec["columns"].keys():
             diffs.append(
                 f"column {col}: only in the migrations ({m['columns'][col]['type']})"
             )
-        for col in l["columns"].keys() - m["columns"].keys():
+        for col in lec["columns"].keys() - m["columns"].keys():
             diffs.append(
-                f"column {col}: only in the local database ({l['columns'][col]['type']})"
+                f"column {col}: only in the local database ({lec['columns'][col]['type']})"
             )
-        for col in sorted(m["columns"].keys() & l["columns"].keys()):
-            mc, lc = m["columns"][col], l["columns"][col]
+        for col in sorted(m["columns"].keys() & lec["columns"].keys()):
+            mc, lc = m["columns"][col], lec["columns"][col]
             for attr in ("type", "nullable") + (("default",) if check_defaults else ()):
                 if mc[attr] != lc[attr]:
                     diffs.append(
                         f"column {col}: {attr} {mc[attr]!r} (migrations) vs "
                         f"{lc[attr]!r} (local)"
                     )
-        if m["pk"] != l["pk"]:
-            diffs.append(f"primary key: {m['pk']} (migrations) vs {l['pk']} (local)")
+        if m["pk"] != lec["pk"]:
+            diffs.append(f"primary key: {m['pk']} (migrations) vs {lec['pk']} (local)")
         for label, attr, fmt in (
             ("foreign key", "fks", fmt_fk),
             ("index", "indexes", fmt_index),
             ("unique constraint", "uniques", lambda u: f"({', '.join(u)})"),
         ):
-            for item in sorted(m[attr] - l[attr], key=str):
+            for item in sorted(m[attr] - lec[attr], key=str):
                 diffs.append(f"{label} {fmt(item)}: only in the migrations")
-            for item in sorted(l[attr] - m[attr], key=str):
+            for item in sorted(lec[attr] - m[attr], key=str):
                 diffs.append(f"{label} {fmt(item)}: only in the local database")
         if diffs:
             lines.append(f"{key[0]}.{key[1]}:")
