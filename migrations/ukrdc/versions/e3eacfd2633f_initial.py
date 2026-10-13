@@ -6,8 +6,8 @@ Create Date: 2026-10-05 15:28:05.845226
 
 """
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 from views import create_views, drop_views
 

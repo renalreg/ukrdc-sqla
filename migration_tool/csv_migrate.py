@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import functools
-import json
-import os
 import importlib
 import importlib.util
+import json
+import os
 import re
 import sys
 from pathlib import Path

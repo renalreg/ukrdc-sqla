@@ -6,8 +6,8 @@ Create Date: 2026-09-30 16:51:58.538864
 
 """
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from views import create_views, drop_views
 
 revision = "ce5cf736eff9"
