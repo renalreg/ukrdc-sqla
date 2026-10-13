@@ -219,14 +219,16 @@ VIEWS_REF = None
 
 
 def upgrade():
-    drop_views(down_revision, revision)    # the views in the database now, then the new set
-    ...                                    # schema changes
+    drop_views(
+        down_revision, revision
+    )  # the views in the database now, then the new set
+    ...  # schema changes
     create_views(revision)
 
 
 def downgrade():
     drop_views(revision, down_revision)
-    ...                                    # reverse schema changes
+    ...  # reverse schema changes
     create_views(down_revision)
 ```
 

@@ -85,11 +85,15 @@ def views_ref(revision) -> str | None:
     if isinstance(revision, (tuple, list)):  # a merge revision's parents
         refs = {views_ref(r) for r in revision}
         if len(refs) > 1:
-            raise ValueError(f"Merged branches have different VIEWS_REF: {sorted(map(str, refs))}")
+            raise ValueError(
+                f"Merged branches have different VIEWS_REF: {sorted(map(str, refs))}"
+            )
         return refs.pop() if refs else None
     script = context.script.get_revision(revision)
     try:
-        return getattr(script.module, "VIEWS_REF", None) or views_ref(script.down_revision)
+        return getattr(script.module, "VIEWS_REF", None) or views_ref(
+            script.down_revision
+        )
     except ValueError as e:
         raise ValueError(f"{e}. Set VIEWS_REF on revision {revision}.") from None
 
@@ -124,7 +128,13 @@ def _commit(ref: str) -> str:
         if re.fullmatch(r"[0-9a-f]{7,39}", ref):
             raise ValueError(f"VIEWS_REF {ref!r}: use the full 40-character commit SHA")
         fetched = _git(
-            "fetch", "--depth=1", "--no-tags", "-q", REPO, f"+{ref}:{pinned}", check=False
+            "fetch",
+            "--depth=1",
+            "--no-tags",
+            "-q",
+            REPO,
+            f"+{ref}:{pinned}",
+            check=False,
         )
         if fetched.returncode:
             raise RuntimeError(
@@ -150,9 +160,11 @@ def _parse(path: str, text: str) -> tuple[str, str, bool, tuple]:
     header = _HEADER.search(text)
     if not header:
         raise ValueError(f"{path}: no CREATE [MATERIALIZED] VIEW ... AS found")
-    rest = text[header.end():]
+    rest = text[header.end() :]
     tail = _TAIL.search(rest)
-    body, tail_sql = (rest[: tail.start()], rest[tail.start():]) if tail else (rest, "")
+    body, tail_sql = (
+        (rest[: tail.start()], rest[tail.start() :]) if tail else (rest, "")
+    )
 
     body = body.strip().rstrip(";").strip()
     body = re.sub(r"\s*WITH\s+NO\s+DATA$", "", body, flags=re.I).rstrip(";").strip()
@@ -166,7 +178,9 @@ def _parse(path: str, text: str) -> tuple[str, str, bool, tuple]:
             continue
         role = re.search(r"\bTO\s+(\w+)$", statement, re.I)
         if not re.match(r"(GRANT|ALTER)\b", statement, re.I) or not role:
-            raise ValueError(f"{path}: unexpected statement after the view: {statement}")
+            raise ValueError(
+                f"{path}: unexpected statement after the view: {statement}"
+            )
         privileges.append((statement, role.group(1)))
     return header.group(2).lower(), body, bool(header.group(1)), tuple(privileges)
 
@@ -179,7 +193,9 @@ def views_at(ref: str) -> tuple[View, ...]:
         Path(p).name.lower(): p
         for p in _git("ls-tree", "--name-only", commit, f"{VIEWS_DIR}/").stdout.split()
     }
-    order = re.findall(r"^\s*\\i\s+\S*?([^/\s]+\.sql)\s*$", _read(commit, BUILD_ORDER), re.I | re.M)
+    order = re.findall(
+        r"^\s*\\i\s+\S*?([^/\s]+\.sql)\s*$", _read(commit, BUILD_ORDER), re.I | re.M
+    )
     if not order:
         raise ValueError(f"{BUILD_ORDER} at {ref} lists no views")
 
@@ -187,10 +203,14 @@ def views_at(ref: str) -> tuple[View, ...]:
     for filename in order:
         path = files.get(filename.lower())
         if not path:
-            raise ValueError(f"{BUILD_ORDER} at {ref} lists {filename}, not in {VIEWS_DIR}")
+            raise ValueError(
+                f"{BUILD_ORDER} at {ref} lists {filename}, not in {VIEWS_DIR}"
+            )
         name, sql, materialized, privileges = _parse(path, _read(commit, path))
         if name != Path(filename).stem.lower():
-            raise ValueError(f"{path} at {ref} defines {name}, not {Path(filename).stem}")
+            raise ValueError(
+                f"{path} at {ref} defines {name}, not {Path(filename).stem}"
+            )
         if "$view$" in sql:
             raise ValueError(f"{path} at {ref} contains $view$")
         parsed.append((name, sql, materialized, privileges))
