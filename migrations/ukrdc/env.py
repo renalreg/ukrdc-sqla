@@ -12,6 +12,7 @@ to its throwaway database and the models' metadata.
 """
 
 import os
+import re
 from logging.config import fileConfig
 
 from alembic import context
@@ -70,6 +71,24 @@ def strip_orm_only_fks(context_, revision, directives):
             walk(ops_)
 
 
+def lock_timeout() -> str:
+    value = (
+        context.get_x_argument(as_dictionary=True).get("lock_timeout")
+        or os.environ.get("LOCK_TIMEOUT")
+        or "10s"
+    )
+    if not re.fullmatch(r"\d+\s*(ms|s|min|h)?", value.strip()):
+        raise SystemExit(
+            f"Invalid lock timeout {value!r}: use e.g. 10s, 500ms, 2min or 0."
+        )
+    return value.strip()
+
+
+def set_lock_timeout() -> None:
+    """For this transaction only (SET LOCAL), so it doesn't outlive the migration."""
+    context.execute(f"SET LOCAL lock_timeout = '{lock_timeout()}'")
+
+
 def run_migrations(conn):
     context.configure(
         connection=conn,
@@ -78,6 +97,7 @@ def run_migrations(conn):
         process_revision_directives=strip_orm_only_fks,
     )
     with context.begin_transaction():
+        set_lock_timeout()
         context.run_migrations()
 
 
@@ -92,6 +112,7 @@ else:
             url=url or None, dialect_name="postgresql", literal_binds=True
         )
         with context.begin_transaction():
+            set_lock_timeout()
             context.run_migrations()
     elif not url:
         raise SystemExit("Set sqlalchemy.url in alembic.ini, or DATABASE_URL.")
