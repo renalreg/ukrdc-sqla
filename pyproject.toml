@@ -32,7 +32,7 @@ requires = ["poetry-core>=1.0.0"]
 
 [tool.deptry]
 # migrate and views are local modules (migration_tool/ and migrations/ukrdc/), not packages.
-known_first_party = ["migrate", "views", "triggers"]
+known_first_party = ["migrate", "views", "triggers", 'csv_helpers']
 
 [tool.deptry.per_rule_ignores]
 DEP001 = ["views","triggers"]

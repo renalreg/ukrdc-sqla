@@ -1,4 +1,5 @@
 """Models which relate to the main UKRDC database"""
+
 import warnings
 from datetime import date, datetime
 from decimal import Decimal
@@ -40,6 +41,8 @@ from ukrdc_sqla.utils.structure import (
 get_column_info = get_column_info
 
 GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
+
+
 class UKRDCDeprecationWarning(DeprecationWarning):
     """Warning for deprecated model attributes kept for backwards compatibility."""
 
@@ -2583,7 +2586,6 @@ class Facility(Base):
     code: Mapped[str] = synonym("facilitycode")
     coding_standard: Mapped[str] = synonym("facilitycodestd")
     pkb_out: Mapped[bool] = synonym("pkbout")
-    pkb_msg_exclusions: Mapped[list[str] | None] = synonym("pkbmsgexclusions")
     rdastartdate: Mapped[datetime | None] = synonym("startdate")
     rdaenddate: Mapped[datetime | None] = synonym("enddate")
     rdafirstdataquarter: Mapped[int | None] = synonym("firstdataquarter")
@@ -2605,23 +2607,35 @@ class Facility(Base):
     @property
     def pkbmsgexclusions(self) -> list[str] | None:
         """Message types excluded on every feed (present under all keys)."""
-        _warn_deprecated("Facility.pkbmsgexclusions", "Facility.pkb_extract_msg_exclusions")
+        _warn_deprecated(
+            "Facility.pkbmsgexclusions", "Facility.pkb_extract_msg_exclusions"
+        )
         lists = [set(v or []) for v in (self.pkb_extract_msg_exclusions or {}).values()]
         if not lists:
             return None
         return sorted(set.intersection(*lists))
+
+    @property
+    def pkb_msg_exclusions(self) -> list[str] | None:
+        return self.pkbmsgexclusions()
 
     def _pkb_feed_exclusions(self, extract: str) -> list[str] | None:
         return (self.pkb_extract_msg_exclusions or {}).get(extract)
 
     @property
     def pkb_pv_msg_exclusions(self) -> list[str] | None:
-        _warn_deprecated("Facility.pkb_pv_msg_exclusions", "Facility.pkb_extract_msg_exclusions['PV']")
+        _warn_deprecated(
+            "Facility.pkb_pv_msg_exclusions",
+            "Facility.pkb_extract_msg_exclusions['PV']",
+        )
         return self._pkb_feed_exclusions(StandardCodesType.pv)
 
     @property
     def pkb_ukrdc_msg_exclusions(self) -> list[str] | None:
-        _warn_deprecated("Facility.pkb_ukrdc_msg_exclusions", "Facility.pkb_extract_msg_exclusions['UKRDC']")
+        _warn_deprecated(
+            "Facility.pkb_ukrdc_msg_exclusions",
+            "Facility.pkb_extract_msg_exclusions['UKRDC']",
+        )
         return self._pkb_feed_exclusions(StandardCodesType.ukrdc)
 
 
