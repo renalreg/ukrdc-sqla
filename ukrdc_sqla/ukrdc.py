@@ -1,5 +1,6 @@
 """Models which relate to the main UKRDC database"""
 
+import warnings
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Literal, Optional
@@ -18,7 +19,7 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON
+from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON, JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -29,7 +30,7 @@ from sqlalchemy.orm import (
     synonym,
 )
 
-from ukrdc_sqla.utils.constants import FacilityType, GpType
+from ukrdc_sqla.utils.constants import FacilityType, GpType, StandardCodesType
 from ukrdc_sqla.utils.structure import (
     ORM_ONLY,
     ColumnInfo,
@@ -40,6 +41,23 @@ from ukrdc_sqla.utils.structure import (
 get_column_info = get_column_info
 
 GLOBAL_LAZY: Literal["dynamic"] = "dynamic"
+
+
+class UKRDCDeprecationWarning(DeprecationWarning):
+    """Warning for deprecated model attributes kept for backwards compatibility."""
+
+
+# DeprecationWarning is hidden by default outside __main__; show ours once per call site.
+warnings.simplefilter("default", UKRDCDeprecationWarning)
+
+
+def _warn_deprecated(old: str, new: str) -> None:
+    warnings.warn(
+        f"{old} is deprecated and kept only for backwards compatibility; "
+        f"use {new} instead.",
+        UKRDCDeprecationWarning,
+        stacklevel=3,  # point at the caller of the deprecated property
+    )
 
 
 class Base(DeclarativeBase):
@@ -88,6 +106,15 @@ class SendingExtractMetadata(Base):
         sqla_info=ColumnInfo(
             label="enable radar exports",
             description="A flag to enable whether the radar exporter will export for this sending extract",
+        ),
+    )
+    enable_pkb_export: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+        sqla_info=ColumnInfo(
+            label="enable pkb exports",
+            description="A flag to enable whether the PKB exporter will export for this sending extract",
         ),
     )
 
@@ -2491,22 +2518,28 @@ class Facility(Base):
         nullable=False,
     )
     pkbout: Mapped[bool] = mapped_column(
-        "pkbout", Boolean, nullable=False, server_default=text("false")
+        "pkbout",
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+        sqla_info=ColumnInfo(
+            label="PKB export enabled",
+            description="Master switch for PKB export for this facility. If false, nothing exports for this facility, regardless of enabled_pkb_extracts or which extracts are enabled globally.",
+        ),
     )
-    pkbmsgexclusions: Mapped[list[str] | None] = mapped_column(
-        "pkbmsgexclusions", ARRAY(Text)
+    enabled_pkb_extracts: Mapped[list[str] | None] = mapped_column(
+        ARRAY(Text),
+        sqla_info=ColumnInfo(
+            label="PKB enabled extracts",
+            description="Sending extracts that PKB should export for this facility. An extract must ALSO be enabled globally via SendingExtractMetadata.enable_pkb_export - this list only narrows that down per facility, it cannot widen it. A null/empty list means nothing exports for this facility.",
+        ),
     )
-    pkb_pv_msg_exclusions: Mapped[list[str] | None] = mapped_column(
-        "pkb_pv_msg_exclusions", ARRAY(Text)
-    )
-    pkb_ukrdc_msg_exclusions: Mapped[list[str] | None] = mapped_column(
-        "pkb_ukrdc_msg_exclusions", ARRAY(Text)
-    )
-    ukrdcoutpkb: Mapped[bool] = mapped_column(
-        "ukrdcoutpkb", Boolean, nullable=False, server_default=text("false")
-    )
-    pvoutpkb: Mapped[bool] = mapped_column(
-        "pvoutpkb", Boolean, nullable=False, server_default=text("false")
+    pkb_extract_msg_exclusions: Mapped[dict[str, list[str]] | None] = mapped_column(
+        JSONB,
+        sqla_info=ColumnInfo(
+            label="PKB per-feed message exclusions",
+            description='Additional message types excluded for specific feeds, e.g. {"PV": ["ADT^A31"]}. Only takes effect for feeds that are actually enabled.',
+        ),
     )
     radar_out: Mapped[bool] = mapped_column(
         "radar_out",
@@ -2553,7 +2586,6 @@ class Facility(Base):
     code: Mapped[str] = synonym("facilitycode")
     coding_standard: Mapped[str] = synonym("facilitycodestd")
     pkb_out: Mapped[bool] = synonym("pkbout")
-    pkb_msg_exclusions: Mapped[list[str] | None] = synonym("pkbmsgexclusions")
     rdastartdate: Mapped[datetime | None] = synonym("startdate")
     rdaenddate: Mapped[datetime | None] = synonym("enddate")
     rdafirstdataquarter: Mapped[int | None] = synonym("firstdataquarter")
@@ -2571,6 +2603,40 @@ class Facility(Base):
     @property
     def pkb_in(self) -> bool:
         return False
+
+    @property
+    def pkbmsgexclusions(self) -> list[str] | None:
+        """Message types excluded on every feed (present under all keys)."""
+        _warn_deprecated(
+            "Facility.pkbmsgexclusions", "Facility.pkb_extract_msg_exclusions"
+        )
+        lists = [set(v or []) for v in (self.pkb_extract_msg_exclusions or {}).values()]
+        if not lists:
+            return None
+        return sorted(set.intersection(*lists))
+
+    @property
+    def pkb_msg_exclusions(self) -> list[str] | None:
+        return self.pkbmsgexclusions()
+
+    def _pkb_feed_exclusions(self, extract: str) -> list[str] | None:
+        return (self.pkb_extract_msg_exclusions or {}).get(extract)
+
+    @property
+    def pkb_pv_msg_exclusions(self) -> list[str] | None:
+        _warn_deprecated(
+            "Facility.pkb_pv_msg_exclusions",
+            "Facility.pkb_extract_msg_exclusions['PV']",
+        )
+        return self._pkb_feed_exclusions(StandardCodesType.pv)
+
+    @property
+    def pkb_ukrdc_msg_exclusions(self) -> list[str] | None:
+        _warn_deprecated(
+            "Facility.pkb_ukrdc_msg_exclusions",
+            "Facility.pkb_extract_msg_exclusions['UKRDC']",
+        )
+        return self._pkb_feed_exclusions(StandardCodesType.ukrdc)
 
 
 class RRCodes(Base):
