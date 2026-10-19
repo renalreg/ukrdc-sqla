@@ -1,15 +1,85 @@
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-if TYPE_CHECKING:
-    from ukrdc_sqla.ukrdc import ResultItem,LabOrder
+from ukrdc_sqla.ukrdc import ResultItem, LabOrder, PatientRecord, DialysisSession
+
+"""Prepost Dialysis Calculation"""
+
+def _prepost_already_calculated(lab_order: "LabOrder") -> bool:
+
+    for result_item in lab_order.result_items:
+        if result_item.calculated_prepost is not None:
+            return True
+
+    return False
 
 
-def example_prepost(result_item: "ResultItem", session: Session) -> str:
-    if result_item.value >= 50:
-        return "greater"
-    return "less"
+# Check first if they are a patient that would even need dialysis in the first place
+# Probably quicker than getting all DialysisSessions for the patient
+# AdmitReasonCode on Treatment record via ModalityCodes, Modality_Type = HD.
+def _patient_on_dialysis(patient_record: "PatientRecord") -> bool:
+
+    for treatment in patient_record.treatments:
+        # We probably need to include the other HD adjacent modality codes such as 4
+        if (
+            treatment.admit_reason_code == "1"  # Column maps to string
+            and treatment.to_time is None
+        ):
+            return True
+
+    return False
+
+
+# Check if the resultitem was relating to a dialysis session
+# Is there a risk that with patients on CF_RR7_TREATMENT treatment 4 (dialysis daily) that this might be incorrect?
+# There are also some patients that do overnight dialysis at units rather than at home, will these be missed?
+# Wondering how broad to be here given patient_on_dialysis checks treatments
+# Should we filter by proceduretypecode as well?
+def _dialysed_on_result_date(patient_record: "PatientRecord", date: date) -> bool:
+
+    # This doesn't allow us to separate time component
+    # sessions = patient_record.dialysis_sessions.filter_by(proceduretime=date).all()
+
+    start = datetime.combine(date, time.min)
+    end = start + timedelta(days=1)
+
+    sessions = patient_record.dialysis_sessions.filter(
+        DialysisSession.proceduretime >= start,
+        DialysisSession.proceduretime < end,
+    ).all()
+
+    # As a sanity check should we check that there are not more than one dialysis session on a day
+    # This probably already done as part of data validation?
+    return len(sessions) > 0
+
+
+# Set all the resultitems in that laborder to the calculated prepost value
+# Will need to be adapted to Oliver's session implementations
+def _assign_prepost(lab_order: "LabOrder", value: str) -> str:
+
+    for result_item in lab_order.result_items:
+        result_item.calculated_prepost = value
+
+    return
+
+
+def _get_laborders_for_date(patient_record: "PatientRecord", date: date):
+
+    return [
+        lab_order
+        for lab_order in patient_record.lab_orders
+        if lab_order.specimencollectedtime.date() == date
+    ]
+
+
+# For a specific blood measurement code, check that across laborders that day that the result reduces enough to be considered
+# 45% or less urea clearance during treatement is not desirable. This could be a poor dialysis session
+def _reduces_within_range(code, min_delta):
+
+    return
 
 
 # Questions
@@ -21,84 +91,55 @@ def example_prepost(result_item: "ResultItem", session: Session) -> str:
 # - Will the calculation happen after the record is commited to the database?
 # - Should we do this on a table or a single laborder?
 
+
 # Would it be quicker to do this per dialysis session?
 # Effectively this function would be called fewer times as number of DialysisSessions > Laborders
-def prepost_calculation(lab_order: "LabOrder", session: Session) -> str:
+def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
 
-    # Check first if they are a patient that would even need dialysis in the first place?
-    # I.e ignore transplanted patients
-    # Save getting all dialysis sessions
-    # AdmitReasonCode on Treatment record via ModalityCodes, Modality_Type = HD.
-    def _patient_on_dialysis(lab_order: "LabOrder") -> bool:
+    # Because we are always assign prepost values to an entire day's batch, this should skip all laborders in a day
+    if _prepost_already_calculated(lab_order):
+        return
 
-        for treatment in lab_order.record.treatments:
+    patient_record = lab_order.record
 
-            # We probably need to include the other HD adjacent modality codes such as 4
-            if (treatment.admit_reason_code == 1 and treatment.to_time is None):
+    lab_order_date = lab_order.specimencollectedtime.date()
 
-                return True
-            
-        return False
+    days_laborders = _get_laborders_for_date(patient_record, lab_order_date)
 
-    # Check if the resultitem was relating to a dialysis session
-    # Is there a risk that with patients on CF_RR7_TREATMENT treatment 4 (dialysis daily)
-    # that this might be incorrect?
-    def _dialysed_on_result_date(lab_order: "LabOrder") -> bool:
+    # No way to know if prepost
+    if len(days_laborders) == 1:
+        _assign_prepost(days_laborders[0], "UNK")
 
-        date = lab_order.specimencollectedtime.date()
-
-        record = lab_order.record
-
-        sessions = record.dialysis_sessions.filter_by(date=date).all()
-
-        # As a sanity check should we check that there are not more than one dialysis session on a day
-        # This probably already done as part of data validation?
-        return len(sessions) > 0
-
-    # Set all the resultitems in that laborder to the calculated prepost value
-    # Are we assigning in place or returning them?
-    def _assign_prepost(lab_order: "LabOrder", value: str) -> str:
-
-        for result_item in lab_order.resultitems:
-
-            # Should we check if some prepost value already exists before overwriting it?
-            result_item.prepost = value
+    if not _patient_on_dialysis(patient_record) or not _dialysed_on_result_date(
+        patient_record, lab_order_date
+    ):
+        for lab_order in days_laborders:
+            _assign_prepost(lab_order, "NA")
 
         return
 
-    # For a specific blood measurement code, check that across laborders that day that the result reduces enough to be considered 
-    def _reduces_within_range(code, min_delta):
-
-        return
-    
-    if not _patient_on_dialysis(lab_order) or not _dialysed_on_result_date(lab_order):
-
-        _assign_prepost(lab_order, "NA")
-
-        return
-    
-
-    # A more robust version of the code from Leicester: 
-
+    # A more robust version of the code from Leicester:
 
     # On the day of dialysis, sort laborders resultitem value provided there are at least 2 entries
-    # Weighted ensemble of whether a laborder is pre or post based on each individual result item 
+    # Weighted ensemble of whether a laborder is pre or post based on each individual result item
     # There should be a minimum difference between pre and post values to consider them valid
 
     # The idea here is to give each indicating code a 'vote' of what the correct pre/post markings are
-    # If most (say 75% of results) agree on the pre/post designation, we can assign it. Otherwise, it is UNK
+    # If most (say 75% of results THAT EXIST) agree on the pre/post designation, we can assign it. Otherwise, it is UNK
 
-    # Creatinine, urea, potassium, phosphate
-    # Is lab calculated eGFR appropriate?
-    indicating_codes = ['QBLA1', 'QBLA3', 'QBLA9', 'QBLB1']
+    # QBLA1 Creatinine
+    # QBLA3 Urea
+    # QBLA6 Sodium
+    # QBLA9 Potassium - Some patients will have potassium rising in dialysis due to articifial addition (bolimic patients need it added in their dialysate)
+    # QBLAC Uric acid
+    # QBLB1 Phosphate
+    # QBLB3 Calcium
+    # Minimum fractional drop for a value to count as "post"
+    INDICATING_CODES = {"QBLA1": 0.3, "QBLA3": 0.3, "QBLB1": 0.3}
 
-    for code in indicating_codes:
+    for codes, min_delta in INDICATING_CODES.items():
+        pass
 
-    # Mark the highest value as pre and the lowest value post
-        # There should probably be a minimum difference between pre and post values to consider them valid
+    # Making lists of sorted laborders based on codes will not work, in the case of some laborders of the day having missing values
 
-
-    # The laborders that contain the QBLA3 pre/post should have all other resultitems on the same laborder marked accordingly
-        # Is this misleading if only QBLA3 is used to determine pre/post and other resultitems do not align?
-
-    return prepost_value
+    return
