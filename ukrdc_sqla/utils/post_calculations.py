@@ -168,6 +168,8 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
 
         votes.extend(_collect_votes_for_code(days_laborders, code, min_delta))
 
+    # This probably all needs to be more robust
+
     counts = {}
 
     # Count the votes
@@ -175,7 +177,22 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
         pair = (pre_id, post_id)
         counts[pair] = counts.get(pair, 0) + 1
 
-    for laborder in days_laborders:
+    if counts:
+        most_common_pair = max(counts, key=counts.get)
+        pre_id, post_id = most_common_pair
+
+        for laborder in days_laborders:
+            if laborder.id == pre_id:
+                _assign_prepost(laborder, "PRE")
+            elif laborder.id == post_id:
+                _assign_prepost(laborder, "POST")
+            else:
+                _assign_prepost(laborder, "UNK")
+
+    else:
+        for laborder in days_laborders:
+            _assign_prepost(laborder, "UNK")
+
 
     # If the votes are tied, we could use time of specimen collection to break the tie
     
