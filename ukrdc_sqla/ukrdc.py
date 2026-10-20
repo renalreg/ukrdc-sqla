@@ -51,7 +51,7 @@ def coding_standard_column(
     primary_key=False, sqla_info: ColumnInfo | None = None
 ) -> MappedColumn:
     return mapped_column(
-        String(100),
+        String(256),
         ForeignKey("coding_standards.coding_standard", info={ORM_ONLY: True}),
         primary_key=primary_key,
         sqla_info=sqla_info,
@@ -2424,11 +2424,7 @@ class TransplantList(Base):
 class Code(Base):
     __tablename__ = "code_list"
 
-    coding_standard: Mapped[str] = mapped_column(
-        String(256),
-        ForeignKey("coding_standards.coding_standard", info={ORM_ONLY: True}),
-        primary_key=True,
-    )
+    coding_standard: Mapped[str] = coding_standard_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(256), primary_key=True)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")

@@ -1,0 +1,224 @@
+name: Release Migrations
+
+# For each declarative Base in ukrdc_sqla: autogenerate an Alembic revision against the release
+# branch, and when one is written, generate a CSV step for it. Anything generated goes in a PR
+# into the release-please branch, so merging it puts the migrations in that release.
+
+on:
+  # the release-please branch is created or updated
+  push:
+    branches:
+      - "release-please--**"
+
+  # Auto Release finished: release-please pushes with the default token, which doesn't trigger
+  # the push event above, so this catches the branch being created or updated that way
+  workflow_run:
+    workflows: ["Auto Release"]
+    types: [completed]
+
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Release branch (default: the open release-please branch)"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-migrations
+  cancel-in-progress: true
+
+env:
+  # Space-separated module:attr list, e.g. "ukrdc_sqla.ukrdc:Base ukrdc_sqla.empi:Base".
+  # Empty: every module in ukrdc_sqla with a declarative Base is found automatically.
+  MODEL_BASES: ""
+  DB_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Find the release branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PUSHED: ${{ github.ref_name }}
+          INPUT: ${{ inputs.branch }}
+        run: |
+          if [ "$EVENT" = "push" ]; then
+            branch="$PUSHED"
+          elif [ -n "$INPUT" ]; then
+            branch="$INPUT"
+          else
+            branch=$(gh api "repos/${{ github.repository }}/branches" --paginate -q '.[].name' \
+                     | grep '^release-please--' | head -n 1 || true)
+          fi
+          if [ -z "$branch" ]; then
+            echo "No release-please branch open: nothing to do."
+          fi
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.branch.outputs.name != ''
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        if: steps.branch.outputs.name != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        if: steps.branch.outputs.name != ''
+        run: |
+          python -m pip install poetry
+          poetry install --with dev
+
+      - name: Find the model Bases
+        id: bases
+        if: steps.branch.outputs.name != ''
+        run: |
+          if [ -n "$MODEL_BASES" ]; then
+            bases="$MODEL_BASES"
+          else
+            bases=$(poetry run python - <<'EOF'
+          import importlib
+          import pkgutil
+          import subprocess
+          import sys
+
+          from sqlalchemy import MetaData
+
+          import ukrdc_sqla
+
+          best = {}  # one module per Base: the one defining the most of its models
+          for info in pkgutil.walk_packages(ukrdc_sqla.__path__, "ukrdc_sqla."):
+              try:
+                  module = importlib.import_module(info.name)
+              except Exception as e:
+                  print(f"skipping {info.name}: {e}", file=sys.stderr)
+                  continue
+              base = getattr(module, "Base", None)
+              metadata = base if isinstance(base, MetaData) else getattr(base, "metadata", None)
+              if not isinstance(metadata, MetaData):
+                  continue
+              mappers = getattr(getattr(base, "registry", None), "mappers", [])
+              own = sum(m.class_.__module__ == info.name for m in mappers)
+              if id(metadata) not in best or own > best[id(metadata)][1]:
+                  best[id(metadata)] = (info.name, own, metadata)
+
+          for name, _, metadata in best.values():
+              if not metadata.tables:
+                  continue
+              # imported on its own, the module must load every table of its Base, or
+              # autogenerate would write a revision dropping the ones it misses
+              code = (f"import {name} as m; b = m.Base; "
+                      "print(len(getattr(b, 'metadata', b).tables))")
+              alone = int(subprocess.run([sys.executable, "-c", code], capture_output=True,
+                                         text=True, check=True).stdout)
+              if alone != len(metadata.tables):
+                  sys.exit(f"{name}:Base loads {alone} of its {len(metadata.tables)} tables on "
+                           "its own: list the right modules in MODEL_BASES in this workflow.")
+              print(f"{name}:Base")
+          EOF
+            )
+          fi
+          echo "Model Bases: $bases"
+          echo "list=$(echo $bases)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate migrations
+        id: generate
+        if: steps.branch.outputs.name != ''
+        env:
+          BASES: ${{ steps.bases.outputs.list }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+        run: |
+          set -euo pipefail
+          version=$(poetry version -s)
+          message="release ${version}"
+          body="$RUNNER_TEMP/pr_body.md"
+          changed=false
+
+          new_files() {  # new or changed .py files under a folder
+            git status --porcelain --untracked-files=all -- "$1" | awk '{print $NF}' | grep '\.py$' || true
+          }
+
+          {
+            echo "Migrations generated from the models on \`$BRANCH\` (version $version)."
+            echo
+          } > "$body"
+
+          for base in $BASES; do
+            module="${base%%:*}"
+            folder="migrations/${module##*.}"
+            echo "::group::$base"
+            poetry run python migration_tool/migrate.py revision --autogenerate -m "$message" \
+              --models "$base" --db-url "$DB_URL"
+            revisions=$(new_files "$folder/versions")
+            if [ -n "$revisions" ]; then
+              poetry run python migration_tool/csv_migrate.py generate -m "$message" --models "$base"
+              steps=$(new_files "$folder/csv_steps")
+              changed=true
+              {
+                echo "### \`$base\`"
+                echo
+                for f in $revisions; do echo "- Alembic revision: \`$f\`"; done
+                for f in $steps; do echo "- CSV step: \`$f\`"; done
+                echo
+              } >> "$body"
+            else
+              echo "No model changes for $base."
+            fi
+            echo "::endgroup::"
+          done
+
+          find migrations -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null || true
+
+          {
+            echo "### Before merging"
+            echo
+            echo "- Check each Alembic revision: a renamed column comes out as drop + add, and some"
+            echo "  type changes need \`postgresql_using=\`."
+            echo "- Fill in each CSV step: for every model that changed, add its upgrade/downgrade"
+            echo "  functions and map the model to them in \`UPGRADES\` / \`DOWNGRADES\`. Models left"
+            echo "  as \`None\` are skipped."
+          } >> "$body"
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR into the release branch
+        if: steps.generate.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # a PAT or app token here lets the PR trigger the test workflow; the default token can't
+          token: ${{ secrets.MIGRATIONS_PR_TOKEN || github.token }}
+          base: ${{ steps.branch.outputs.name }}
+          branch: auto-migrations/${{ steps.branch.outputs.name }}
+          add-paths: migrations/**
+          commit-message: "chore: migrations for release ${{ steps.generate.outputs.version }}"
+          title: "chore: migrations for release ${{ steps.generate.outputs.version }}"
+          body-path: ${{ steps.generate.outputs.body }}
+          labels: migrations
+          delete-branch: true
