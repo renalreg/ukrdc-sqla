@@ -227,7 +227,7 @@ def test_not_dialysed_on_result_date_gets_na(session, patient_record, lab_order)
     )
     session.add(result_item)
 
-    # Makes _patient_on_dialysis return True
+    # Patient is on Dialysis 
     treatment = Treatment(
         id="TEST_TREATMENT",
         pid=patient_record.pid,
@@ -236,6 +236,7 @@ def test_not_dialysed_on_result_date_gets_na(session, patient_record, lab_order)
     )
     session.add(treatment)
 
+    # Patient not dialysed on result date
     dialysis_session = DialysisSession(
         id="TEST_SESSION",
         pid=patient_record.pid,
@@ -264,19 +265,79 @@ def test_already_calculated_skips_recalculation(session, lab_order, monkeypatch)
     assert post_calculations._assign_prepost.call_count == 0
 
 
-# @pytest.mark.parametrize()
-def test_insufficient_drop_gets_unk(session, lab_order):
+@pytest.mark.parametrize(
+    ("test_results", "expected_prepost"),
+    [
+        (
+            [
+                [("QBLA3", "100"), ("QBLA1", "150")], # Laborder with multiple ResultItem
+                [("QBLA3", "60")], # Laborder with single ResultItem
+            ],
+            ["PRE", "PRE"], # Expected prepost for LabOrders in order. Prepost applies to all ResultItems within each LabOrder
+        ),
+        (
+            [
+                [("QBLA3", "100"), ("QBLA1", "150")],
+                [("QBLA3", "80"), ("QBLA1", "120")],
+                [("QBLA3", "60")],
+            ],
+            ["PRE", "PRE", "PRE"],
+        ),
+    ],
+)
+def test_prepost(session, patient_record, test_results, expected_prepost):
 
-    pass
+    # Patient is on dialysis
+    treatment = Treatment(
+        id="TEST_TREATMENT",
+        pid=patient_record.pid,
+        admit_reason_code="1",
+        to_time=None,
+    )
+    session.add(treatment)
 
+    # Dialysed on result date
+    dialysis_session = DialysisSession(
+        id="TEST_SESSION",
+        pid=patient_record.pid,
+        proceduretime=datetime(2025, 1, 1, 0, 0),
+    )
+    session.add(dialysis_session)
 
-# @pytest.mark.parametrize()
-def test_sufficient_drop_gets_prepost(session, lab_order):
+    for order_index, results in enumerate(test_results):
+        order = LabOrder(
+            id=f"TEST_ORDER_{order_index}",
+            pid=patient_record.pid,
+            specimencollectedtime=datetime(2025, 1, 1, 0, 0),
+        )
+        session.add(order)
 
-    pass
+        result_items = []
 
+        for result_index, (code, value) in enumerate(results):
+            result_item = ResultItem(
+                id=f"TEST_RESULT_{order_index}_{result_index}",
+                orderid=order.id,
+                serviceidcode=code,
+                resultvalue=value,
+                calculated_prepost=None,
+            )
+            result_items.append(result_item)
+        session.add_all(result_items)
 
-# @pytest.mark.parametrize()
-def test_middle_laborder_gets_unk(session, lab_order):
+        session.flush()
 
-    pass
+    # Repeat test for all laborders, i.e any laborder on the same day 
+    # being passed in should result in the same calculations
+    for order_index in range(len(test_results)):
+        order = session.get(LabOrder, f"TEST_ORDER_{order_index}")
+
+        post_calculations.prepost_calculation(order, session)
+
+        expected = expected_prepost[order_index]
+        result_items = order.result_items.all()
+
+        # All resultitems in the laborder should get same prepost value
+        for result_item in result_items:
+            assert result_item.calculated_prepost == expected
+

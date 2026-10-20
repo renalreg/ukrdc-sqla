@@ -140,6 +140,9 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
     for codes, min_delta in INDICATING_CODES.items():
         pass
 
+    for lab_order in days_laborders:
+        _assign_prepost(lab_order, "PRE")
+
     # Making lists of sorted laborders based on codes will not work, in the case of some laborders of the day having missing values
 
     return
