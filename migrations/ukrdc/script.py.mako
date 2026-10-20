@@ -7,7 +7,7 @@ Create Date: ${create_date}
 """
 from alembic import op
 import sqlalchemy as sa
-from triggers import create_triggers,drop_triggers()
+from triggers import create_triggers, drop_triggers
 from views import create_views, drop_views
 ${imports if imports else ""}
 
