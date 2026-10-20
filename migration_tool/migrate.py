@@ -177,7 +177,9 @@ def describe_diffs(diffs) -> str:
     for diff in diffs:
         for op, *rest in diff if isinstance(diff, list) else [diff]:
             # schema / table / column / index etc., as names
-            names = [x if isinstance(x, str) else getattr(x, "name", None) for x in rest[:3]]
+            names = [
+                x if isinstance(x, str) else getattr(x, "name", None) for x in rest[:3]
+            ]
             lines.append(f"  {op}: {'.'.join(n for n in names if n)}")
     return "The models have changes that no migration covers:\n" + "\n".join(lines)
 
