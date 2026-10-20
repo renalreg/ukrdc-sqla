@@ -2,9 +2,10 @@ from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
 from ukrdc_sqla.ukrdc import ResultItem, LabOrder, PatientRecord, DialysisSession
+
+from itertools import combinations
 
 """Prepost Dialysis Calculation"""
 
@@ -71,16 +72,38 @@ def _get_laborders_for_date(patient_record: "PatientRecord", date: date):
     return [
         lab_order
         for lab_order in patient_record.lab_orders
-        if lab_order.specimencollectedtime.date() == date
+        if lab_order.specimencollectedtime.date() == date #specimencollectedtime is not mandatory, need to check resultitem for ObservationTime as backup
     ]
 
 
-# For a specific blood measurement code, check that across laborders that day that the result reduces enough to be considered
-# 45% or less urea clearance during treatement is not desirable. This could be a poor dialysis session
-def _reduces_within_range(code, min_delta):
+def _collect_votes_for_code(days_laborders: list["LabOrder"], code: str, min_delta: float) -> list[tuple[str, str, str]]:
 
-    return
+    votes = []
 
+    for order_a, order_b in combinations(days_laborders, 2):
+        result_a = order_a.result_items.filter_by(serviceidcode=code).first()
+        result_b = order_b.result_items.filter_by(serviceidcode=code).first() # Can a laborder contain multiple resultitems of the same code?
+
+        try:
+            value_a = float(result_a.resultvalue)
+            value_b = float(result_b.resultvalue)
+
+        # Should catch result None, no result.resultvalue, result.resultvalue None or string
+        except (TypeError, ValueError, AttributeError): 
+            continue
+
+        diff = value_a - value_b
+
+        if abs(diff) < min_delta: # Should we be doing fractional or absolute?
+            continue
+
+        if diff > 0:
+            votes.append((order_a.id, order_b.id, code))
+
+        elif diff < 0:
+            votes.append((order_b.id, order_a.id, code))
+
+    return votes
 
 # Questions
 # - Should we consider both observationtime and enteredon dates for dialysis check?
@@ -109,6 +132,7 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
     # No way to know if prepost
     if len(days_laborders) == 1:
         _assign_prepost(days_laborders[0], "UNK")
+        return
 
     if not _patient_on_dialysis(patient_record) or not _dialysed_on_result_date(
         patient_record, lab_order_date
@@ -135,14 +159,24 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
     # QBLB1 Phosphate
     # QBLB3 Calcium
     # Minimum fractional drop for a value to count as "post"
+    # 45% or less urea clearance during treatement is not desirable. This could be a poor dialysis session
     INDICATING_CODES = {"QBLA1": 0.3, "QBLA3": 0.3, "QBLB1": 0.3}
 
-    for codes, min_delta in INDICATING_CODES.items():
-        pass
+    votes = [] # Each vote will be of the form (pre_order_id, post_order_id, indicating_code)
 
-    for lab_order in days_laborders:
-        _assign_prepost(lab_order, "PRE")
+    for code, min_delta in INDICATING_CODES.items():
 
-    # Making lists of sorted laborders based on codes will not work, in the case of some laborders of the day having missing values
+        votes.extend(_collect_votes_for_code(days_laborders, code, min_delta))
 
+    counts = {}
+
+    # Count the votes
+    for pre_id, post_id, code in votes:
+        pair = (pre_id, post_id)
+        counts[pair] = counts.get(pair, 0) + 1
+
+    for laborder in days_laborders:
+
+    # If the votes are tied, we could use time of specimen collection to break the tie
+    
     return
