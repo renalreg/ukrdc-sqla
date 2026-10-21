@@ -168,6 +168,22 @@ def load_metadata(target: str) -> MetaData:
     return metadata
 
 
+# ----------------------------------------------------------------------------- check output
+
+
+def describe_diffs(diffs) -> str:
+    """`check` differences, one per line: the operation and what it applies to."""
+    lines = []
+    for diff in diffs:
+        for op, *rest in diff if isinstance(diff, list) else [diff]:
+            # schema / table / column / index etc., as names
+            names = [
+                x if isinstance(x, str) else getattr(x, "name", None) for x in rest[:3]
+            ]
+            lines.append(f"  {op}: {'.'.join(n for n in names if n)}")
+    return "The models have changes that no migration covers:\n" + "\n".join(lines)
+
+
 # ----------------------------------------------------------------------------- CLI
 
 
@@ -279,10 +295,13 @@ def cli(models, migrations, db_url, pg_image, at, alembic_args):
                 cfg.set_main_option("sqlalchemy.url", f"{pg_driver()}://")
             result = fn(cfg, *args, **kwargs)
     except CommandError as e:
-        raise click.ClickException(str(e)) from None
+        diffs = getattr(e, "diffs", None)  # set by `check` when the models differ
+        raise click.ClickException(describe_diffs(diffs) if diffs else str(e)) from None
     except DBAPIError as e:
         raise click.ClickException(str(e.orig).strip()) from None
 
+    if fn is command.check:
+        click.echo("The migrations match the models.")
     if fn is command.revision and result:
         for script in result if isinstance(result, list) else [result]:
             if script is not None:
