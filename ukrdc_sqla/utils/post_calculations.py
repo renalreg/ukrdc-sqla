@@ -31,7 +31,7 @@ def _prepost_already_calculated(lab_order: "LabOrder") -> bool:
 def _patient_on_dialysis(patient_record: "PatientRecord") -> bool:
 
     for treatment in patient_record.treatments:
-        # We probably need to include the other HD adjacent modality codes such as 4
+        # We will need to also include the other HD adjacent modality codes such as 4
         if (
             treatment.admit_reason_code == "1"  # Column maps to string
             and treatment.to_time is None
@@ -43,13 +43,11 @@ def _patient_on_dialysis(patient_record: "PatientRecord") -> bool:
 
 # Check if the resultitem was relating to a dialysis session
 # Is there a risk that with patients on CF_RR7_TREATMENT treatment 4 (dialysis daily) that this might be incorrect?
-# There are also some patients that do overnight dialysis at units rather than at home, will these be missed?
-# Wondering how broad to be here given patient_on_dialysis checks treatments
+# There are also some patients that do overnight dialysis at units rather than at home, who could be missed by this.
 # Should we filter by proceduretypecode as well?
 def _dialysed_on_result_date(patient_record: "PatientRecord", date: date) -> bool:
 
-    # This doesn't allow us to separate time component
-    # sessions = patient_record.dialysis_sessions.filter_by(proceduretime=date).all()
+    # Had to do it like this as a standard filter_by doesn't let us separate time component
 
     start = datetime.combine(date, time.min)
     end = start + timedelta(days=1)
