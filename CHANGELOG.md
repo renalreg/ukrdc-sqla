@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.0...v5.0.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** moved deps to optional ([f4e3d15](https://github.com/renalreg/ukrdc-sqla/commit/f4e3d15ac3c474bbecfeb5fcea208e084b6fe8a1))
+
 ## [5.0.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.9.0...v5.0.0) (2026-10-21)
 
 
