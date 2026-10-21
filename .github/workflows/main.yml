@@ -19,7 +19,7 @@ jobs:
     uses: renalreg/.github/.github/workflows/python_test.yml@main
     secrets: inherit
     with:
-      python_versions: '["3.11"]'
+      python_versions: '["3.10","3.11","3.12"]'
       package_manager_command: "pip install poetry"
       install_command: "poetry install --no-interaction --all-groups"
       test_command: "poetry run tox"
