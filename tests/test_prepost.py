@@ -273,7 +273,7 @@ def test_already_calculated_skips_recalculation(session, lab_order, monkeypatch)
                 [("QBLA3", "100"), ("QBLA1", "150")], # Laborder with multiple ResultItem
                 [("QBLA3", "60")], # Laborder with single ResultItem
             ],
-            ["PRE", "PRE"], # Expected prepost for LabOrders in order. Prepost applies to all ResultItems within each LabOrder
+            ["PRE", "POST"], # Expected prepost for LabOrders in order. Prepost applies to all ResultItems within each LabOrder
         ),
         (
             [
@@ -281,7 +281,7 @@ def test_already_calculated_skips_recalculation(session, lab_order, monkeypatch)
                 [("QBLA3", "80"), ("QBLA1", "120")],
                 [("QBLA3", "60")],
             ],
-            ["PRE", "PRE", "PRE"],
+            ["PRE", "UNK", "PRE"],
         ),
     ],
 )

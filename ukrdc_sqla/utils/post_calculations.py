@@ -7,6 +7,13 @@ from ukrdc_sqla.ukrdc import ResultItem, LabOrder, PatientRecord, DialysisSessio
 
 from itertools import combinations
 
+
+def example_prepost(result_item: "ResultItem", session: Session) -> str:
+    if result_item.value >= 50:
+        return "greater"
+    return "less"
+
+
 """Prepost Dialysis Calculation"""
 
 def _prepost_already_calculated(lab_order: "LabOrder") -> bool:
@@ -129,17 +136,17 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
 
     days_laborders = _get_laborders_for_date(patient_record, lab_order_date)
 
-    # No way to know if prepost
-    if len(days_laborders) == 1:
-        _assign_prepost(days_laborders[0], "UNK")
-        return
-
     if not _patient_on_dialysis(patient_record) or not _dialysed_on_result_date(
         patient_record, lab_order_date
     ):
         for lab_order in days_laborders:
             _assign_prepost(lab_order, "NA")
 
+        return
+
+    # No way to know if prepost
+    if len(days_laborders) == 1:
+        _assign_prepost(days_laborders[0], "UNK") # Should this be NA or UNK?
         return
 
     # A more robust version of the code from Leicester:
@@ -160,7 +167,7 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
     # QBLB3 Calcium
     # Minimum fractional drop for a value to count as "post"
     # 45% or less urea clearance during treatement is not desirable. This could be a poor dialysis session
-    INDICATING_CODES = {"QBLA1": 0.3, "QBLA3": 0.3, "QBLB1": 0.3}
+    INDICATING_CODES = {"QBLA1": 10, "QBLA3": 10, "QBLB1": 10}
 
     votes = [] # Each vote will be of the form (pre_order_id, post_order_id, indicating_code)
 
@@ -187,7 +194,7 @@ def prepost_calculation(lab_order: "LabOrder", session: Session = None) -> str:
             elif laborder.id == post_id:
                 _assign_prepost(laborder, "POST")
             else:
-                _assign_prepost(laborder, "UNK")
+                _assign_prepost(laborder, "UNK") # Should this be UNK or NA
 
     else:
         for laborder in days_laborders:

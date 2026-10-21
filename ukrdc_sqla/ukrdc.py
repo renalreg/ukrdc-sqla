@@ -2113,7 +2113,6 @@ class ResultItem(Base):
     result_type: Mapped[str | None] = synonym("resulttype")
     entered_on: Mapped[datetime | None] = synonym("enteredon")
     pre_post: Mapped[str | None] = synonym("prepost")
-    calculated_pre_post: Mapped[str | None] = synonym("calculatedprepost")
     service_id: Mapped[str | None] = synonym("serviceidcode")
     service_id_std: Mapped[str | None] = synonym("serviceidcodestd")
     service_id_description: Mapped[str | None] = synonym("serviceiddesc")
