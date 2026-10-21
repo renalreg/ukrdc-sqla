@@ -47,7 +47,7 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
         run: |
-          poetry config pypi-token.pypi "$POETRY_PYPI_TOKEN_PYPI
+          poetry config pypi-token.pypi "$POETRY_PYPI_TOKEN_PYPI"
 
       - name: Build with Poetry
         run: poetry build
