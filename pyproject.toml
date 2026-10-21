@@ -8,15 +8,15 @@ version = "5.0.0"
 [tool.poetry.dependencies]
 SQLAlchemy = ">=2.0.0,<3.0.0"
 python = ">=3.10.0,<4.0"
-psycopg2 = "^2.9.13"
 
+psycopg2 = { version = "^2.9.13", optional = true }
 polars = { version = ">=1.44.2,<3.0.0", optional = true }
 alembic = { version = "^1.20.0", optional = true }
 click = { version = "^8.5.0", optional = true }
 psycopg = { version = "^3.3.6", extras = ["binary"], optional = true }
 
 [tool.poetry.extras]
-migration = ["alembic", "click", "psycopg", "polars"]
+migration = ["alembic", "click", "psycopg", "polars", "psycopg2"]
 
 [tool.poetry.group.dev.dependencies]
 deptry = "^0.25.1"
