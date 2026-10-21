@@ -1,39 +1,5 @@
 """Modules which relate to the Repository System Tables"""
 
-from datetime import datetime
+from ukrdc_sqla.ukrdc import EventControl, ValidationError
 
-from sqlalchemy import DateTime, Integer, String
-from sqlalchemy.orm import Mapped, synonym
-
-from ukrdc_sqla.ukrdc import Base
-from ukrdc_sqla.utils.structure import mapped_column
-
-
-class EventControl(Base):
-    """This holds when Mirth functions last ran"""
-
-    __tablename__ = "eventcontrol"
-
-    event_type: Mapped[str] = mapped_column("eventtype", String, primary_key=True)
-    event_date: Mapped[datetime | None] = mapped_column("eventdate", DateTime)
-    pending_event_date: Mapped[datetime | None] = mapped_column(
-        "pendingeventdate", DateTime
-    )
-
-    def __init__(self, et, ed, ped):
-        self.event_type = et
-        self.event_date = ed
-        self.pending_event_date = ped
-
-
-class ValidationError(Base):
-    __tablename__ = "validationerror"
-
-    vid: Mapped[int] = mapped_column(Integer, primary_key=True)
-    pid: Mapped[str | None] = mapped_column(String)
-    updatedon: Mapped[datetime | None] = mapped_column(DateTime)
-    errortype: Mapped[str | None] = mapped_column(String)
-    message: Mapped[str | None] = mapped_column(String)
-
-    updated_on: Mapped[datetime | None] = synonym("updatedon")
-    error_type: Mapped[str | None] = synonym("errortype")
+__all__ = ["EventControl", "ValidationError"]
