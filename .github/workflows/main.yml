@@ -43,6 +43,12 @@ jobs:
       - name: Install and configure Poetry
         run: python -m pip install poetry
 
+      - name: Set Poetry config
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+        run: |
+          poetry config pypi-token.pypi "$POETRY_PYPI_TOKEN_PYPI"
+
       - name: Build with Poetry
         run: poetry build
 
