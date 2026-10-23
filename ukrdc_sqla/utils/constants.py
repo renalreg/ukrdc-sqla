@@ -48,6 +48,14 @@ class StandardCodesType:
     ukrdc: str = "UKRDC"
     ukrr: str = "UKRR"
     snomed: str = "SNOMED"
+
+
+@dataclass
+class SendingExtractType:
+    """Links to the sending extract columns"""
+
+    pv: str = "PV"
+    ukrdc: str = "UKRDC"
     radar: str = "RADAR"
 
 
@@ -67,6 +75,7 @@ class ConstantTypes(
     FacilityType,
     GpType,
     StandardCodesType,
+    SendingExtractType,
     PatientNumberOrganizationType,
 ):
     """Combined set of all constant values defined in this file."""
