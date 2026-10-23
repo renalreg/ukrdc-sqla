@@ -48,6 +48,16 @@ class StandardCodesType:
     ukrdc: str = "UKRDC"
     ukrr: str = "UKRR"
     snomed: str = "SNOMED"
+    radar: str = "RADAR"
+
+
+@dataclass
+class PatientNumberOrganizationType:
+    """Links to the patientnumber table, organization column"""
+
+    nhs: str = "NHS"
+    chi: str = "CHI"
+    hsc: str = "HSC"
 
 
 @dataclass
@@ -57,5 +67,6 @@ class ConstantTypes(
     FacilityType,
     GpType,
     StandardCodesType,
+    PatientNumberOrganizationType,
 ):
     """Combined set of all constant values defined in this file."""
