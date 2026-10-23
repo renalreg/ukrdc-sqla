@@ -51,11 +51,31 @@ class StandardCodesType:
 
 
 @dataclass
+class SendingExtractType:
+    """Links to the sending extract columns"""
+
+    pv: str = "PV"
+    ukrdc: str = "UKRDC"
+    radar: str = "RADAR"
+
+
+@dataclass
+class PatientNumberOrganizationType:
+    """Links to the patientnumber table, organization column"""
+
+    nhs: str = "NHS"
+    chi: str = "CHI"
+    hsc: str = "HSC"
+
+
+@dataclass
 class ConstantTypes(
     RelationshipType,
     CodeMapFacilityType,
     FacilityType,
     GpType,
     StandardCodesType,
+    SendingExtractType,
+    PatientNumberOrganizationType,
 ):
     """Combined set of all constant values defined in this file."""
