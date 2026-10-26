@@ -38,7 +38,7 @@ class MasterRecord(Base):
     gender: Mapped[str | None] = mapped_column(String(5))
     givenname: Mapped[str | None] = mapped_column(String(60))
     surname: Mapped[str | None] = mapped_column(String(60))
-    nationalid: Mapped[str] = mapped_column(CHAR(10), nullable=False)
+    nationalid: Mapped[str] = mapped_column(CHAR(50), nullable=False)
     nationalidtype: Mapped[str] = mapped_column(CHAR(10), nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False)
     effectivedate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
@@ -132,8 +132,8 @@ class Person(Base):
     # so the PidXRef -> Person FK is ORM-only
     localid: Mapped[str] = mapped_column(String(17), nullable=False)
     localidtype: Mapped[str] = mapped_column("localidtype", String(10), nullable=False)
-    nationalid: Mapped[str | None] = mapped_column("nationalid", String(10))
-    nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String(5))
+    nationalid: Mapped[str | None] = mapped_column("nationalid", String(50))
+    nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String(10))
     dateofbirth: Mapped[datetime.date] = mapped_column(
         "dateofbirth", Date, nullable=False
     )
@@ -249,7 +249,7 @@ class Audit(Base):
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
     description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     attributes: Mapped[str | None] = mapped_column("attributes", String(1024))
-    mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String(10))
+    mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String(50))
     mainnationalidtype: Mapped[str | None] = mapped_column(
         "mainnationalidtype", String(10)
     )
