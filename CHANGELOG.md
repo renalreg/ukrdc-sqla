@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.1...v5.1.0) (2026-10-26)
+
+
+### Features
+
+* **UK-356:** add RADAR and PatientNumberOrganizationType constants ([#214](https://github.com/renalreg/ukrdc-sqla/issues/214)) ([308aafc](https://github.com/renalreg/ukrdc-sqla/commit/308aafc7422142d705e3f0281c72918ad626d00a))
+
 ## [5.0.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.0...v5.0.1) (2026-10-21)
 
 
