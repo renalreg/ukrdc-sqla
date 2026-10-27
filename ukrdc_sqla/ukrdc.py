@@ -2472,7 +2472,7 @@ class CodeMap(Base):
 
 
 class Facility(Base):
-    __tablename__ = "facility_new"
+    __tablename__ = "facility"
 
     # New columns matching SQL schema
     facilitycode: Mapped[str] = mapped_column(
