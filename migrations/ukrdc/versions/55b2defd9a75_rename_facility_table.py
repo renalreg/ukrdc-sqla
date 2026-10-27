@@ -19,7 +19,7 @@ depends_on = None
 
 # ukrdc_resources_database commit SHA (or release tag) the views are built from.
 # None keeps the previous revision's views.
-VIEWS_REF = "02473c5856a12e7874e07edd9c040d97da081f5f"
+VIEWS_REF = "5def661d86b0e784d1e18408a0562cab6fcc3a80"
 
 RADAR_OUT_COMMENT = (
     "Master switch for RADAR export for this facility. If false, nothing exports "
