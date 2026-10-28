@@ -88,7 +88,7 @@ class LinkRecord(Base):
     linktype: Mapped[int] = mapped_column("linktype", Integer, nullable=False)
     linkcode: Mapped[int] = mapped_column("linkcode", Integer, nullable=False)
     linkdesc: Mapped[str | None] = mapped_column("linkdesc", String(200))
-    updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String(320))
     creationdate: Mapped[datetime.datetime] = mapped_column(
         "creationdate", DateTime, nullable=False, server_default=func.now()
     )
@@ -130,7 +130,7 @@ class Person(Base):
 
     # Not unique on its own in the database (only as part of ix_person_mrn),
     # so the PidXRef -> Person FK is ORM-only
-    localid: Mapped[str] = mapped_column(String(17), nullable=False)
+    localid: Mapped[str] = mapped_column(String(50), nullable=False)
     localidtype: Mapped[str] = mapped_column("localidtype", String(10), nullable=False)
     nationalid: Mapped[str | None] = mapped_column("nationalid", String(50))
     nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String(10))
@@ -256,7 +256,7 @@ class Audit(Base):
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )
-    updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String(320))
 
     # --- Relationships ---
     # Can't use relations here, otherwise on delete sqla would try to
@@ -289,7 +289,7 @@ class PidXRef(Base):
     sendingextract: Mapped[str] = mapped_column(
         "sendingextract", String(6), nullable=False
     )
-    localid: Mapped[str] = mapped_column("localid", String(17), nullable=False)
+    localid: Mapped[str] = mapped_column("localid", String(50), nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(
         "creationdate", DateTime, nullable=False, server_default=func.now()
     )
