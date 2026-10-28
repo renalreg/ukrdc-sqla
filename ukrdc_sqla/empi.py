@@ -343,24 +343,6 @@ class TraceRequest(Base):
         "TraceResponse", back_populates="request", uselist=False
     )
 
-    # --- Synonyms ---
-    trace_id: Mapped[str] = synonym("traceid")
-    trace_type: Mapped[str] = synonym("tracetype")
-    name_swap: Mapped[str] = synonym("nameswap")
-    localid_type: Mapped[str] = synonym("localidtype")
-    other_given_names: Mapped[str | None] = synonym("othergivennames")
-    date_of_birth_start: Mapped[datetime.date | None] = synonym("dateofbirthstart")
-    date_of_birth_end: Mapped[datetime.date | None] = synonym("dateofbirthend")
-    long_name: Mapped[str | None] = synonym("longname")
-    long_address: Mapped[str | None] = synonym("longaddress")
-
-    def __str__(self):
-        return (
-            f"TraceRequest({self.traceid}) <"
-            f"{self.tracetype} {self.localidtype}:{self.localid}"
-            ">"
-        )
-
 
 class TraceResponse(Base):
     __tablename__ = "traceresponse"
