@@ -3,7 +3,6 @@
 import datetime
 
 from sqlalchemy import (
-    CHAR,
     Boolean,
     Date,
     DateTime,
@@ -38,8 +37,8 @@ class MasterRecord(Base):
     gender: Mapped[str | None] = mapped_column(String(5))
     givenname: Mapped[str | None] = mapped_column(String(60))
     surname: Mapped[str | None] = mapped_column(String(60))
-    nationalid: Mapped[str] = mapped_column(CHAR(50), nullable=False)
-    nationalidtype: Mapped[str] = mapped_column(CHAR(10), nullable=False)
+    nationalid: Mapped[str] = mapped_column(String(50), nullable=False)
+    nationalidtype: Mapped[str] = mapped_column(String(10), nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False)
     effectivedate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
