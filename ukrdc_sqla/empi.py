@@ -337,21 +337,11 @@ class TraceRequest(Base):
     longname: Mapped[str | None] = mapped_column("longname", String(100))
     longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
 
-    # --- Relationships ---
-    response: Mapped["TraceResponse | None"] = relationship(
-        "TraceResponse", back_populates="request", uselist=False
-    )
-
 
 class TraceResponse(Base):
     __tablename__ = "traceresponse"
 
-    traceid: Mapped[str] = mapped_column(
-        "traceid",
-        String(36),
-        ForeignKey("tracerequest.traceid", info={ORM_ONLY: True}),
-        primary_key=True,
-    )
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
     tracestarttime: Mapped[str] = mapped_column(
         "tracestarttime", String(23), nullable=False
     )
@@ -363,30 +353,12 @@ class TraceResponse(Base):
     maxweight: Mapped[float | None] = mapped_column("maxweight", Double)
     matchcount: Mapped[int | None] = mapped_column("matchcount", Integer)
 
-    # --- Relationships ---
-    request: Mapped["TraceRequest"] = relationship(
-        "TraceRequest", back_populates="response"
-    )
-    lines: Mapped[list["TraceResponseLine"]] = relationship(
-        "TraceResponseLine", back_populates="response", cascade="all, delete-orphan"
-    )
-
 
 class TraceResponseLine(Base):
     __tablename__ = "traceresponseline"
 
-    traceid: Mapped[str] = mapped_column(
-        "traceid",
-        String(36),
-        ForeignKey("traceresponse.traceid", info={ORM_ONLY: True}),
-        primary_key=True,
-    )
-    personid: Mapped[int] = mapped_column(
-        "personid",
-        Integer,
-        ForeignKey("person.id", info={ORM_ONLY: True}),
-        primary_key=True,
-    )
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
+    personid: Mapped[int] = mapped_column("personid", Integer, primary_key=True)
     weight: Mapped[float | None] = mapped_column("weight", Double)
     givenname: Mapped[str | None] = mapped_column("givenname", String(50))
     othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
@@ -398,12 +370,6 @@ class TraceResponseLine(Base):
     street: Mapped[str | None] = mapped_column("street", String(50))
     longname: Mapped[str | None] = mapped_column("longname", String(100))
     longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
-
-    response: Mapped["TraceResponse"] = relationship(
-        "TraceResponse", back_populates="lines"
-    )
-    # View-only so deleting a trace never touches the person record
-    person: Mapped["Person"] = relationship("Person", viewonly=True)
 
 
 Index(
