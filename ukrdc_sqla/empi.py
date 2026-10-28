@@ -3,9 +3,11 @@
 import datetime
 
 from sqlalchemy import (
+    CHAR,
     Boolean,
     Date,
     DateTime,
+    Double,
     ForeignKey,
     Index,
     Integer,
@@ -312,6 +314,113 @@ class PidXRef(Base):
             f"{self.localid.strip()}"
             f">"
         )
+
+
+class TraceRequest(Base):
+    __tablename__ = "tracerequest"
+
+    traceid: Mapped[str] = mapped_column("traceid", CHAR(36), primary_key=True)
+    tracetype: Mapped[str] = mapped_column("tracetype", CHAR(10), nullable=False)
+    nameswap: Mapped[str] = mapped_column("nameswap", CHAR(1), nullable=False)
+    localid: Mapped[str] = mapped_column("localid", CHAR(10), nullable=False)
+    localidtype: Mapped[str] = mapped_column("localidtype", CHAR(5), nullable=False)
+    originator: Mapped[str] = mapped_column("originator", String(50), nullable=False)
+    givenname: Mapped[str | None] = mapped_column("givenname", String(50))
+    othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
+    surname: Mapped[str | None] = mapped_column("surname", String(50))
+    gender: Mapped[str | None] = mapped_column("gender", CHAR(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", CHAR(10))
+    dateofbirthstart: Mapped[datetime.date | None] = mapped_column(
+        "dateofbirthstart", Date
+    )
+    dateofbirthend: Mapped[datetime.date | None] = mapped_column("dateofbirthend", Date)
+    street: Mapped[str | None] = mapped_column("street", String(50))
+    longname: Mapped[str | None] = mapped_column("longname", String(100))
+    longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
+
+    # --- Relationships ---
+    response: Mapped["TraceResponse | None"] = relationship(
+        "TraceResponse", back_populates="request", uselist=False
+    )
+
+    # --- Synonyms ---
+    trace_id: Mapped[str] = synonym("traceid")
+    trace_type: Mapped[str] = synonym("tracetype")
+    name_swap: Mapped[str] = synonym("nameswap")
+    localid_type: Mapped[str] = synonym("localidtype")
+    other_given_names: Mapped[str | None] = synonym("othergivennames")
+    date_of_birth_start: Mapped[datetime.date | None] = synonym("dateofbirthstart")
+    date_of_birth_end: Mapped[datetime.date | None] = synonym("dateofbirthend")
+    long_name: Mapped[str | None] = synonym("longname")
+    long_address: Mapped[str | None] = synonym("longaddress")
+
+    def __str__(self):
+        return (
+            f"TraceRequest({self.traceid}) <"
+            f"{self.tracetype} {self.localidtype}:{self.localid}"
+            ">"
+        )
+
+
+class TraceResponse(Base):
+    __tablename__ = "traceresponse"
+
+    traceid: Mapped[str] = mapped_column(
+        "traceid",
+        CHAR(36),
+        ForeignKey("tracerequest.traceid", info={ORM_ONLY: True}),
+        primary_key=True,
+    )
+    tracestarttime: Mapped[str] = mapped_column(
+        "tracestarttime", CHAR(23), nullable=False
+    )
+    traceendtime: Mapped[str] = mapped_column("traceendtime", CHAR(23), nullable=False)
+    message: Mapped[str | None] = mapped_column("message", String(200))
+    status: Mapped[str] = mapped_column("status", CHAR(10), nullable=False)
+    maxweight: Mapped[float | None] = mapped_column("maxweight", Double)
+    matchcount: Mapped[int | None] = mapped_column("matchcount", Integer)
+
+    # --- Relationships ---
+    request: Mapped["TraceRequest"] = relationship(
+        "TraceRequest", back_populates="response"
+    )
+    lines: Mapped[list["TraceResponseLine"]] = relationship(
+        "TraceResponseLine", back_populates="response", cascade="all, delete-orphan"
+    )
+
+
+class TraceResponseLine(Base):
+    __tablename__ = "traceresponseline"
+
+    traceid: Mapped[str] = mapped_column(
+        "traceid",
+        CHAR(36),
+        ForeignKey("traceresponse.traceid", info={ORM_ONLY: True}),
+        primary_key=True,
+    )
+    personid: Mapped[int] = mapped_column(
+        "personid",
+        Integer,
+        ForeignKey("person.id", info={ORM_ONLY: True}),
+        primary_key=True,
+    )
+    weight: Mapped[float | None] = mapped_column("weight", Double)
+    givenname: Mapped[str | None] = mapped_column("givenname", String(50))
+    othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
+    surname: Mapped[str | None] = mapped_column("surname", String(50))
+    prevsurname: Mapped[str | None] = mapped_column("prevsurname", String(50))
+    gender: Mapped[str | None] = mapped_column("gender", CHAR(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", CHAR(10))
+    dateofbirth: Mapped[datetime.date | None] = mapped_column("dateofbirth", Date)
+    street: Mapped[str | None] = mapped_column("street", String(50))
+    longname: Mapped[str | None] = mapped_column("longname", String(100))
+    longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
+
+    response: Mapped["TraceResponse"] = relationship(
+        "TraceResponse", back_populates="lines"
+    )
+    # View-only so deleting a trace never touches the person record
+    person: Mapped["Person"] = relationship("Person", viewonly=True)
 
 
 Index(
