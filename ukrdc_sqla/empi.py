@@ -3,7 +3,6 @@
 import datetime
 
 from sqlalchemy import (
-    CHAR,
     Boolean,
     Date,
     DateTime,
@@ -319,17 +318,17 @@ class PidXRef(Base):
 class TraceRequest(Base):
     __tablename__ = "tracerequest"
 
-    traceid: Mapped[str] = mapped_column("traceid", CHAR(36), primary_key=True)
-    tracetype: Mapped[str] = mapped_column("tracetype", CHAR(10), nullable=False)
-    nameswap: Mapped[str] = mapped_column("nameswap", CHAR(1), nullable=False)
-    localid: Mapped[str] = mapped_column("localid", CHAR(10), nullable=False)
-    localidtype: Mapped[str] = mapped_column("localidtype", CHAR(5), nullable=False)
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
+    tracetype: Mapped[str] = mapped_column("tracetype", String(10), nullable=False)
+    nameswap: Mapped[str] = mapped_column("nameswap", String(1), nullable=False)
+    localid: Mapped[str] = mapped_column("localid", String(10), nullable=False)
+    localidtype: Mapped[str] = mapped_column("localidtype", String(5), nullable=False)
     originator: Mapped[str] = mapped_column("originator", String(50), nullable=False)
     givenname: Mapped[str | None] = mapped_column("givenname", String(50))
     othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
     surname: Mapped[str | None] = mapped_column("surname", String(50))
-    gender: Mapped[str | None] = mapped_column("gender", CHAR(2))
-    postcode: Mapped[str | None] = mapped_column("postcode", CHAR(10))
+    gender: Mapped[str | None] = mapped_column("gender", String(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", String(10))
     dateofbirthstart: Mapped[datetime.date | None] = mapped_column(
         "dateofbirthstart", Date
     )
@@ -349,16 +348,18 @@ class TraceResponse(Base):
 
     traceid: Mapped[str] = mapped_column(
         "traceid",
-        CHAR(36),
+        String(36),
         ForeignKey("tracerequest.traceid", info={ORM_ONLY: True}),
         primary_key=True,
     )
     tracestarttime: Mapped[str] = mapped_column(
-        "tracestarttime", CHAR(23), nullable=False
+        "tracestarttime", String(23), nullable=False
     )
-    traceendtime: Mapped[str] = mapped_column("traceendtime", CHAR(23), nullable=False)
+    traceendtime: Mapped[str] = mapped_column(
+        "traceendtime", String(23), nullable=False
+    )
     message: Mapped[str | None] = mapped_column("message", String(200))
-    status: Mapped[str] = mapped_column("status", CHAR(10), nullable=False)
+    status: Mapped[str] = mapped_column("status", String(10), nullable=False)
     maxweight: Mapped[float | None] = mapped_column("maxweight", Double)
     matchcount: Mapped[int | None] = mapped_column("matchcount", Integer)
 
@@ -376,7 +377,7 @@ class TraceResponseLine(Base):
 
     traceid: Mapped[str] = mapped_column(
         "traceid",
-        CHAR(36),
+        String(36),
         ForeignKey("traceresponse.traceid", info={ORM_ONLY: True}),
         primary_key=True,
     )
@@ -391,8 +392,8 @@ class TraceResponseLine(Base):
     othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
     surname: Mapped[str | None] = mapped_column("surname", String(50))
     prevsurname: Mapped[str | None] = mapped_column("prevsurname", String(50))
-    gender: Mapped[str | None] = mapped_column("gender", CHAR(2))
-    postcode: Mapped[str | None] = mapped_column("postcode", CHAR(10))
+    gender: Mapped[str | None] = mapped_column("gender", String(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", String(10))
     dateofbirth: Mapped[datetime.date | None] = mapped_column("dateofbirth", Date)
     street: Mapped[str | None] = mapped_column("street", String(50))
     longname: Mapped[str | None] = mapped_column("longname", String(100))
