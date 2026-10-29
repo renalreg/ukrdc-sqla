@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.2](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.1...v5.2.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **models:** enum correction ([#223](https://github.com/renalreg/ukrdc-sqla/issues/223)) ([6b72386](https://github.com/renalreg/ukrdc-sqla/commit/6b72386a8d201948f7e6983cd6ff2430528fb803))
+
 ## [5.2.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.0...v5.2.1) (2026-10-29)
 
 
