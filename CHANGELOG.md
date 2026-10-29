@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.2.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.1.0...v5.2.0) (2026-10-28)
+
+
+### Features
+
+* **UK-408:** Delete Facility Table, Rename Facility_New ([265d3e4](https://github.com/renalreg/ukrdc-sqla/commit/265d3e4710ec0bd2d525767fb844939bce8623e5))
+* **UK-440:** update char lengths to match db and increased to match the schema ([959aef8](https://github.com/renalreg/ukrdc-sqla/commit/959aef8f964b44057572bdc5d4a61063ac999361))
+* **UK-441:** JTRACE - more updates ([7266fe5](https://github.com/renalreg/ukrdc-sqla/commit/7266fe5500296d97393981d4a50dca5e4a132b3d))
+* **UK-441:** JTRACE - Update DB to change from CHAR to VARCHAR ([#219](https://github.com/renalreg/ukrdc-sqla/issues/219)) ([50c2ae3](https://github.com/renalreg/ukrdc-sqla/commit/50c2ae3c460ac2fafa35cec8ad7791060e658dc3))
+
 ## [5.1.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.1...v5.1.0) (2026-10-26)
 
 
