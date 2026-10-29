@@ -33,7 +33,9 @@ class MasterRecord(Base):
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     __mapper_args__ = {"primary_key": [id]}
-    lastupdated: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    lastupdated: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
     dateofbirth: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     gender: Mapped[str | None] = mapped_column(String(5))
     givenname: Mapped[str | None] = mapped_column(String(60))
@@ -42,7 +44,9 @@ class MasterRecord(Base):
     nationalidtype: Mapped[str] = mapped_column(String(10), nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False)
     effectivedate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    creationdate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    creationdate: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
 
     # --- Relationships ---
     link_records: Mapped[list["LinkRecord"]] = relationship(
@@ -214,10 +218,10 @@ class WorkItem(Base):
     description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     status: Mapped[int] = mapped_column("status", Integer, nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(
-        "creationdate", DateTime, nullable=False
+        "creationdate", DateTime, nullable=False, server_default=func.now()
     )
     lastupdated: Mapped[datetime.datetime] = mapped_column(
-        "lastupdated", DateTime, nullable=False
+        "lastupdated", DateTime, nullable=False, server_default=func.now()
     )
     updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
     updatedesc: Mapped[str | None] = mapped_column("updatedesc", String(100))
