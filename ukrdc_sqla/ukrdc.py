@@ -2486,7 +2486,7 @@ class Facility(Base):
             FacilityType.adult_renal_centre,
             FacilityType.paediatric_renal_centre,
             FacilityType.other,
-            name="facility_type",
+            name="facility_type_enum",
         ),
         nullable=False,
     )
