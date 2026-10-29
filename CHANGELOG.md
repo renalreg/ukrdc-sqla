@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.0...v5.2.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **models:** missing timestamps ([f10efa9](https://github.com/renalreg/ukrdc-sqla/commit/f10efa9fa9ba7d5e74dcc220b6ca7a221443e918))
+
 ## [5.2.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.1.0...v5.2.0) (2026-10-28)
 
 
