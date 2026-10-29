@@ -70,7 +70,7 @@ def _create_facility_table(table_name):
                 "Adult Renal Centre",
                 "Paediatric Renal Centre",
                 "Other",
-                name="facility_type",
+                name="facility_type_enum",
                 create_type=False,
             ),
             nullable=False,
