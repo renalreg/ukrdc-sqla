@@ -2078,6 +2078,13 @@ class ResultItem(Base):
             description="Indicates whether the sample was taken PRE or POST dialysis (PRE, POST, UNK, NA).",
         ),
     )
+    calculated_prepost: Mapped[str | None] = mapped_column(
+        String(4),
+        sqla_info=ColumnInfo(
+            label="Calculated Pre/Post Indicator",
+            description="Calculated pre/post dialysis indicator based on available data (PRE, POST, UNK, NA).",
+        ),
+    )
     enteredon: Mapped[datetime | None] = mapped_column(
         DateTime,
         sqla_info=ColumnInfo(
