@@ -34,7 +34,12 @@ def upgrade():
     op.create_table(
         "masterrecord",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("lastupdated", sa.DateTime(), nullable=False),
+        sa.Column(
+            "lastupdated",
+            sa.DateTime(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.Column("dateofbirth", sa.Date(), nullable=False),
         sa.Column("gender", sa.String(length=5), nullable=True),
         sa.Column("givenname", sa.String(length=60), nullable=True),
@@ -43,7 +48,12 @@ def upgrade():
         sa.Column("nationalidtype", sa.CHAR(length=10), nullable=False),
         sa.Column("status", sa.Integer(), nullable=False),
         sa.Column("effectivedate", sa.DateTime(), nullable=False),
-        sa.Column("creationdate", sa.DateTime(), nullable=False),
+        sa.Column(
+            "creationdate",
+            sa.DateTime(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
     )
     op.create_table(
         "person",
@@ -136,8 +146,18 @@ def upgrade():
         sa.Column("type", sa.Integer(), nullable=False),
         sa.Column("description", sa.String(length=100), nullable=False),
         sa.Column("status", sa.Integer(), nullable=False),
-        sa.Column("creationdate", sa.DateTime(), nullable=False),
-        sa.Column("lastupdated", sa.DateTime(), nullable=False),
+        sa.Column(
+            "creationdate",
+            sa.DateTime(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "lastupdated",
+            sa.DateTime(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.Column("updatedby", sa.String(length=20), nullable=True),
         sa.Column("updatedesc", sa.String(length=100), nullable=True),
         sa.Column("attributes", sa.String(length=1024), nullable=True),
