@@ -30,6 +30,12 @@ class Base(DeclarativeBase):
 
 class MasterRecord(Base):
     __tablename__ = "masterrecord"
+    __table_args__ = (
+        Index("masterrecord_id_key", "id", unique=True),
+        Index(
+            "masterrecord_nationalid_key", "nationalid", "nationalidtype", unique=True
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     __mapper_args__ = {"primary_key": [id]}
@@ -127,6 +133,10 @@ class LinkRecord(Base):
 
 class Person(Base):
     __tablename__ = "person"
+    __table_args__ = (
+        Index("ix_person_mrn", "originator", "localid", "localidtype", unique=True),
+        Index("person_id_key", "id", unique=True),
+    )
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     __mapper_args__ = {"primary_key": [id]}
@@ -278,6 +288,15 @@ class Audit(Base):
 
 class PidXRef(Base):
     __tablename__ = "pidxref"
+    __table_args__ = (
+        Index(
+            "pidxref_compound",
+            "sendingfacility",
+            "sendingextract",
+            "localid",
+            unique=True,
+        ),
+    )
 
     # --- Attributes ---
     id: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -374,17 +393,3 @@ class TraceResponseLine(Base):
     street: Mapped[str | None] = mapped_column("street", String(50))
     longname: Mapped[str | None] = mapped_column("longname", String(100))
     longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
-
-
-Index(
-    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
-)
-Index("person_id_key", Person.id, unique=True)
-
-Index(
-    "pidxref_compound",
-    PidXRef.sending_facility,
-    PidXRef.sending_extract,
-    PidXRef.localid,
-    unique=True,
-)
