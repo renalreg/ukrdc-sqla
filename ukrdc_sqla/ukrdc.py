@@ -15,6 +15,7 @@ from sqlalchemy import (
     Integer,
     LargeBinary,
     Numeric,
+    PrimaryKeyConstraint,
     String,
     Text,
     func,
@@ -618,6 +619,7 @@ class FamilyDoctor(Base):
 
 class GPInfo(Base):
     __tablename__ = "ukrdc_ods_gp_codes"
+    __table_args__ = (PrimaryKeyConstraint("code", name="pk_ukrdc_ods_gp_codes"),)
 
     code: Mapped[str] = mapped_column(String(8), primary_key=True)
 
@@ -689,7 +691,15 @@ class FamilyHistory(Base):
 
 class Observation(Base):
     __tablename__ = "observation"
-    __table_args__ = (Index("ix_observation_pid_obstime", "pid", "observationtime"),)
+    __table_args__ = (
+        Index("ix_observation_pid_obstime", "pid", "observationtime"),
+        Index(
+            "idx_observation_pid_observationcode_observationtime",
+            "pid",
+            "observationcode",
+            "observationtime",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(
         String(100),
@@ -966,6 +976,9 @@ class Allergy(Base):
 
 class Diagnosis(Base):
     __tablename__ = "diagnosis"
+    __table_args__ = (
+        Index("idx_diagnosis_pid_diagnosiscode", "pid", "diagnosiscode"),
+    )
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column(index=True)
@@ -1029,6 +1042,9 @@ class Diagnosis(Base):
 
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
+    __table_args__ = (
+        Index("idx_renaldiagnosis_pid_diagnosiscodestd", "pid", "diagnosiscodestd"),
+    )
 
     pid: Mapped[str] = pid_column(primary_key=True)
 
@@ -1467,6 +1483,14 @@ class Name(Base):
 
 class PatientNumber(Base):
     __tablename__ = "patientnumber"
+    __table_args__ = (
+        Index(
+            "idx_patientnumber_pid_numbertype_organization",
+            "pid",
+            "numbertype",
+            "organization",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = mapped_column(
@@ -1565,6 +1589,9 @@ class ContactDetail(Base):
 
 class Medication(Base):
     __tablename__ = "medication"
+    __table_args__ = (
+        Index("idx_medication_pid_fromtime_totime", "pid", "fromtime", "totime"),
+    )
 
     id: Mapped[str] = mapped_column(String(length=150), primary_key=True)
     pid: Mapped[str] = pid_column(index=True)
@@ -1871,6 +1898,7 @@ class Document(Base):
 
 class LabOrder(Base):
     __tablename__ = "laborder"
+    __table_args__ = (Index("idx_laborder_pid_id", "pid", "id"),)
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column(index=True)
@@ -1976,6 +2004,12 @@ class ResultItem(Base):
     __tablename__ = "resultitem"
     __table_args__ = (
         Index("resultitem_orderid_firstpart", func.left(text("orderid"), -32)),
+        Index(
+            "idx_resultitem_orderid_serviceidcode_observationtime",
+            "orderid",
+            "serviceidcode",
+            "observationtime",
+        ),
     )
 
     id: Mapped[str] = mapped_column(
@@ -2209,7 +2243,10 @@ class PVDelete(Base):
 
 class Treatment(Base):
     __tablename__ = "treatment"
-    __table_args__ = (Index("ix_treatment_pid_fromtime", "pid", "fromtime"),)
+    __table_args__ = (
+        Index("ix_treatment_pid_fromtime", "pid", "fromtime"),
+        Index("idx_treatment_pid_admitreasoncode", "pid", "admitreasoncode"),
+    )
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column(index=True)

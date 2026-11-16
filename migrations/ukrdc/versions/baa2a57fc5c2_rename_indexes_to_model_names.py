@@ -8,15 +8,22 @@ Gives every index the models define the name the models give it (ix_<table>_<col
 the ones declared with index=True).
 
 - Live has these under older names (e.g. laborder_pid_idx). ALTER INDEX ... RENAME is a
-  catalog change only: no rebuild and no lock on the table.
+  catalog change only: no rebuild, and on PostgreSQL 12+ it doesn't block reads or writes.
 - A database built from the migrations never had most of them, so the missing ones are
   created and it matches the models (what CI's `migrate.py check` compares).
+- Local and staging have eight composite idx_* indexes live doesn't. They are now in the
+  models and are built here with CREATE INDEX CONCURRENTLY, so building them on live's
+  large tables doesn't block writes.
+- idx_observation_pid_serviceidcode_observationtime is renamed to
+  idx_observation_pid_observationcode_observationtime: it indexes observationcode, not
+  serviceidcode.
 
 Views and triggers are left as they are: no column changes, and rebuilding them would lock
 every table on live for nothing.
 """
 
-from alembic import op
+from alembic import context, op
+from sqlalchemy import text
 
 revision = "baa2a57fc5c2"
 down_revision = "55b2defd9a75"
@@ -55,6 +62,19 @@ INDEXES = {
     "ix_treatment_pid_fromtime": "CREATE INDEX ix_treatment_pid_fromtime ON treatment (pid, fromtime)",
 }
 
+# Composite indexes the models define that live doesn't have. Built CONCURRENTLY, outside
+# the migration's transaction, so writes carry on while they build.
+CONCURRENT_INDEXES = {
+    "idx_diagnosis_pid_diagnosiscode": "ON diagnosis (pid, diagnosiscode)",
+    "idx_laborder_pid_id": "ON laborder (pid, id)",
+    "idx_medication_pid_fromtime_totime": "ON medication (pid, fromtime, totime)",
+    "idx_observation_pid_observationcode_observationtime": "ON observation (pid, observationcode, observationtime)",
+    "idx_patientnumber_pid_numbertype_organization": "ON patientnumber (pid, numbertype, organization)",
+    "idx_renaldiagnosis_pid_diagnosiscodestd": "ON renaldiagnosis (pid, diagnosiscodestd)",
+    "idx_resultitem_orderid_serviceidcode_observationtime": "ON resultitem (orderid, serviceidcode, observationtime)",
+    "idx_treatment_pid_admitreasoncode": "ON treatment (pid, admitreasoncode)",
+}
+
 
 def upgrade():
     # Live's names -> the models' names. IF EXISTS: databases built from the migrations
@@ -84,6 +104,11 @@ def upgrade():
     op.execute(
         "ALTER INDEX IF EXISTS resultitem_serviceidcode RENAME TO ix_resultitem_serviceidcode"
     )
+    # Local and staging only; the old name said serviceidcode for an observationcode index.
+    op.execute(
+        "ALTER INDEX IF EXISTS idx_observation_pid_serviceidcode_observationtime"
+        " RENAME TO idx_observation_pid_observationcode_observationtime"
+    )
 
     # Create the ones the database doesn't have. Each is looked up first, so on live, where
     # they all exist now, no table is touched (CREATE INDEX IF NOT EXISTS would still lock
@@ -93,12 +118,38 @@ def upgrade():
             f"DO $$ BEGIN IF to_regclass('{name}') IS NULL THEN {create}; END IF; END $$"
         )
 
+    # CREATE INDEX CONCURRENTLY can't run inside a transaction, so this commits the work
+    # above first. A concurrent build that failed earlier leaves an INVALID index behind
+    # that IF NOT EXISTS would skip, so one is dropped and built again.
+    with op.get_context().autocommit_block():
+        for name, target in CONCURRENT_INDEXES.items():
+            if context.is_offline_mode():
+                op.execute(f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {name} {target}")
+                continue
+            valid = (
+                op.get_bind()
+                .execute(
+                    text(
+                        "SELECT indisvalid FROM pg_index"
+                        " WHERE indexrelid = to_regclass(:name)"
+                    ),
+                    {"name": name},
+                )
+                .scalar()
+            )
+            if valid:
+                continue
+            if valid is False:
+                op.execute(f"DROP INDEX CONCURRENTLY {name}")
+            op.execute(f"CREATE INDEX CONCURRENTLY {name} {target}")
+
 
 def downgrade():
     # Renames back only; nothing is dropped. ix_laborder_creation_date,
     # ix_laborder_repository_update_date, ix_laborder_update_date and
     # ix_patientnumber_patientid keep their names: the initial revision created them under
-    # those names, and its downgrade drops them by those names.
+    # those names, and its downgrade drops them by those names. The idx_* indexes stay too:
+    # local and staging had them before this revision.
     op.execute("ALTER INDEX IF EXISTS ix_laborder_pid RENAME TO laborder_pid_idx")
     op.execute("ALTER INDEX IF EXISTS ix_medication_pid RENAME TO medication_pid_idx")
     op.execute("ALTER INDEX IF EXISTS ix_name_pid RENAME TO name_pid_idx")
@@ -111,4 +162,8 @@ def downgrade():
     )
     op.execute(
         "ALTER INDEX IF EXISTS ix_resultitem_serviceidcode RENAME TO resultitem_serviceidcode"
+    )
+    op.execute(
+        "ALTER INDEX IF EXISTS idx_observation_pid_observationcode_observationtime"
+        " RENAME TO idx_observation_pid_serviceidcode_observationtime"
     )
