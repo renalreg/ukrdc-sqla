@@ -976,9 +976,7 @@ class Allergy(Base):
 
 class Diagnosis(Base):
     __tablename__ = "diagnosis"
-    __table_args__ = (
-        Index("idx_diagnosis_pid_diagnosiscode", "pid", "diagnosiscode"),
-    )
+    __table_args__ = (Index("idx_diagnosis_pid_diagnosiscode", "pid", "diagnosiscode"),)
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = pid_column(index=True)
