@@ -67,6 +67,7 @@ class Message(Base):
     facility: Mapped[str | None] = mapped_column(String)
     error: Mapped[str | None] = mapped_column(String)
     status: Mapped[str | None] = mapped_column(String)
+    source: Mapped[str | None] = mapped_column(String)
 
     latests: Mapped[list["Latest"]] = relationship("Latest", back_populates="message")
 
