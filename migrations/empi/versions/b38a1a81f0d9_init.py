@@ -55,6 +55,13 @@ def upgrade():
             nullable=False,
         ),
     )
+    op.create_index("masterrecord_id_key", "masterrecord", ["id"], unique=True)
+    op.create_index(
+        "masterrecord_nationalid_key",
+        "masterrecord",
+        ["nationalid", "nationalidtype"],
+        unique=True,
+    )
     op.create_table(
         "person",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -226,6 +233,8 @@ def downgrade():
     op.drop_index("person_id_key", table_name="person")
     op.drop_index("ix_person_mrn", table_name="person")
     op.drop_table("person")
+    op.drop_index("masterrecord_nationalid_key", table_name="masterrecord")
+    op.drop_index("masterrecord_id_key", table_name="masterrecord")
     op.drop_table("masterrecord")
     op.drop_table("audit")
     # ### end Alembic commands ###
