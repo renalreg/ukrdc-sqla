@@ -581,12 +581,8 @@ class FamilyDoctor(Base):
     )
     gpname: Mapped[str | None] = mapped_column(String(100))
 
-    gpid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
-    )
-    gppracticeid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
-    )
+    gpid: Mapped[str | None] = mapped_column(String(20))
+    gppracticeid: Mapped[str | None] = mapped_column(String(20))
 
     addressuse: Mapped[str | None] = mapped_column(String(10))
     fromtime: Mapped[date | None] = mapped_column(Date)
