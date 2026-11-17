@@ -16,7 +16,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.pool import NullPool
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from migrate import pg_driver, scratch_database  # noqa: E402
+from migrate import has_section, pg_driver, scratch_database  # noqa: E402
 
 SKIP_SCHEMAS = {"information_schema", "pg_toast"}
 SKIP_TABLES = {"alembic_version"}
@@ -137,10 +137,17 @@ def compare(migrated: dict, local: dict, check_defaults: bool) -> list[str]:
     help="The local database to compare with, e.g. postgresql://user:pass@localhost:5432/ukrdc_test.",
 )
 @click.option(
-    "--migrations",
+    "-n",
+    "--database",
     required=True,
+    help="Whose migrations to build: its section in alembic.ini, e.g. ukrdc.",
+)
+@click.option(
+    "--migrations",
+    default=Path("migrations"),
+    show_default=True,
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Migrations folder, e.g. migrations/ukrdc.",
+    help="The shared migrations folder (alembic.ini, env.py, script.py.mako).",
 )
 @click.option(
     "--revision",
@@ -170,14 +177,21 @@ def compare(migrated: dict, local: dict, check_defaults: bool) -> list[str]:
     show_default=True,
     help="Also compare column defaults (noisy: sequence names, casts).",
 )
-def cli(db_url, migrations, revision, schemas, local_schema, scratch_url, defaults):
+def cli(
+    database, migrations, db_url, revision, schemas, local_schema, scratch_url, defaults
+):
     """Build the migrations in a scratch database and list how its schema differs from --db-url's."""
     local_url = make_url(db_url)
     if local_url.drivername == "postgresql":
         local_url = local_url.set(drivername=pg_driver())
     ini = migrations / "alembic.ini"
     if not ini.exists():
-        raise click.ClickException(f"No {ini}.")
+        raise click.ClickException(
+            f"No {ini}: --migrations is the shared migrations folder (e.g. migrations), "
+            "and --database picks the database in it."
+        )
+    if not has_section(ini, database):
+        raise click.ClickException(f"{ini} has no [{database}] section.")
 
     if local_schema and len(schemas) != 1:
         raise click.UsageError(
@@ -195,7 +209,7 @@ def cli(db_url, migrations, revision, schemas, local_schema, scratch_url, defaul
     )
     with scratch_database(obj) as engine:
         with engine.begin() as conn:
-            cfg = Config(str(ini))
+            cfg = Config(str(ini), ini_section=database)
             cfg.set_main_option(
                 "sqlalchemy.url",
                 engine.url.render_as_string(hide_password=False).replace("%", "%%"),

@@ -581,12 +581,8 @@ class FamilyDoctor(Base):
     )
     gpname: Mapped[str | None] = mapped_column(String(100))
 
-    gpid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
-    )
-    gppracticeid: Mapped[str | None] = mapped_column(
-        String(20), ForeignKey("ukrdc_ods_gp_codes.code", info={ORM_ONLY: True})
-    )
+    gpid: Mapped[str | None] = mapped_column(String(20))
+    gppracticeid: Mapped[str | None] = mapped_column(String(20))
 
     addressuse: Mapped[str | None] = mapped_column(String(10))
     fromtime: Mapped[date | None] = mapped_column(Date)
@@ -603,15 +599,6 @@ class FamilyDoctor(Base):
     email: Mapped[str | None] = mapped_column(String(100))
     commenttext: Mapped[str | None] = mapped_column(String(100))
     update_date: Mapped[datetime | None] = mapped_column(DateTime)
-
-    # Relationships
-
-    gp_info: Mapped["GPInfo"] = relationship(
-        "GPInfo", foreign_keys=[gpid], uselist=False
-    )
-    gp_practice_info: Mapped["GPInfo"] = relationship(
-        "GPInfo", foreign_keys=[gppracticeid], uselist=False
-    )
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.id}) <{self.gpname} {self.gpid}>"

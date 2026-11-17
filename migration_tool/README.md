@@ -71,30 +71,58 @@ migration_tool/
     compare_schema.py              # migrations vs an existing database
     csv_migrate.py                 # CSV data migrations
     csv_step_template.py.tmpl      # what csv_migrate.py generate writes
-    alembic_template/              # copied into a NEW migrations folder by migrate.py
+    alembic_template/              # copied by migrate.py only if migrations/ doesn't exist yet
         alembic.ini
         env.py
         script.py.mako
     README.md
 
-migrations/ukrdc/                  # one folder per models module: ukrdc_sqla.ukrdc:Base -> migrations/ukrdc
-    alembic.ini                    # Alembic settings; sqlalchemy.url is empty (use DATABASE_URL)
+migrations/                        # shared by every database
+    alembic.ini                    # a section per database: [ukrdc], [empi], [audit], [errorsdb], ...
     env.py                         # how Alembic connects; skips vwe_* models and ORM-only foreign keys
-    script.py.mako                 # template for new revisions (with the view calls and VIEWS_REF)
-    views.py                       # fetches and rebuilds the views at each revision's VIEWS_REF
-    versions/                      # Alembic revisions
-    csv_steps/                     # CSV step files: 0001_baseline.py, 0002_add_code_list_region.py, ...
+    script.py.mako                 # template for new revisions (with the view calls and VIEWS_REF
+                                   # in a section with views_and_triggers = true)
+    ukrdc/                         # one folder per models module: ukrdc_sqla.ukrdc:Base -> [ukrdc], migrations/ukrdc
+        versions/                  # Alembic revisions
+        views.py                   # fetches and rebuilds the views at each revision's VIEWS_REF
+        triggers.py                # update_date triggers, recreated by each revision
+        csv_steps/                 # CSV step files: 0001_baseline.py, 0002_add_code_list_region.py, ...
+    empi/
+        versions/
+    ...
 
 {tables_dir}/csv_versions.json     # CSV stamp file, next to the CSVs it describes
 ```
 
-New revisions are written from the migrations folder's own `script.py.mako`. `alembic_template/` is
-only used when `migrate.py` creates a migrations folder that doesn't exist yet. It copies
-`alembic.ini`, `env.py` and `script.py.mako` and nothing else, so **`views.py` has to be copied in by
-hand** (see [First-time setup](#first-time-setup-of-a-migrations-folder)).
+Every database shares `alembic.ini`, `env.py` and `script.py.mako`; what differs is set in its
+section of `alembic.ini`:
+
+```ini
+[ukrdc]
+version_locations = %(here)s/ukrdc/versions
+prepend_sys_path = %(here)s/ukrdc
+views_and_triggers = true
+lock_timeout = 10s
+
+[empi]
+version_locations = %(here)s/empi/versions
+```
+
+| Setting | Effect |
+|---|---|
+| `version_locations` | **Required.** The database's revisions folder. |
+| `prepend_sys_path` | A folder revisions import from: ukrdc's revisions do `from views import ...` and `from triggers import ...`. |
+| `views_and_triggers = true` | New revisions are written with the calls that rebuild the views and triggers, and `VIEWS_REF`. |
+| `lock_timeout` | How long the migration waits for a lock before failing. See [Before applying to live](#before-applying-to-live). |
+
+Don't put comments on the same line as a value: Alembic reads them as part of it.
+`sqlalchemy.url` is left empty; give the database in `DATABASE_URL`. `migrate.py` adds a section
+for a new models module itself (see [First-time setup](#first-time-setup-of-a-database)).
+`alembic_template/` is only used when `migrate.py` creates `migrations/` from nothing.
 
 Placeholders below are in `{braces}`. For this repo, `{module:Base}` is `ukrdc_sqla.ukrdc:Base` and
-`{module}` is `ukrdc`.
+`{module}` is `ukrdc`. The examples use ukrdc; for another database, use its module instead
+(`--models ukrdc_sqla.empi:Base`, `-n empi`).
 
 ---
 
@@ -108,11 +136,11 @@ poetry run python migration_tool/migrate.py downgrade base --models ukrdc_sqla.u
 poetry run python migration_tool/migrate.py check --models ukrdc_sqla.ukrdc:Base
 
 # How the migrations differ from an existing database
-poetry run python migration_tool/compare_schema.py --db-url {url} --migrations migrations/ukrdc
+poetry run python migration_tool/compare_schema.py --db-url {url} -n ukrdc
 
 # Apply to a real database
 $env:DATABASE_URL = "postgresql+psycopg://{user}:{pass}@{host}:{port}/{db}"
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
 
 # CSVs
 poetry run python migration_tool/csv_migrate.py generate -m "{message}" --models ukrdc_sqla.ukrdc:Base
@@ -138,17 +166,17 @@ database (and container) afterwards. **It never touches a real database.**
 
 | Option | Effect |
 |---|---|
-| `--models {module:Base}` | **Required**, even for commands that don't use it. The declarative Base, e.g. `ukrdc_sqla.ukrdc:Base`. Used for autogenerate and `check`, and to name the migrations folder. |
+| `--models {module:Base}` | **Required**, even for commands that don't use it. The declarative Base, e.g. `ukrdc_sqla.ukrdc:Base`. Used for autogenerate and `check`, and to pick the database: the module's section in `migrations/alembic.ini` (`[ukrdc]`). Alembic's `-n {section}` picks another. |
 | `--db-url {postgresql://user:pass@host:port/db}` | Use this Postgres server instead of Docker. The user must be able to `CREATE DATABASE`. A scratch database `migrate_scratch_{random}` is created on it and dropped afterwards; the database named in the URL is only used to connect. |
 | `--pg-image {image}` | Docker image for the throwaway Postgres (default `postgres:16`). Match production. |
 | `--at {revision}` | Migrate the scratch database to `{revision}` before running the command (`base` = empty). Default: `base` for `upgrade`, `head` for everything else. |
-| `--migrations {dir}` | Use a different migrations folder (default `migrations/{module}`). Alembic's own `-c {alembic.ini}` also works. |
+| `--migrations {dir}` | The shared migrations folder (default `migrations`). Alembic's own `-c {alembic.ini}` also works. |
 
 ### Commands
 
 | Command | Database? | Effect |
 |---|---|---|
-| `revision --autogenerate -m "{message}"` | scratch at `head` | Compares a database built from every revision with the models and writes `versions/{rev}_{message}.py`. Writes nothing if there are no changes. The first time, creates the migrations folder from `alembic_template/`. **Review the revision before committing** ([checklist](#writing-and-reviewing-a-revision)). |
+| `revision --autogenerate -m "{message}"` | scratch at `head` | Compares a database built from every revision with the models and writes `versions/{rev}_{message}.py`. Writes nothing if there are no changes. The first time for a models module, adds its section to `alembic.ini` and creates `migrations/{module}/versions`. **Review the revision before committing** ([checklist](#writing-and-reviewing-a-revision)). |
 | `revision -m "{message}"` | none | An empty revision to fill in by hand (a data migration, or a views-only change). |
 | `upgrade head` | scratch from empty | Runs every migration, to prove they all apply. |
 | `upgrade {revision}` | scratch from empty | Same, stopping at `{revision}`. |
@@ -232,7 +260,8 @@ def downgrade():
     create_views(down_revision)
 ```
 
-New revisions get this from `script.py.mako`. At a ref, the views are the files listed in
+New revisions get this from `script.py.mako` when their section has `views_and_triggers = true`
+(ukrdc's does), together with `drop_triggers()` / `create_triggers()` from `triggers.py`. At a ref, the views are the files listed in
 `schema/UKRDC/scripts/REBUILD_ALL_VIEWS.DDL`, created in that order from
 `schema/UKRDC/views/*.SQL`, with each file's `GRANT` / `ALTER ... OWNER` statements. A file in the
 views folder that the `.DDL` doesn't list is ignored. The `"extract".` schema prefix is removed, so
@@ -290,9 +319,9 @@ trip, use a local database you can throw away:
 
 ```
 $env:DATABASE_URL = "postgresql+psycopg://{user}:{pass}@localhost:5432/{scratch_db}"
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
-poetry run alembic -c migrations/ukrdc/alembic.ini downgrade base
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc downgrade base
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
 ```
 
 To check the migrations build the same tables as an existing database, use
@@ -303,7 +332,7 @@ To check the migrations build the same tables as an existing database, use
 ## Comparing with an existing database: compare_schema.py
 
 ```
-poetry run python migration_tool/compare_schema.py --db-url {url} --migrations migrations/ukrdc [options]
+poetry run python migration_tool/compare_schema.py --db-url {url} -n ukrdc [options]
 ```
 
 Builds the migrations in a scratch database, then lists how its tables differ from the database at
@@ -313,7 +342,8 @@ Builds the migrations in a scratch database, then lists how its tables differ fr
 | Option | Effect |
 |---|---|
 | `--db-url {url}` | **Required.** The existing database to compare with. |
-| `--migrations {dir}` | **Required.** The migrations folder, e.g. `migrations/ukrdc`. |
+| `-n {section}` / `--database {section}` | **Required.** Whose migrations to build: its section in `migrations/alembic.ini`, e.g. `ukrdc`. |
+| `--migrations {dir}` | The shared migrations folder (default `migrations`). |
 | `--revision {rev}` | Build the migrations to `{rev}` (default `head`). Use it to find the revision an existing database matches before stamping it. |
 | `--schema {schema}` | Only this schema (repeatable). Default: every schema. |
 | `--local-schema {schema}` | Compare this schema of the existing database with the one `--schema` of the migrations, e.g. live `extract` vs migrated `public`. |
@@ -332,7 +362,7 @@ there are differences, so it can gate CI.
 # The live database (tables in the extract schema), building the scratch copy on a local server
 poetry run python migration_tool/compare_schema.py `
   --db-url postgresql://{user}:{pass}@{host}:{port}/{db} `
-  --migrations migrations/ukrdc `
+  -n ukrdc `
   --schema public --local-schema extract `
   --scratch-url postgresql://{user}:{pass}@localhost:5432/postgres
 ```
@@ -341,16 +371,20 @@ poetry run python migration_tool/compare_schema.py `
 
 ## Applying migrations to a real database
 
-`migrate.py` never touches a real database. Use plain Alembic with the migrations folder:
+`migrate.py` never touches a real database. Use plain Alembic with the shared `alembic.ini`, and
+pick the database with `-n`:
 
 ```
-poetry run alembic -c migrations/ukrdc/alembic.ini {command}
+poetry run alembic -c migrations/alembic.ini -n {module} {command}
 ```
+
+Leave out `-n` and Alembic stops with `No 'script_location' key found in configuration`.
 
 ### Connecting
 
-The database comes from the `DATABASE_URL` environment variable, or `sqlalchemy.url` in
-`alembic.ini` when that isn't set.
+The database comes from the `DATABASE_URL` environment variable, or `sqlalchemy.url` in the
+database's section of `alembic.ini` when that isn't set (it's empty in this repo, so nothing is
+applied anywhere by accident).
 
 ```
 $env:DATABASE_URL = "postgresql+psycopg://{user}:{pass}@{host}:{port}/{db}"     # PowerShell
@@ -379,14 +413,14 @@ Keep that `options=` for **every** later command on that database. Without it, A
 ### Status
 
 ```
-poetry run alembic -c migrations/ukrdc/alembic.ini current      # the revision the database is at
-poetry run alembic -c migrations/ukrdc/alembic.ini history      # all revisions
+poetry run alembic -c migrations/alembic.ini -n ukrdc current      # the revision the database is at
+poetry run alembic -c migrations/alembic.ini -n ukrdc history      # all revisions
 ```
 
 ### An empty database
 
 ```
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
 ```
 
 ### A database that already has the tables
@@ -397,11 +431,11 @@ then apply only the later ones:
 
 ```
 # 1. Find the revision it matches (no differences)
-poetry run python migration_tool/compare_schema.py --db-url {url} --migrations migrations/ukrdc --revision {rev}
+poetry run python migration_tool/compare_schema.py --db-url {url} -n ukrdc --revision {rev}
 # 2. Record it (writes alembic_version only, changes nothing else)
-poetry run alembic -c migrations/ukrdc/alembic.ini stamp {rev}
+poetry run alembic -c migrations/alembic.ini -n ukrdc stamp {rev}
 # 3. Apply the rest
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
 ```
 
 The first `upgrade` after a stamp drops the views of `{rev}`'s `VIEWS_REF` by name, so the views
@@ -411,17 +445,17 @@ they depend on a changed column (see [Views](#views)).
 ### Upgrading and downgrading
 
 ```
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade head
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade {rev}
-poetry run alembic -c migrations/ukrdc/alembic.ini downgrade -1
-poetry run alembic -c migrations/ukrdc/alembic.ini downgrade {rev}
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade {rev}
+poetry run alembic -c migrations/alembic.ini -n ukrdc downgrade -1
+poetry run alembic -c migrations/alembic.ini -n ukrdc downgrade {rev}
 ```
 
 ### SQL for review, or for a DBA to run
 
 ```
-poetry run alembic -c migrations/ukrdc/alembic.ini upgrade {current_rev}:head --sql > upgrade.sql
-poetry run alembic -c migrations/ukrdc/alembic.ini downgrade head:{rev} --sql > downgrade.sql
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade {current_rev}:head --sql > upgrade.sql
+poetry run alembic -c migrations/alembic.ini -n ukrdc downgrade head:{rev} --sql > downgrade.sql
 ```
 
 The view SQL is included (as `DO` blocks), so this needs `git` too.
@@ -433,7 +467,14 @@ The view SQL is included (as `DO` blocks), so this needs `git` too.
   changes too, so if anything fails, nothing (views included) is left half done.
 - **Locks.** Dropping and recreating the views takes exclusive locks on them, and altering a column
   locks its table. Queries and extracts using them wait, or make the migration wait. Run it when
-  nothing else is.
+  nothing else is. Creating an index blocks writes to its table until the run commits.
+- **Lock timeout.** ukrdc's migrations wait at most 10 seconds for a lock (`lock_timeout = 10s` in
+  its section), then fail and roll back. Otherwise a migration stuck behind a long query would hold
+  up every other query on that table, queued behind it. Run it again when things are quieter, or
+  let it wait longer: `poetry run alembic -c migrations/alembic.ini -n ukrdc -x lock_timeout=2min
+  upgrade head` (or set `LOCK_TIMEOUT`); `0` waits indefinitely. The timeout only covers waiting
+  for a lock, not how long the migration then holds it. The other databases have none unless you
+  set one.
 - **Time.** Materialized views are repopulated, and changing a column's type can rewrite a large
   table.
 - **Skipped views.** If the database lacks `eventcontrol`, `facility` or `satellite_map`, the views
@@ -576,19 +617,17 @@ Common polars operations (values are strings, so a new column's default is a str
 
 ## Workflows
 
-### First-time setup of a migrations folder
+### First-time setup of a database
 
-`migrations/ukrdc/` already exists in this repo, so this is only needed for another models module,
-or to start again. Run it while the database and the CSVs both match the current models.
+Every database in this repo already has its section and folder, so this is only needed for a new
+models module, or to start again. Run it while the database and the CSVs both match the current
+models.
 
 ```
-# 1. Database: create the folder, add views.py, then the initial revision
-mkdir migrations/{module}
-#    -> copy views.py into migrations/{module}/ if the module has views. It must be there before
-#       the first revision is generated (migrate.py doesn't copy it).
+# 1. Database: the initial revision. migrate.py adds [{module}] to migrations/alembic.ini and
+#    creates migrations/{module}/versions.
 poetry run python migration_tool/migrate.py revision --autogenerate -m "initial" --models {module:Base}
-#    -> in the new revision: set VIEWS_REF to a full SHA, add DROP TYPE for any enums to downgrade(),
-#       then ruff format it
+#    -> add DROP TYPE for any enums to downgrade(), then ruff format it
 poetry run python migration_tool/migrate.py upgrade head --models {module:Base}
 poetry run python migration_tool/migrate.py downgrade base --models {module:Base}
 
@@ -597,12 +636,23 @@ poetry run python migration_tool/csv_migrate.py generate -m "baseline" --models 
 poetry run python migration_tool/csv_migrate.py init {tables_dir} --models {module:Base}
 poetry run python migration_tool/csv_migrate.py current {tables_dir} --models {module:Base}   # check the models it picked
 
-# 3. Commit migrations/{module}/ and {tables_dir}/csv_versions.json
+# 3. Commit migrations/alembic.ini, migrations/{module}/ and {tables_dir}/csv_versions.json
 ```
 
-`alembic_template/script.py.mako` is what a new folder's revisions are written from. If it includes
-the view calls (`from views import ...`), the module needs `views.py`; for a module without views,
-remove those lines from the new folder's `script.py.mako`.
+**A database with views and triggers**, like ukrdc, needs them set up before step 1, so the first
+revision is written with the calls that build them. Copy `views.py` and `triggers.py` into
+`migrations/{module}/`, and add its section to `migrations/alembic.ini` yourself, before the
+`# Logging` line (`migrate.py` leaves a section that's already there alone):
+
+```ini
+[{module}]
+version_locations = %(here)s/{module}/versions
+prepend_sys_path = %(here)s/{module}
+views_and_triggers = true
+lock_timeout = 10s
+```
+
+Then set `VIEWS_REF` to a full SHA in the initial revision.
 
 ### Adding a column
 
@@ -698,7 +748,7 @@ poetry run python migration_tool/csv_migrate.py downgrade {tables_dir} {NNNN-1} 
 ```
 
 For the database: if the revision hasn't been applied anywhere, delete the file. If it has, run
-`alembic -c migrations/ukrdc/alembic.ini downgrade -1` against that database first.
+`alembic -c migrations/alembic.ini -n ukrdc downgrade -1` against that database first.
 
 ### When a CSV fails to migrate
 
@@ -727,8 +777,12 @@ the step file (or the CSV), then run the same `upgrade` again: it picks up from 
 | `Docker isn't installed` / `docker run failed (is Docker running?)` | Start Docker, or pass `--db-url` to a Postgres server. |
 | `Couldn't create a database on ...` | The user in `--db-url` / `--scratch-url` can't `CREATE DATABASE`. Use a server where it can, e.g. a local one. |
 | `Can't load --models ...` / `has no tables` | Run from the project root in the Poetry environment, and point `--models` at the module that defines every model (`ukrdc_sqla.ukrdc:Base`). |
-| `No migrations/{module}/alembic.ini yet` | Create the folder with `revision --autogenerate`, or pass `--migrations`. |
-| `No module named 'views'` | `views.py` is missing from the migrations folder. Copy it in. |
+| `No migrations/alembic.ini yet` | Run from the project root, or pass `--migrations`. `revision --autogenerate` creates it if it really doesn't exist. |
+| `migrations/alembic.ini has no [{module}] section` | A models module with no migrations yet: run `revision --autogenerate` for it ([First-time setup](#first-time-setup-of-a-database)). Or the section has another name: pick it with `-n`. |
+| `No 'script_location' key found in configuration` (plain Alembic) | `-n {module}` is missing: `alembic -c migrations/alembic.ini -n ukrdc ...`. |
+| `No module named 'views'` / `'triggers'` | The file is missing from `migrations/{module}/`, or the section has no `prepend_sys_path = %(here)s/{module}`. |
+| `canceling statement due to lock timeout` | Something else held a lock for longer than `lock_timeout`; nothing was applied. Run it again when it's quieter, or with `-x lock_timeout=2min` ([Lock timeout](#before-applying-to-live)). |
+| Plain Alembic does nothing, `heads` prints nothing | The section's `version_locations` points at the wrong folder. |
 | `Couldn't fetch VIEWS_REF ...` | No `git`, no access to GitHub, or no such commit or tag. Set `UKRDC_VIEWS_REPO` to a local clone. |
 | `use the full 40-character commit SHA` | `VIEWS_REF` is a short SHA. |
 | `type "{name}" already exists` | An earlier downgrade left an enum type behind. Add `DROP TYPE IF EXISTS {name}` to that downgrade; drop the type by hand where it's already left over. |
@@ -741,5 +795,30 @@ the step file (or the CSV), then run the same `upgrade` again: it picks up from 
 | `Not a model: {name}` (csv_migrate) | Use the model class name (`Code`), not the table name (`code_list`). |
 | `0 run, 1 skipped` (csv_migrate) | The model is mapped to `None` in that step, or the key doesn't match the class name. |
 | `Two steps numbered {NNNN}` (csv_migrate) | Two branches added the same step number. [Renumber the newer one](#two-branches-both-added-a-revision-or-step). |
+
+---
+
+## CI
+
+`.github/workflows/db_migrations.yml` (**Migrations Check**) runs on every pull request and push to
+`main`, against a `postgres:16` service:
+
+1. **Finds every declarative Base** in `ukrdc_sqla` (or uses `MODEL_BASES`, if set in the
+   workflow). Each one must load all its tables when its module is imported on its own.
+2. **`migrate.py check --models {module:Base}`** for each Base: fails if the models have changes no
+   migration covers, and the run summary says which Base and the commands to generate the revision
+   and CSV step.
+3. **Plain Alembic for every section of `migrations/alembic.ini`**:
+   `alembic -c migrations/alembic.ini -n {section} upgrade head --sql`, the way migrations are
+   deployed. Fails if a section's revisions can't be found or loaded (a wrong `version_locations`,
+   a missing `prepend_sys_path`), and warns about a section with no Base, since nothing checks its
+   migrations against models.
+
+Run the same checks locally before pushing:
+
+```
+poetry run python migration_tool/migrate.py check --models ukrdc_sqla.ukrdc:Base
+poetry run alembic -c migrations/alembic.ini -n ukrdc upgrade head --sql > $null    # bash: > /dev/null
+```
 
 ---

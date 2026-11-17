@@ -12,8 +12,8 @@ the ones declared with index=True).
 - A database built from the migrations never had most of them, so the missing ones are
   created and it matches the models (what CI's `migrate.py check` compares).
 - Local and staging have eight composite idx_* indexes live doesn't. They are now in the
-  models and are built here with CREATE INDEX CONCURRENTLY, so building them on live's
-  large tables doesn't block writes.
+  models and are built here like the others, inside the migration's transaction: on live
+  each blocks writes to its table until the migration commits.
 - idx_observation_pid_serviceidcode_observationtime is renamed to
   idx_observation_pid_observationcode_observationtime: it indexes observationcode, not
   serviceidcode.
@@ -22,8 +22,7 @@ Views and triggers are left as they are: no column changes, and rebuilding them 
 every table on live for nothing.
 """
 
-from alembic import context, op
-from sqlalchemy import text
+from alembic import op
 
 revision = "baa2a57fc5c2"
 down_revision = "55b2defd9a75"
@@ -60,19 +59,15 @@ INDEXES = {
     "resultitem_orderid_firstpart": "CREATE INDEX resultitem_orderid_firstpart ON resultitem (left(orderid, -32))",
     "ix_treatment_pid": "CREATE INDEX ix_treatment_pid ON treatment (pid)",
     "ix_treatment_pid_fromtime": "CREATE INDEX ix_treatment_pid_fromtime ON treatment (pid, fromtime)",
-}
-
-# Composite indexes the models define that live doesn't have. Built CONCURRENTLY, outside
-# the migration's transaction, so writes carry on while they build.
-CONCURRENT_INDEXES = {
-    "idx_diagnosis_pid_diagnosiscode": "ON diagnosis (pid, diagnosiscode)",
-    "idx_laborder_pid_id": "ON laborder (pid, id)",
-    "idx_medication_pid_fromtime_totime": "ON medication (pid, fromtime, totime)",
-    "idx_observation_pid_observationcode_observationtime": "ON observation (pid, observationcode, observationtime)",
-    "idx_patientnumber_pid_numbertype_organization": "ON patientnumber (pid, numbertype, organization)",
-    "idx_renaldiagnosis_pid_diagnosiscodestd": "ON renaldiagnosis (pid, diagnosiscodestd)",
-    "idx_resultitem_orderid_serviceidcode_observationtime": "ON resultitem (orderid, serviceidcode, observationtime)",
-    "idx_treatment_pid_admitreasoncode": "ON treatment (pid, admitreasoncode)",
+    # Composite indexes local and staging have and live doesn't.
+    "idx_diagnosis_pid_diagnosiscode": "CREATE INDEX idx_diagnosis_pid_diagnosiscode ON diagnosis (pid, diagnosiscode)",
+    "idx_laborder_pid_id": "CREATE INDEX idx_laborder_pid_id ON laborder (pid, id)",
+    "idx_medication_pid_fromtime_totime": "CREATE INDEX idx_medication_pid_fromtime_totime ON medication (pid, fromtime, totime)",
+    "idx_observation_pid_observationcode_observationtime": "CREATE INDEX idx_observation_pid_observationcode_observationtime ON observation (pid, observationcode, observationtime)",
+    "idx_patientnumber_pid_numbertype_organization": "CREATE INDEX idx_patientnumber_pid_numbertype_organization ON patientnumber (pid, numbertype, organization)",
+    "idx_renaldiagnosis_pid_diagnosiscodestd": "CREATE INDEX idx_renaldiagnosis_pid_diagnosiscodestd ON renaldiagnosis (pid, diagnosiscodestd)",
+    "idx_resultitem_orderid_serviceidcode_observationtime": "CREATE INDEX idx_resultitem_orderid_serviceidcode_observationtime ON resultitem (orderid, serviceidcode, observationtime)",
+    "idx_treatment_pid_admitreasoncode": "CREATE INDEX idx_treatment_pid_admitreasoncode ON treatment (pid, admitreasoncode)",
 }
 
 
@@ -110,38 +105,13 @@ def upgrade():
         " RENAME TO idx_observation_pid_observationcode_observationtime"
     )
 
-    # Create the ones the database doesn't have. Each is looked up first, so on live, where
-    # they all exist now, no table is touched (CREATE INDEX IF NOT EXISTS would still lock
-    # the table against writes until the migration commits).
+    # Create the ones the database doesn't have. Each is looked up first, so a table whose
+    # indexes all exist isn't touched (CREATE INDEX IF NOT EXISTS would still lock it
+    # against writes until the migration commits).
     for name, create in INDEXES.items():
         op.execute(
             f"DO $$ BEGIN IF to_regclass('{name}') IS NULL THEN {create}; END IF; END $$"
         )
-
-    # CREATE INDEX CONCURRENTLY can't run inside a transaction, so this commits the work
-    # above first. A concurrent build that failed earlier leaves an INVALID index behind
-    # that IF NOT EXISTS would skip, so one is dropped and built again.
-    with op.get_context().autocommit_block():
-        for name, target in CONCURRENT_INDEXES.items():
-            if context.is_offline_mode():
-                op.execute(f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {name} {target}")
-                continue
-            valid = (
-                op.get_bind()
-                .execute(
-                    text(
-                        "SELECT indisvalid FROM pg_index"
-                        " WHERE indexrelid = to_regclass(:name)"
-                    ),
-                    {"name": name},
-                )
-                .scalar()
-            )
-            if valid:
-                continue
-            if valid is False:
-                op.execute(f"DROP INDEX CONCURRENTLY {name}")
-            op.execute(f"CREATE INDEX CONCURRENTLY {name} {target}")
 
 
 def downgrade():

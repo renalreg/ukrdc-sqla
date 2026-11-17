@@ -1,14 +1,14 @@
-"""Alembic environment for these migrations (copied here by migrate.py).
+"""Alembic environment shared by every database's migrations (see alembic.ini).
 
-Apply them to a database with plain Alembic, after setting sqlalchemy.url in alembic.ini
-(or DATABASE_URL):
+Apply a database's migrations with plain Alembic: -n picks its section in alembic.ini, and
+DATABASE_URL (or sqlalchemy.url in that section) is the database to apply them to:
 
-    alembic -c migrations/ukrdc/alembic.ini upgrade head
-    alembic -c migrations/ukrdc/alembic.ini downgrade -1
-    alembic -c migrations/ukrdc/alembic.ini upgrade head --sql     # print the SQL instead
+    alembic -c migrations/alembic.ini -n ukrdc upgrade head
+    alembic -c migrations/alembic.ini -n ukrdc downgrade -1
+    alembic -c migrations/alembic.ini -n ukrdc upgrade head --sql     # print the SQL instead
 
-New revisions come from `python migrate.py generate -m "..."`, which passes in a connection
-to its throwaway database and the models' metadata.
+New revisions come from `python migrate.py --models ... revision --autogenerate -m "..."`,
+which passes in a connection to its throwaway database and the models' metadata.
 """
 
 import os
@@ -71,12 +71,18 @@ def strip_orm_only_fks(context_, revision, directives):
             walk(ops_)
 
 
-def lock_timeout() -> str:
+# ----------------------------------------------------------------------------- lock timeout
+
+
+def lock_timeout() -> str | None:
+    """-x lock_timeout=..., else LOCK_TIMEOUT, else the section's lock_timeout, else none."""
     value = (
         context.get_x_argument(as_dictionary=True).get("lock_timeout")
         or os.environ.get("LOCK_TIMEOUT")
-        or "10s"
+        or config.get_main_option("lock_timeout")
     )
+    if not value:
+        return None
     if not re.fullmatch(r"\d+\s*(ms|s|min|h)?", value.strip()):
         raise SystemExit(
             f"Invalid lock timeout {value!r}: use e.g. 10s, 500ms, 2min or 0."
@@ -86,7 +92,12 @@ def lock_timeout() -> str:
 
 def set_lock_timeout() -> None:
     """For this transaction only (SET LOCAL), so it doesn't outlive the migration."""
-    context.execute(f"SET LOCAL lock_timeout = '{lock_timeout()}'")
+    value = lock_timeout()
+    if value is not None:
+        context.execute(f"SET LOCAL lock_timeout = '{value}'")
+
+
+# ----------------------------------------------------------------------------- run
 
 
 def run_migrations(conn):
@@ -115,7 +126,10 @@ else:
             set_lock_timeout()
             context.run_migrations()
     elif not url:
-        raise SystemExit("Set sqlalchemy.url in alembic.ini, or DATABASE_URL.")
+        raise SystemExit(
+            f"Set DATABASE_URL, or sqlalchemy.url in the [{config.config_ini_section}]"
+            " section of alembic.ini."
+        )
     else:
         with create_engine(url, poolclass=pool.NullPool).connect() as conn:
             run_migrations(conn)

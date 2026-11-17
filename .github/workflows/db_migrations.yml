@@ -3,6 +3,10 @@ name: Migrations Check
 # For each declarative Base in ukrdc_sqla: migrate a throwaway database to the head of its
 # migrations and compare it with the models (alembic check). Any model change that no
 # migration covers fails the run, naming the Base and the operations that are missing.
+#
+# The migrations share migrations/alembic.ini, with a section per database named after the
+# Base's module (ukrdc_sqla.ukrdc:Base -> [ukrdc], revisions in migrations/ukrdc/versions).
+# Every section is also run the way the migrations are deployed, with plain Alembic.
 
 on:
   pull_request:
@@ -41,10 +45,10 @@ jobs:
           --health-retries 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -148,3 +152,76 @@ jobs:
             exit 1
           fi
           echo "All migrations match the models."
+
+      - name: Apply every database's migrations with plain Alembic
+        # How they're deployed: alembic -c migrations/alembic.ini -n <database>. migrate.py
+        # passes in its own connection, so this is the only step that reads each section's
+        # settings the way a deploy does. Offline (--sql): no database needed.
+        if: ${{ !cancelled() }}
+        env:
+          BASES: ${{ steps.bases.outputs.list }}
+        run: |
+          set -uo pipefail
+          sections=$(poetry run python - <<'EOF'
+          import configparser
+
+          ini = configparser.ConfigParser(interpolation=None)
+          ini.read("migrations/alembic.ini", encoding="utf-8")
+          print(" ".join(s for s in ini.sections() if ini.has_option(s, "version_locations")))
+          EOF
+          )
+          echo "Databases in migrations/alembic.ini: $sections"
+
+          checked=" "
+          for base in ${BASES:-}; do
+            module="${base%%:*}"
+            checked+="${module##*.} "
+          done
+
+          failed=()
+          {
+            echo
+            echo "## Plain Alembic"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for db in $sections; do
+            echo "::group::$db"
+            if [ -n "${BASES:-}" ] && [[ "$checked" != *" $db "* ]]; then
+              echo "::warning title=No models for [$db]::migrations/alembic.ini has [$db], but no ukrdc_sqla.$db:Base was found, so its migrations aren't checked against models."
+            fi
+            # A section whose version_locations finds no revisions applies nothing, without
+            # an error: count that as a failure too.
+            if ! heads=$(poetry run alembic -c migrations/alembic.ini -n "$db" heads 2>&1); then
+              out="$heads"
+              ok=false
+            elif [ -z "$heads" ]; then
+              out="No revisions found: check version_locations in [$db]."
+              ok=false
+            elif out=$(poetry run alembic -c migrations/alembic.ini -n "$db" upgrade head --sql 2>&1 >/dev/null); then
+              ok=true
+            else
+              ok=false
+            fi
+            if $ok; then
+              echo "- \`$db\`: applies" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "$out"
+              failed+=("$db")
+              echo "::error title=Can't apply [$db]::alembic -c migrations/alembic.ini -n $db upgrade head --sql: $(echo "$out" | tail -1)"
+              {
+                echo "- \`$db\`: **can't be applied** (\`alembic -c migrations/alembic.ini -n $db upgrade head --sql\`)"
+                echo
+                echo '  ```'
+                echo "$out" | tail -20 | sed 's/^/  /'
+                echo '  ```'
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ ${#failed[@]} -ne 0 ]; then
+            echo "Plain Alembic failed for: ${failed[*]}"
+            exit 1
+          fi
+          echo "Every database's migrations apply with plain Alembic."
