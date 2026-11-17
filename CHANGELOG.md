@@ -1,5 +1,43 @@
 # Changelog
 
+## [5.2.2](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.1...v5.2.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **models:** enum correction ([#223](https://github.com/renalreg/ukrdc-sqla/issues/223)) ([6b72386](https://github.com/renalreg/ukrdc-sqla/commit/6b72386a8d201948f7e6983cd6ff2430528fb803))
+
+## [5.2.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.0...v5.2.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **models:** missing timestamps ([f10efa9](https://github.com/renalreg/ukrdc-sqla/commit/f10efa9fa9ba7d5e74dcc220b6ca7a221443e918))
+
+## [5.2.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.1.0...v5.2.0) (2026-10-28)
+
+
+### Features
+
+* **UK-408:** Delete Facility Table, Rename Facility_New ([265d3e4](https://github.com/renalreg/ukrdc-sqla/commit/265d3e4710ec0bd2d525767fb844939bce8623e5))
+* **UK-440:** update char lengths to match db and increased to match the schema ([959aef8](https://github.com/renalreg/ukrdc-sqla/commit/959aef8f964b44057572bdc5d4a61063ac999361))
+* **UK-441:** JTRACE - more updates ([7266fe5](https://github.com/renalreg/ukrdc-sqla/commit/7266fe5500296d97393981d4a50dca5e4a132b3d))
+* **UK-441:** JTRACE - Update DB to change from CHAR to VARCHAR ([#219](https://github.com/renalreg/ukrdc-sqla/issues/219)) ([50c2ae3](https://github.com/renalreg/ukrdc-sqla/commit/50c2ae3c460ac2fafa35cec8ad7791060e658dc3))
+
+## [5.1.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.1...v5.1.0) (2026-10-26)
+
+
+### Features
+
+* **UK-356:** add RADAR and PatientNumberOrganizationType constants ([#214](https://github.com/renalreg/ukrdc-sqla/issues/214)) ([308aafc](https://github.com/renalreg/ukrdc-sqla/commit/308aafc7422142d705e3f0281c72918ad626d00a))
+
+## [5.0.1](https://github.com/renalreg/ukrdc-sqla/compare/v5.0.0...v5.0.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** moved deps to optional ([f4e3d15](https://github.com/renalreg/ukrdc-sqla/commit/f4e3d15ac3c474bbecfeb5fcea208e084b6fe8a1))
+
 ## [5.0.0](https://github.com/renalreg/ukrdc-sqla/compare/v4.9.0...v5.0.0) (2026-10-21)
 
 

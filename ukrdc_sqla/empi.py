@@ -3,10 +3,10 @@
 import datetime
 
 from sqlalchemy import (
-    CHAR,
     Boolean,
     Date,
     DateTime,
+    Double,
     ForeignKey,
     Index,
     Integer,
@@ -30,19 +30,29 @@ class Base(DeclarativeBase):
 
 class MasterRecord(Base):
     __tablename__ = "masterrecord"
+    __table_args__ = (
+        Index("masterrecord_id_key", "id", unique=True),
+        Index(
+            "masterrecord_nationalid_key", "nationalid", "nationalidtype", unique=True
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     __mapper_args__ = {"primary_key": [id]}
-    lastupdated: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    lastupdated: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
     dateofbirth: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     gender: Mapped[str | None] = mapped_column(String(5))
     givenname: Mapped[str | None] = mapped_column(String(60))
     surname: Mapped[str | None] = mapped_column(String(60))
-    nationalid: Mapped[str] = mapped_column(CHAR(10), nullable=False)
-    nationalidtype: Mapped[str] = mapped_column(CHAR(10), nullable=False)
+    nationalid: Mapped[str] = mapped_column(String(50), nullable=False)
+    nationalidtype: Mapped[str] = mapped_column(String(10), nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False)
     effectivedate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
-    creationdate: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False)
+    creationdate: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
 
     # --- Relationships ---
     link_records: Mapped[list["LinkRecord"]] = relationship(
@@ -88,7 +98,7 @@ class LinkRecord(Base):
     linktype: Mapped[int] = mapped_column("linktype", Integer, nullable=False)
     linkcode: Mapped[int] = mapped_column("linkcode", Integer, nullable=False)
     linkdesc: Mapped[str | None] = mapped_column("linkdesc", String(200))
-    updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String(320))
     creationdate: Mapped[datetime.datetime] = mapped_column(
         "creationdate", DateTime, nullable=False, server_default=func.now()
     )
@@ -123,6 +133,10 @@ class LinkRecord(Base):
 
 class Person(Base):
     __tablename__ = "person"
+    __table_args__ = (
+        Index("ix_person_mrn", "originator", "localid", "localidtype", unique=True),
+        Index("person_id_key", "id", unique=True),
+    )
 
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     __mapper_args__ = {"primary_key": [id]}
@@ -130,10 +144,10 @@ class Person(Base):
 
     # Not unique on its own in the database (only as part of ix_person_mrn),
     # so the PidXRef -> Person FK is ORM-only
-    localid: Mapped[str] = mapped_column(String(17), nullable=False)
+    localid: Mapped[str] = mapped_column(String(50), nullable=False)
     localidtype: Mapped[str] = mapped_column("localidtype", String(10), nullable=False)
-    nationalid: Mapped[str | None] = mapped_column("nationalid", String(10))
-    nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String(5))
+    nationalid: Mapped[str | None] = mapped_column("nationalid", String(50))
+    nationalidtype: Mapped[str | None] = mapped_column("nationalidtype", String(10))
     dateofbirth: Mapped[datetime.date] = mapped_column(
         "dateofbirth", Date, nullable=False
     )
@@ -214,10 +228,10 @@ class WorkItem(Base):
     description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     status: Mapped[int] = mapped_column("status", Integer, nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(
-        "creationdate", DateTime, nullable=False
+        "creationdate", DateTime, nullable=False, server_default=func.now()
     )
     lastupdated: Mapped[datetime.datetime] = mapped_column(
-        "lastupdated", DateTime, nullable=False
+        "lastupdated", DateTime, nullable=False, server_default=func.now()
     )
     updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
     updatedesc: Mapped[str | None] = mapped_column("updatedesc", String(100))
@@ -249,14 +263,14 @@ class Audit(Base):
     type: Mapped[int] = mapped_column("type", Integer, nullable=False)
     description: Mapped[str] = mapped_column("description", String(100), nullable=False)
     attributes: Mapped[str | None] = mapped_column("attributes", String(1024))
-    mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String(10))
+    mainnationalid: Mapped[str | None] = mapped_column("mainnationalid", String(50))
     mainnationalidtype: Mapped[str | None] = mapped_column(
         "mainnationalidtype", String(10)
     )
     lastupdated: Mapped[datetime.datetime] = mapped_column(
         "lastupdated", DateTime, nullable=False
     )
-    updatedby: Mapped[str | None] = mapped_column("updatedby", String(20))
+    updatedby: Mapped[str | None] = mapped_column("updatedby", String(320))
 
     # --- Relationships ---
     # Can't use relations here, otherwise on delete sqla would try to
@@ -274,6 +288,15 @@ class Audit(Base):
 
 class PidXRef(Base):
     __tablename__ = "pidxref"
+    __table_args__ = (
+        Index(
+            "pidxref_compound",
+            "sendingfacility",
+            "sendingextract",
+            "localid",
+            unique=True,
+        ),
+    )
 
     # --- Attributes ---
     id: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -289,7 +312,7 @@ class PidXRef(Base):
     sendingextract: Mapped[str] = mapped_column(
         "sendingextract", String(6), nullable=False
     )
-    localid: Mapped[str] = mapped_column("localid", String(17), nullable=False)
+    localid: Mapped[str] = mapped_column("localid", String(50), nullable=False)
     creationdate: Mapped[datetime.datetime] = mapped_column(
         "creationdate", DateTime, nullable=False, server_default=func.now()
     )
@@ -315,15 +338,58 @@ class PidXRef(Base):
         )
 
 
-Index(
-    "ix_person_mrn", Person.originator, Person.localid, Person.localid_type, unique=True
-)
-Index("person_id_key", Person.id, unique=True)
+class TraceRequest(Base):
+    __tablename__ = "tracerequest"
 
-Index(
-    "pidxref_compound",
-    PidXRef.sending_facility,
-    PidXRef.sending_extract,
-    PidXRef.localid,
-    unique=True,
-)
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
+    tracetype: Mapped[str] = mapped_column("tracetype", String(10), nullable=False)
+    nameswap: Mapped[str] = mapped_column("nameswap", String(1), nullable=False)
+    localid: Mapped[str] = mapped_column("localid", String(10), nullable=False)
+    localidtype: Mapped[str] = mapped_column("localidtype", String(5), nullable=False)
+    originator: Mapped[str] = mapped_column("originator", String(50), nullable=False)
+    givenname: Mapped[str | None] = mapped_column("givenname", String(50))
+    othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
+    surname: Mapped[str | None] = mapped_column("surname", String(50))
+    gender: Mapped[str | None] = mapped_column("gender", String(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", String(10))
+    dateofbirthstart: Mapped[datetime.date | None] = mapped_column(
+        "dateofbirthstart", Date
+    )
+    dateofbirthend: Mapped[datetime.date | None] = mapped_column("dateofbirthend", Date)
+    street: Mapped[str | None] = mapped_column("street", String(50))
+    longname: Mapped[str | None] = mapped_column("longname", String(100))
+    longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))
+
+
+class TraceResponse(Base):
+    __tablename__ = "traceresponse"
+
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
+    tracestarttime: Mapped[str] = mapped_column(
+        "tracestarttime", String(23), nullable=False
+    )
+    traceendtime: Mapped[str] = mapped_column(
+        "traceendtime", String(23), nullable=False
+    )
+    message: Mapped[str | None] = mapped_column("message", String(200))
+    status: Mapped[str] = mapped_column("status", String(10), nullable=False)
+    maxweight: Mapped[float | None] = mapped_column("maxweight", Double)
+    matchcount: Mapped[int | None] = mapped_column("matchcount", Integer)
+
+
+class TraceResponseLine(Base):
+    __tablename__ = "traceresponseline"
+
+    traceid: Mapped[str] = mapped_column("traceid", String(36), primary_key=True)
+    personid: Mapped[int] = mapped_column("personid", Integer, primary_key=True)
+    weight: Mapped[float | None] = mapped_column("weight", Double)
+    givenname: Mapped[str | None] = mapped_column("givenname", String(50))
+    othergivennames: Mapped[str | None] = mapped_column("othergivennames", String(50))
+    surname: Mapped[str | None] = mapped_column("surname", String(50))
+    prevsurname: Mapped[str | None] = mapped_column("prevsurname", String(50))
+    gender: Mapped[str | None] = mapped_column("gender", String(2))
+    postcode: Mapped[str | None] = mapped_column("postcode", String(10))
+    dateofbirth: Mapped[datetime.date | None] = mapped_column("dateofbirth", Date)
+    street: Mapped[str | None] = mapped_column("street", String(50))
+    longname: Mapped[str | None] = mapped_column("longname", String(100))
+    longaddress: Mapped[str | None] = mapped_column("longaddress", String(100))

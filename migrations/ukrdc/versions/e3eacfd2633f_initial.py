@@ -1713,7 +1713,7 @@ def upgrade():
                 "Adult Renal Centre",
                 "Paediatric Renal Centre",
                 "Other",
-                name="facility_type",
+                name="facility_type_enum",
             ),
             nullable=False,
         ),
@@ -2109,4 +2109,4 @@ def downgrade():
 
     # Enum types created with ukrdc_ods_gp_codes and facility_new
     op.execute("DROP TYPE IF EXISTS gp_type")
-    op.execute("DROP TYPE IF EXISTS facility_type")
+    op.execute("DROP TYPE IF EXISTS facility_type_enum")

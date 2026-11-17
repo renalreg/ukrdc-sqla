@@ -12,11 +12,14 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     LargeBinary,
     Numeric,
+    PrimaryKeyConstraint,
     String,
     Text,
+    func,
     text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIT, JSON, JSONB
@@ -76,11 +79,12 @@ def coding_standard_column(
     )
 
 
-def pid_column(primary_key=False) -> MappedColumn:
+def pid_column(primary_key=False, index: bool | None = None) -> MappedColumn:
     return mapped_column(
         String(30),
         ForeignKey("patientrecord.pid", info={ORM_ONLY: True}),
         primary_key=primary_key,
+        index=index,
         sqla_info=ColumnInfo(
             label="Patient ID",
             description="Unique identifier for the patient record, referencing patientrecord.pid.",
@@ -121,6 +125,15 @@ class SendingExtractMetadata(Base):
 
 class PatientRecord(Base):
     __tablename__ = "patientrecord"
+    __table_args__ = (
+        Index(
+            "patientrecord_key2",
+            "sendingfacility",
+            "sendingextract",
+            "localpatientid",
+            unique=True,
+        ),
+    )
 
     pid: Mapped[str] = mapped_column(String(30), primary_key=True)
     sendingfacility: Mapped[str] = mapped_column(String(7), nullable=False)
@@ -633,6 +646,7 @@ class FamilyDoctor(Base):
 
 class GPInfo(Base):
     __tablename__ = "ukrdc_ods_gp_codes"
+    __table_args__ = (PrimaryKeyConstraint("code", name="pk_ukrdc_ods_gp_codes"),)
 
     code: Mapped[str] = mapped_column(String(8), primary_key=True)
 
@@ -704,6 +718,15 @@ class FamilyHistory(Base):
 
 class Observation(Base):
     __tablename__ = "observation"
+    __table_args__ = (
+        Index("ix_observation_pid_obstime", "pid", "observationtime"),
+        Index(
+            "idx_observation_pid_observationcode_observationtime",
+            "pid",
+            "observationcode",
+            "observationtime",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(
         String(100),
@@ -713,7 +736,7 @@ class Observation(Base):
             description="Unique identifier for the observation record.",
         ),
     )
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
@@ -980,9 +1003,10 @@ class Allergy(Base):
 
 class Diagnosis(Base):
     __tablename__ = "diagnosis"
+    __table_args__ = (Index("idx_diagnosis_pid_diagnosiscode", "pid", "diagnosiscode"),)
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1043,6 +1067,9 @@ class Diagnosis(Base):
 
 class RenalDiagnosis(Base):
     __tablename__ = "renaldiagnosis"
+    __table_args__ = (
+        Index("idx_renaldiagnosis_pid_diagnosiscodestd", "pid", "diagnosiscodestd"),
+    )
 
     pid: Mapped[str] = pid_column(primary_key=True)
 
@@ -1104,7 +1131,7 @@ class DialysisSession(Base):
     __tablename__ = "dialysissession"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1399,7 +1426,7 @@ class ProgramMembership(Base):
     __tablename__ = "programmembership"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1460,7 +1487,7 @@ class Name(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = mapped_column(
-        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True}), index=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -1481,10 +1508,18 @@ class Name(Base):
 
 class PatientNumber(Base):
     __tablename__ = "patientnumber"
+    __table_args__ = (
+        Index(
+            "idx_patientnumber_pid_numbertype_organization",
+            "pid",
+            "numbertype",
+            "organization",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = mapped_column(
-        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True}), index=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -1514,7 +1549,7 @@ class Address(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = mapped_column(
-        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True}), index=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -1554,7 +1589,7 @@ class ContactDetail(Base):
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
     pid: Mapped[str] = mapped_column(
-        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True})
+        String(30), ForeignKey("patient.pid", info={ORM_ONLY: True}), index=True
     )
 
     creation_date: Mapped[datetime] = mapped_column(
@@ -1579,9 +1614,12 @@ class ContactDetail(Base):
 
 class Medication(Base):
     __tablename__ = "medication"
+    __table_args__ = (
+        Index("idx_medication_pid_fromtime_totime", "pid", "fromtime", "totime"),
+    )
 
     id: Mapped[str] = mapped_column(String(length=150), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -1844,7 +1882,7 @@ class Document(Base):
     __tablename__ = "document"
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     repositoryupdatedate: Mapped[datetime | None] = mapped_column(DateTime)
     creation_date: Mapped[datetime] = mapped_column(
@@ -1885,9 +1923,10 @@ class Document(Base):
 
 class LabOrder(Base):
     __tablename__ = "laborder"
+    __table_args__ = (Index("idx_laborder_pid_id", "pid", "id"),)
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date = mapped_column(
         DateTime, nullable=False, index=True, server_default=text("now()")
@@ -1988,6 +2027,15 @@ class LabOrder(Base):
 
 class ResultItem(Base):
     __tablename__ = "resultitem"
+    __table_args__ = (
+        Index("resultitem_orderid_firstpart", func.left(text("orderid"), -32)),
+        Index(
+            "idx_resultitem_orderid_serviceidcode_observationtime",
+            "orderid",
+            "serviceidcode",
+            "observationtime",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(
         String(100),
@@ -2001,6 +2049,7 @@ class ResultItem(Base):
         "orderid",
         String(100),
         ForeignKey("laborder.id", info={ORM_ONLY: True}),
+        index=True,
         sqla_info=ColumnInfo(
             label="Order ID",
             description="Identifier of the related laboratory order.",
@@ -2021,6 +2070,7 @@ class ResultItem(Base):
     )
     serviceidcode: Mapped[str | None] = mapped_column(
         String(100),
+        index=True,
         sqla_info=ColumnInfo(
             label="Service ID Code",
             description="Test code identifying the laboratory service or test performed.",
@@ -2202,7 +2252,7 @@ class PVDelete(Base):
 
     did: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
     )
@@ -2218,9 +2268,13 @@ class PVDelete(Base):
 
 class Treatment(Base):
     __tablename__ = "treatment"
+    __table_args__ = (
+        Index("ix_treatment_pid_fromtime", "pid", "fromtime"),
+        Index("idx_treatment_pid_admitreasoncode", "pid", "admitreasoncode"),
+    )
 
     id: Mapped[str] = mapped_column(String(length=100), primary_key=True)
-    pid: Mapped[str] = pid_column()
+    pid: Mapped[str] = pid_column(index=True)
 
     creation_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=text("now()")
@@ -2499,7 +2553,7 @@ class CodeMap(Base):
 
 
 class Facility(Base):
-    __tablename__ = "facility_new"
+    __tablename__ = "facility"
 
     # New columns matching SQL schema
     facilitycode: Mapped[str] = mapped_column(
@@ -2513,7 +2567,7 @@ class Facility(Base):
             FacilityType.adult_renal_centre,
             FacilityType.paediatric_renal_centre,
             FacilityType.other,
-            name="facility_type",
+            name="facility_type_enum",
         ),
         nullable=False,
     )

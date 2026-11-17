@@ -2,9 +2,16 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.sql.schema import Index
 
 
 class Base(DeclarativeBase):
@@ -32,9 +39,22 @@ class Channel(Base):
 
 class Message(Base):
     __tablename__ = "messages"
+    __table_args__ = (
+        UniqueConstraint(
+            "message_id",
+            "channel_id",
+            "msg_status",
+            name="messages_message_id_channel_id_msg_status_key",
+        ),
+        Index("messages_ni_idx", "ni"),
+        Index("messages_msg_status_idx", "msg_status"),
+        Index("messages_received_idx", "received"),
+        Index("messages_facility_idx", "facility"),
+        Index("messages_filename_idx", "filename"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    message_id: Mapped[int | None] = mapped_column(Integer, unique=True)
+    message_id: Mapped[int | None] = mapped_column(Integer)
     channel_id: Mapped[str | None] = mapped_column(String, ForeignKey("channels.id"))
     received: Mapped[datetime | None] = mapped_column(DateTime)
     msg_status: Mapped[str | None] = mapped_column(String)
@@ -68,10 +88,3 @@ class Latest(Base):
 
     # --- Relationships ---
     message: Mapped["Message"] = relationship("Message", back_populates="latests")
-
-
-Index("messages_ni_idx", Message.ni)
-Index("messages_msg_status_idx", Message.msg_status)
-Index("messages_received_idx", Message.received)
-Index("messages_facility_idx", Message.facility)
-Index("messages_filename_idx", Message.filename)

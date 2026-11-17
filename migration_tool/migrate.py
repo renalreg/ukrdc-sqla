@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import configparser
 import importlib
 import importlib.util
 import shutil
@@ -130,18 +131,47 @@ def scratch_database(obj):
 
 
 def create_migrations_folder(obj) -> None:
-    """A new migrations folder from alembic_template (alembic.ini, env.py, script.py.mako)."""
+    """The shared migrations folder from alembic_template (alembic.ini, env.py,
+    script.py.mako), with no databases in it yet."""
     missing = [n for n in TEMPLATE_FILES if not (TEMPLATE / n).exists()]
     if missing:
         raise click.ClickException(
             f"{TEMPLATE} is missing {', '.join(missing)}: keep the "
             "alembic_template folder next to migrate.py."
         )
-    (obj.migrations / "versions").mkdir(parents=True, exist_ok=True)
+    obj.migrations.mkdir(parents=True, exist_ok=True)
     for name in TEMPLATE_FILES:
         if not (obj.migrations / name).exists():
             shutil.copy(TEMPLATE / name, obj.migrations / name)
     click.echo(f"Created {obj.migrations} from {TEMPLATE}.", err=True)
+
+
+def has_section(ini: Path, section: str) -> bool:
+    parser = configparser.ConfigParser(interpolation=None)
+    parser.read(ini, encoding="utf-8")
+    return parser.has_section(section)
+
+
+def add_database(ini: Path, section: str) -> None:
+    """A section for a new database in the shared alembic.ini, and its versions folder.
+    Goes in before the logging sections, so the database sections stay together."""
+    (ini.parent / section / "versions").mkdir(parents=True, exist_ok=True)
+    block = f"[{section}]\nversion_locations = %(here)s/{section}/versions\n\n"
+    text = ini.read_text(encoding="utf-8")
+    at = next(
+        (i for marker in ("# Logging", "[loggers]") if (i := text.find(marker)) >= 0),
+        None,
+    )
+    if at is None:
+        text = text.rstrip("\n") + "\n\n" + block
+    else:
+        text = text[:at] + block + text[at:]
+    ini.write_text(text, encoding="utf-8")
+    click.echo(
+        f"Added [{section}] to {ini}, with its revisions in {ini.parent / section}"
+        "/versions.",
+        err=True,
+    )
 
 
 # ----------------------------------------------------------------------------- models
@@ -202,7 +232,11 @@ def describe_diffs(diffs) -> str:
 @click.option(
     "--migrations",
     type=click.Path(file_okay=False, path_type=Path),
-    help="Migrations folder. Default: migrations/<module>, e.g. migrations/ukrdc.",
+    default=Path("migrations"),
+    show_default=True,
+    help="The shared migrations folder: alembic.ini, env.py and script.py.mako, and a "
+    "<database>/versions folder for each database. The database is the --models module "
+    "(e.g. ukrdc), or Alembic's -n.",
 )
 @click.option(
     "--db-url",
@@ -228,7 +262,7 @@ def cli(models, migrations, db_url, pg_image, at, alembic_args):
     module = models.partition(":")[0].rsplit(".", 1)[-1]
     obj = SimpleNamespace(
         models=models,
-        migrations=migrations or Path("migrations") / module,
+        migrations=migrations,
         db_url=db_url,
         pg_image=pg_image,
     )
@@ -241,18 +275,30 @@ def cli(models, migrations, db_url, pg_image, at, alembic_args):
     args = [getattr(options, k, None) for k in positional]
     kwargs = {k: getattr(options, k, None) for k in kwarg}
 
-    explicit_config = any(
-        a in ("-c", "--config") or a.startswith("--config=") for a in alembic_args
-    )
+    def given(short: str, long: str) -> bool:
+        return any(a in (short, long) or a.startswith(f"{long}=") for a in alembic_args)
+
+    explicit_config = given("-c", "--config")
     ini = Path(options.config) if explicit_config else obj.migrations / "alembic.ini"
-    if not ini.exists() and fn is command.revision and not explicit_config:
-        create_migrations_folder(obj)
+    # The database's section in the shared alembic.ini: -n if given, else the module.
+    section = options.name if given("-n", "--name") else module
+    if fn is command.revision and not explicit_config:
+        if not ini.exists():
+            create_migrations_folder(obj)
+        if not has_section(ini, section):
+            add_database(ini, section)
     if not ini.exists() and fn is not command.init:
         raise click.ClickException(
             f"No {ini} yet: run `migrate.py revision --autogenerate -m ...` "
             "to create the migrations folder."
         )
-    cfg = Config(str(ini), ini_section=options.name, cmd_opts=options)
+    if ini.exists() and fn is not command.init and not has_section(ini, section):
+        raise click.ClickException(
+            f"{ini} has no [{section}] section: run `migrate.py --models {models} "
+            "revision --autogenerate -m ...` to add the database, or pick its "
+            "section with -n."
+        )
+    cfg = Config(str(ini), ini_section=section, cmd_opts=options)
 
     autogenerate = fn is command.revision and kwargs.get("autogenerate")
     offline = bool(kwargs.get("sql"))
