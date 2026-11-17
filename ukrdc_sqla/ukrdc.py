@@ -600,15 +600,6 @@ class FamilyDoctor(Base):
     commenttext: Mapped[str | None] = mapped_column(String(100))
     update_date: Mapped[datetime | None] = mapped_column(DateTime)
 
-    # Relationships
-
-    gp_info: Mapped["GPInfo"] = relationship(
-        "GPInfo", foreign_keys=[gpid], uselist=False
-    )
-    gp_practice_info: Mapped["GPInfo"] = relationship(
-        "GPInfo", foreign_keys=[gppracticeid], uselist=False
-    )
-
     def __str__(self):
         return f"{self.__class__.__name__}({self.id}) <{self.gpname} {self.gpid}>"
 
