@@ -21,7 +21,6 @@ VIEWS_REF = "4b6133e32e445346a050d6b922b8dad871a222a0"
 
 
 def upgrade():
-
     drop_triggers()
 
     drop_views(
