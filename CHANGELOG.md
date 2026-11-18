@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.3.0](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.2...v5.3.0) (2026-11-18)
+
+
+### Features
+
+* add source column to errordb messages ([#229](https://github.com/renalreg/ukrdc-sqla/issues/229)) ([2ec99e0](https://github.com/renalreg/ukrdc-sqla/commit/2ec99e014565b4213b25181c458148777b5ae7df))
+* **alembic:** updated alembic and fixed tests, now migrations use a shared set of files to reduce file bulk ([756f8eb](https://github.com/renalreg/ukrdc-sqla/commit/756f8eb34bcda58ec0542989ca9ed508a38a8426))
+* **UK-214:** UKRDC Models - Remove FK from FamilyDoctors ([#228](https://github.com/renalreg/ukrdc-sqla/issues/228)) ([5327076](https://github.com/renalreg/ukrdc-sqla/commit/53270769bd08ab807c8db8ea7d11e6e52e5c7793))
+* **UK-451:** UKRDC DB - Database Indexes ([e58f1fe](https://github.com/renalreg/ukrdc-sqla/commit/e58f1fe72a0d896084a24f12c5dde8d0282563fc))
+
 ## [5.2.2](https://github.com/renalreg/ukrdc-sqla/compare/v5.2.1...v5.2.2) (2026-10-29)
 
 
